@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b1220" />
-  <title>SegnalaFacile</title>
+  <title>SegnalaFacile – Demo</title>
 
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
@@ -19,20 +19,19 @@
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background: radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 50%),
-                  radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 55%),
-                  var(--bg);
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: var(--bg);
       color:var(--text);
+      -webkit-tap-highlight-color: transparent;
     }
     .wrap{max-width:860px; margin:0 auto; padding:22px 16px 90px}
+
     header{
       display:flex; align-items:center; justify-content:space-between; gap:12px;
       padding:12px 0 6px;
     }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-    }
+    .brand{display:flex; align-items:center; gap:10px;}
     .logo{
       width:38px; height:38px; border-radius:12px;
       background: linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.9));
@@ -56,12 +55,14 @@
     }
     .hero h1{margin:0 0 8px; font-size:28px; line-height:1.15}
     .hero p{margin:0; color:var(--muted); font-size:14px; line-height:1.5}
+
     .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
     button, .btn{
       cursor:pointer; border:0; border-radius:14px;
       padding:12px 14px; font-weight:700; font-size:14px;
       display:inline-flex; align-items:center; gap:10px;
       text-decoration:none; color:var(--text);
+      user-select:none;
     }
     .primary{background:var(--accent)}
     .ghost{background:rgba(255,255,255,.06); border:1px solid var(--stroke)}
@@ -91,6 +92,7 @@
     }
     .toggle span{color:var(--muted); font-size:13px}
     .toggle strong{font-size:13px}
+
     .preview{
       margin-top:10px; display:none; gap:10px; align-items:flex-start;
       padding:12px; border-radius:14px; border:1px dashed var(--stroke);
@@ -98,6 +100,7 @@
     }
     .preview img{width:86px; height:86px; object-fit:cover; border-radius:14px; border:1px solid var(--stroke)}
     .preview .meta{font-size:12px; color:var(--muted); line-height:1.4}
+
     .pill{
       display:inline-flex; align-items:center; gap:8px;
       padding:6px 10px; border-radius:999px;
@@ -145,52 +148,37 @@
       padding:12px; border-radius:16px; border:1px solid rgba(25,195,125,.35);
       background:rgba(25,195,125,.12);
       color:var(--text);
-      /* =========================
-   FIX TOUCH / CLICK MOBILE
-   ========================= */
+    }
 
-body::before{
-  content:"";
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 50%),
-    radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 55%);
-  z-index: 0;
-  pointer-events: none;
-}
+    /* =========================
+       FIX TOUCH / CLICK MOBILE
+       ========================= */
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 50%),
+        radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 55%);
+      z-index: 0;
+      pointer-events: none;
+    }
 
-/* tutto il contenuto sopra lo sfondo */
-.wrap,
-header,
-section,
-nav.bottom{
-  position: relative;
-  z-index: 1;
-}
+    .wrap, header, section, nav.bottom{
+      position: relative;
+      z-index: 1;
+    }
 
-/* assicura che i bottoni ricevano il tap */
-.btn,
-button,
-nav a{
-  pointer-events: auto;
-  touch-action: manipulation;
-}
+    .btn, button, nav a{
+      pointer-events: auto;
+      touch-action: manipulation;
+    }
 
-/* barra inferiore sempre sopra */
-nav.bottom{
-  z-index: 9999;
-  /* DEBUG: evidenzia eventuali overlay invisibili */
-*{
-  outline: 1px solid transparent;
-}
-  section{
-  display: none;
-}
+    nav.bottom{ z-index: 9999; }
 
-section:not(.hidden){
-  display: block;
-}
+    /* evita sovrapposizioni tra sezioni */
+    section{ display:none; }
+    section:not(.hidden){ display:block; }
   </style>
 </head>
 
@@ -212,7 +200,7 @@ section:not(.hidden){
       <div class="card hero">
         <h1>Invia una segnalazione in pochi secondi</h1>
         <p>
-          Descrivi il problema, aggiungi una foto e invia.  
+          Descrivi il problema, aggiungi una foto e invia.
           Niente messaggi sparsi: tutto ordinato e tracciabile.
         </p>
         <div class="btnRow">
@@ -340,7 +328,7 @@ section:not(.hidden){
 
         <div class="btnRow" style="margin-top:14px">
           <a class="btn primary" id="waLink" href="#">💬 WhatsApp</a>
-          <a class="btn ghost" id="tgLink" href="#" target="_blank">💬 Telegram</a>
+          <a class="btn ghost" id="tgLink" href="#" target="_blank" rel="noreferrer">💬 Telegram</a>
           <a class="btn ghost" id="telLink" href="#">📞 Telefono</a>
           <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
@@ -370,7 +358,7 @@ section:not(.hidden){
       whatsappNumber: "393476182313",   // es: 393476183313 (senza +)
       whatsappText: "Ciao! Ti scrivo da SegnalaFacile.",
       phoneNumber: "393476182313",
-      telegramUsername: "SegnalaFacileBot"
+      telegramUsername: "SegnalaFacileBot",
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino" // testo per Google Maps
     };
@@ -383,6 +371,7 @@ section:not(.hidden){
       e.preventDefault();
       deferredPrompt = e;
       const pill = document.getElementById("installPill");
+      if(!pill) return;
       pill.style.display = "inline-flex";
       pill.addEventListener("click", async () => {
         try{
@@ -440,11 +429,11 @@ section:not(.hidden){
 
     function applyContacts(){
       const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(CONFIG.whatsappText)}`;
-      wa.href = waUrl;
-      tel.href = `tel:${CONFIG.phoneNumber}`;
-      mail.href = `mailto:${CONFIG.email}`;
-      map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
-      tg.href = "https://t.me/" + CONFIG.telegramUsername;
+      if(wa) wa.href = waUrl;
+      if(tel) tel.href = `tel:${CONFIG.phoneNumber}`;
+      if(mail) mail.href = `mailto:${CONFIG.email}`;
+      if(map) map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
+      if(tg) tg.href = `https://t.me/${CONFIG.telegramUsername}`;
     }
     applyContacts();
 
@@ -478,72 +467,79 @@ section:not(.hidden){
 
     let photoDataUrl = null;
 
-    btnPickPhoto.addEventListener("click", () => elFoto.click());
-    btnClearPhoto.addEventListener("click", () => {
-      elFoto.value = "";
-      photoDataUrl = null;
-      preview.style.display = "none";
-    });
-
-    elFoto.addEventListener("change", async () => {
-      const file = elFoto.files && elFoto.files[0];
-      if(!file) return;
-      if(!file.type.startsWith("image/")){
-        alert("Seleziona un'immagine valida.");
-        return;
-      }
-      // Convert to dataURL (demo only)
-      const reader = new FileReader();
-      reader.onload = () => {
-        photoDataUrl = reader.result;
-        photoImg.src = photoDataUrl;
-        preview.style.display = "flex";
-        photoMeta.textContent = `${file.name} • ${Math.round(file.size/1024)} KB`;
-      };
-      reader.readAsDataURL(file);
-    });
-
-    function resetForm(){
-      elTitolo.value = "";
-      elDescrizione.value = "";
-      elAnonimo.checked = false;
-      elFoto.value = "";
-      photoDataUrl = null;
-      preview.style.display = "none";
+    if(btnPickPhoto && elFoto){
+      btnPickPhoto.addEventListener("click", () => elFoto.click());
     }
 
-    btnSend.addEventListener("click", () => {
-      const titolo = elTitolo.value.trim();
-      const descrizione = elDescrizione.value.trim();
+    if(btnClearPhoto){
+      btnClearPhoto.addEventListener("click", () => {
+        if(elFoto) elFoto.value = "";
+        photoDataUrl = null;
+        if(preview) preview.style.display = "none";
+      });
+    }
 
-      if(titolo.length < 4){
-        alert("Inserisci un titolo (minimo 4 caratteri).");
-        return;
-      }
-      if(descrizione.length < 10){
-        alert("Inserisci una descrizione (minimo 10 caratteri).");
-        return;
-      }
+    if(elFoto){
+      elFoto.addEventListener("change", () => {
+        const file = elFoto.files && elFoto.files[0];
+        if(!file) return;
+        if(!file.type.startsWith("image/")){
+          alert("Seleziona un'immagine valida.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          photoDataUrl = reader.result;
+          if(photoImg) photoImg.src = photoDataUrl;
+          if(preview) preview.style.display = "flex";
+          if(photoMeta) photoMeta.textContent = `${file.name} • ${Math.round(file.size/1024)} KB`;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
 
-      const reports = loadReports();
-      const now = new Date();
-      const item = {
-        id: cryptoRandomId(),
-        titolo,
-        descrizione,
-        anonimo: !!elAnonimo.checked,
-        photoDataUrl,
-        createdAt: now.toISOString()
-      };
-      reports.unshift(item);
-      saveReports(reports);
+    function resetForm(){
+      if(elTitolo) elTitolo.value = "";
+      if(elDescrizione) elDescrizione.value = "";
+      if(elAnonimo) elAnonimo.checked = false;
+      if(elFoto) elFoto.value = "";
+      photoDataUrl = null;
+      if(preview) preview.style.display = "none";
+    }
 
-      resetForm();
-      location.hash = "#/success";
-    });
+    if(btnSend){
+      btnSend.addEventListener("click", () => {
+        const titolo = (elTitolo?.value || "").trim();
+        const descrizione = (elDescrizione?.value || "").trim();
+
+        if(titolo.length < 4){
+          alert("Inserisci un titolo (minimo 4 caratteri).");
+          return;
+        }
+        if(descrizione.length < 10){
+          alert("Inserisci una descrizione (minimo 10 caratteri).");
+          return;
+        }
+
+        const reports = loadReports();
+        const now = new Date();
+        const item = {
+          id: cryptoRandomId(),
+          titolo,
+          descrizione,
+          anonimo: !!elAnonimo?.checked,
+          photoDataUrl,
+          createdAt: now.toISOString()
+        };
+        reports.unshift(item);
+        saveReports(reports);
+
+        resetForm();
+        location.hash = "#/success";
+      });
+    }
 
     function cryptoRandomId(){
-      // fallback simple
       return (crypto?.randomUUID?.() || ("id_" + Math.random().toString(16).slice(2) + Date.now()));
     }
 
@@ -554,19 +550,26 @@ section:not(.hidden){
     const emptyState = document.getElementById("emptyState");
     const btnClearAll = document.getElementById("btnClearAll");
 
-    btnClearAll.addEventListener("click", () => {
-      const ok = confirm("Vuoi svuotare tutte le segnalazioni salvate su questo dispositivo?");
-      if(!ok) return;
-      saveReports([]);
-      renderList();
-    });
+    if(btnClearAll){
+      btnClearAll.addEventListener("click", () => {
+        const ok = confirm("Vuoi svuotare tutte le segnalazioni salvate su questo dispositivo?");
+        if(!ok) return;
+        saveReports([]);
+        renderList();
+      });
+    }
 
     function fmtDate(iso){
       const d = new Date(iso);
-      return d.toLocaleString("it-IT", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+      return d.toLocaleString("it-IT", {
+        year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit"
+      });
     }
 
     function renderList(){
+      if(!list || !emptyState) return;
+
       const reports = loadReports();
       list.innerHTML = "";
 
