@@ -62,7 +62,14 @@
       display:inline-flex; align-items:center; gap:10px;
       text-decoration:none; color:var(--text);
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
+    button:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+      transform:none !important;
+    }
+
     .primary{background:var(--accent)}
     .ghost{background:rgba(255,255,255,.06); border:1px solid var(--stroke)}
     .danger{background:rgba(255,77,79,.14); border:1px solid rgba(255,77,79,.35)}
@@ -153,6 +160,52 @@
     /* Router: mostra solo la section non-hidden */
     section{display:none;}
     section:not(.hidden){display:block;}
+
+    /* =========================
+       BANNER (in alto, bello)
+       ========================= */
+    .banner{
+      position: sticky;
+      top: 10px;
+      z-index: 2000;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 45px rgba(0,0,0,.35);
+      margin: 0 0 12px;
+    }
+    .banner .text{
+      font-size:13px;
+      line-height:1.35;
+      color: var(--text);
+    }
+    .banner .close{
+      flex: 0 0 auto;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight:800;
+    }
+    .banner.info{
+      border-color: rgba(45,125,255,.35);
+      background: rgba(45,125,255,.10);
+    }
+    .banner.success{
+      border-color: rgba(25,195,125,.35);
+      background: rgba(25,195,125,.12);
+    }
+    .banner.error{
+      border-color: rgba(255,77,79,.35);
+      background: rgba(255,77,79,.12);
+    }
   </style>
 </head>
 
@@ -163,11 +216,17 @@
         <div class="logo"></div>
         <div>
           <div class="title">SegnalaFacile</div>
-          <div class="badge">Salvataggio locale + invio Telegram</div>
+          <div class="badge">DEMO • PWA installabile • salvataggio locale + invio Telegram</div>
         </div>
       </div>
       <div class="pill" id="installPill" style="display:none;">⬇️ Installa</div>
     </header>
+
+    <!-- BANNER (globale, visibile su tutte le viste) -->
+    <div id="banner" class="banner hidden" role="status" aria-live="polite">
+      <div class="text" id="bannerText"></div>
+      <button class="close" id="bannerClose" type="button">✕</button>
+    </div>
 
     <!-- HOME -->
     <section id="view-home" class="grid">
@@ -179,7 +238,7 @@
           <a class="btn ghost" href="#/contacts">☎️ Contatti rapidi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
         </div>
-        <div class="hint">Nessuna registrazione richiesta. Salvataggio locale + inoltro sul canale Telegram.</div>
+        <div class="hint">Nessuna registrazione richiesta. Salvataggio locale + inoltro su Telegram tramite Worker.</div>
       </div>
 
       <div class="card">
@@ -228,14 +287,14 @@
           <div class="meta">
             <div style="font-weight:800;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta"></div>
-            <div class="hint" style="margin-top:8px">La foto viene inoltrata sul gruppo Telegram Segnala Facile.</div>
+            <div class="hint" style="margin-top:8px">Se presente, la foto viene inoltrata su Telegram come allegato.</div>
           </div>
         </div>
 
         <div class="toggle">
           <div>
             <strong>Invia anche in forma anonima</strong><br>
-            <span>Nessun nome richiesto</span>
+            <span>Nessun nome richiesto nella demo</span>
           </div>
           <input id="anonimo" type="checkbox" />
         </div>
@@ -246,7 +305,7 @@
         </div>
 
         <div class="hint">
-          Nota: salvataggio locale + inoltro al gruppo Telegram Segnala Facile.
+          Nota: salvataggio locale + inoltro al tuo gruppo Telegram tramite Cloudflare Worker.
         </div>
       </div>
     </section>
@@ -258,7 +317,7 @@
           <div style="font-size:22px">✅</div>
           <div>
             <div style="font-weight:900;font-size:18px">Segnalazione inviata correttamente</div>
-            <div class="hint" style="margin:6px 0 0">Salvata in locale e inoltrata sul gruppo Telegram Segnala Facile.</div>
+            <div class="hint" style="margin:6px 0 0">Salvata in locale e inoltrata su Telegram (se configurato).</div>
           </div>
         </div>
 
@@ -305,7 +364,7 @@
 
         <div class="btnRow" style="margin-top:14px">
           <a class="btn primary" id="waLink" href="#">💬 WhatsApp</a>
-          <a class="btn ghost" id="tgLink" href="#" target="_blank">💬 Telegram</a>
+          <a class="btn ghost" id="tgLink" href="#" target="_blank" rel="noreferrer">💬 Telegram</a>
           <a class="btn ghost" id="telLink" href="#">📞 Telefono</a>
           <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
@@ -343,6 +402,31 @@
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026"
     };
+
+    // =========================
+    // Banner helper
+    // =========================
+    const banner = document.getElementById("banner");
+    const bannerText = document.getElementById("bannerText");
+    const bannerClose = document.getElementById("bannerClose");
+    let bannerTimer = null;
+
+    function showBanner(type, text, autoHideMs = 0){
+      if (bannerTimer) { clearTimeout(bannerTimer); bannerTimer = null; }
+      banner.classList.remove("hidden","info","success","error");
+      banner.classList.add(type || "info");
+      bannerText.textContent = text || "";
+      if (autoHideMs && autoHideMs > 0){
+        bannerTimer = setTimeout(() => hideBanner(), autoHideMs);
+      }
+    }
+    function hideBanner(){
+      if (bannerTimer) { clearTimeout(bannerTimer); bannerTimer = null; }
+      banner.classList.add("hidden");
+      banner.classList.remove("info","success","error");
+      bannerText.textContent = "";
+    }
+    bannerClose.addEventListener("click", hideBanner);
 
     // =========================
     // PWA install prompt
@@ -384,6 +468,7 @@
       views[key].classList.remove("hidden");
       setActiveNav(key);
       if(key === "my") renderList();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function route(){
@@ -420,7 +505,7 @@
     // =========================
     // Local storage for reports
     // =========================
-    const STORAGE_KEY = "segnalafacile_reports_v2";
+    const STORAGE_KEY = "segnalafacile_reports_v3";
 
     function loadReports(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -450,9 +535,9 @@
     const photoImg = document.getElementById("photoImg");
     const photoMeta = document.getElementById("photoMeta");
 
-    let photoDataUrl = null;        // DataURL (jpeg compresso)
-    let photoFileName = "";         // Nome originale
-    let photoFileType = "";         // MIME originale (es. image/png)
+    let photoDataUrl = null;     // dataURL (jpeg compresso)
+    let photoName = "";
+    let photoType = "";
 
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
     btnPickGallery.addEventListener("click", () => elFotoGallery.click());
@@ -461,45 +546,35 @@
       elFotoCamera.value = "";
       elFotoGallery.value = "";
       photoDataUrl = null;
-      photoFileName = "";
-      photoFileType = "";
+      photoName = "";
+      photoType = "";
       preview.style.display = "none";
-      photoImg.removeAttribute("src");
-      photoMeta.textContent = "";
+      showBanner("info", "Foto rimossa.", 1800);
     });
 
     async function handleSelectedFile(file){
       if(!file) return;
 
       if(!file.type || !file.type.startsWith("image/")){
-        alert("Seleziona un'immagine valida.");
+        showBanner("error", "Seleziona un'immagine valida.");
         return;
       }
 
-      photoFileName = file.name || "foto.jpg";
-      photoFileType = file.type || "image/jpeg";
-
       try{
-        // Compressione per ridurre dimensione (ottimo per Telegram)
-        const compressed = await compressImageToDataUrl(file, 1280, 0.82);
-        photoDataUrl = compressed;
+        photoName = file.name || "foto.jpg";
+        photoType = file.type || "image/jpeg";
+
+        // compress (riduce peso, evita base64 enormi)
+        photoDataUrl = await compressImageToDataUrl(file, 1280, 0.82);
 
         photoImg.src = photoDataUrl;
         preview.style.display = "flex";
+        photoMeta.textContent = `${photoName} • ${Math.round((photoDataUrl.length * 3/4)/1024)} KB circa`;
 
-        const kbOriginal = Math.round((file.size || 0) / 1024);
-        photoMeta.textContent = `${photoFileName} • ${kbOriginal} KB (originale, invio ottimizzato)`;
+        showBanner("success", "Foto pronta ✅", 1600);
       }catch(e){
-        // Fallback: se compressione fallisce, usa FileReader classico
-        const reader = new FileReader();
-        reader.onload = () => {
-          photoDataUrl = reader.result;
-          photoImg.src = photoDataUrl;
-          preview.style.display = "flex";
-          const kb = Math.round((file.size || 0) / 1024);
-          photoMeta.textContent = `${photoFileName} • ${kb} KB`;
-        };
-        reader.readAsDataURL(file);
+        console.warn(e);
+        showBanner("error", "Errore nel caricamento della foto.");
       }
     }
 
@@ -522,11 +597,9 @@
       elFotoGallery.value = "";
 
       photoDataUrl = null;
-      photoFileName = "";
-      photoFileType = "";
+      photoName = "";
+      photoType = "";
       preview.style.display = "none";
-      photoImg.removeAttribute("src");
-      photoMeta.textContent = "";
     }
 
     btnSend.addEventListener("click", async () => {
@@ -534,29 +607,37 @@
       const descrizione = elDescrizione.value.trim();
 
       if(titolo.length < 4){
-        alert("Inserisci un titolo (minimo 4 caratteri).");
+        showBanner("error", "Inserisci un titolo (minimo 4 caratteri).");
         return;
       }
       if(descrizione.length < 10){
-        alert("Inserisci una descrizione (minimo 10 caratteri).");
+        showBanner("error", "Inserisci una descrizione (minimo 10 caratteri).");
         return;
       }
 
+      const now = new Date();
+
+      // UI: stato invio
+      btnSend.disabled = true;
+      const oldBtnText = btnSend.textContent;
+      btnSend.textContent = "⏳ Invio in corso...";
+      showBanner("info", "Sto salvando e inoltrando…", 0);
+
       // 1) Salva in locale
       const reports = loadReports();
-      const now = new Date();
       const item = {
         id: cryptoRandomId(),
         titolo,
         descrizione,
         anonimo: !!elAnonimo.checked,
-        photoDataUrl: photoDataUrl || "", // ✅ corretto
+        photoDataUrl: photoDataUrl || null,
         createdAt: now.toISOString()
       };
       reports.unshift(item);
       saveReports(reports);
 
       // 2) Inoltra su Telegram via Worker
+      let telegramOk = false;
       try{
         if(CONFIG.telegramWorkerUrl){
           const payload = {
@@ -566,11 +647,11 @@
             when: now.toLocaleString("it-IT"),
             hasPhoto: !!photoDataUrl,
             photoBase64: photoDataUrl || "",
-            photoName: photoFileName || "",
-            photoType: photoFileType || ""
+            photoName: photoName || "",
+            photoType: photoType || ""
           };
 
-          await fetch(CONFIG.telegramWorkerUrl, {
+          const res = await fetch(CONFIG.telegramWorkerUrl, {
             method: "POST",
             headers: {
               "Content-Type":"application/json",
@@ -578,10 +659,26 @@
             },
             body: JSON.stringify(payload)
           });
+
+          telegramOk = res.ok;
+          if(!res.ok){
+            console.warn("Worker response not ok:", res.status);
+          }
         }
       }catch(e){
         console.warn("Invio Telegram fallito:", e);
       }
+
+      // UI: esito
+      if(telegramOk){
+        showBanner("success", "Segnalazione salvata e inoltrata su Telegram ✅", 4500);
+      }else{
+        showBanner("error", "Segnalazione salvata in locale. Telegram non ha risposto (ma non hai perso nulla).", 6500);
+      }
+
+      // ripristina UI
+      btnSend.disabled = false;
+      btnSend.textContent = oldBtnText;
 
       resetForm();
       location.hash = "#/success";
@@ -650,6 +747,7 @@
           const next = loadReports().filter(x => x.id !== r.id);
           saveReports(next);
           renderList();
+          showBanner("info", "Segnalazione eliminata.", 2500);
         });
 
         meta.appendChild(a1);
@@ -672,6 +770,7 @@
       if(!ok) return;
       saveReports([]);
       renderList();
+      showBanner("info", "Storico svuotato.", 2500);
     });
 
     // =========================
