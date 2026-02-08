@@ -481,21 +481,21 @@
     // =========================
     // Contacts links
     // =========================
-    const wa = document.getElementById("waLink");
-    const tel = document.getElementById("telLink");
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
     const tg = document.getElementById("tgLink");
 
     function applyContacts(){
-      const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(CONFIG.whatsappText)}`;
-      wa.href = waUrl;
-      tel.href = `tel:${CONFIG.phoneNumber}`;
       mail.href = `mailto:${CONFIG.email}`;
       map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
       tg.href = "https://t.me/" + CONFIG.telegramUsername;
     }
     applyContacts();
+
+    mail.addEventListener("click", (e) => {
+      e.preventDefault();
+       e.stopPropagation();
+      });
 
     // =========================
     // Local storage for reports
