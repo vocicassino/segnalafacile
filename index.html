@@ -212,9 +212,14 @@
 
         <label>Foto (opzionale)</label>
         <div class="row">
-          <button class="ghost" id="btnPickPhoto" type="button">📷 Aggiungi foto</button>
-          <!-- niente capture: consente camera o galleria -->
-          <input id="foto" type="file" accept="image/*" class="hidden" />
+          <button class="ghost" id="btnPickCamera" type="button">📷 Scatta foto</button>
+          <button class="ghost" id="btnPickGallery" type="button">🖼️ Scegli dalla galleria</button>
+
+          <!-- Input fotocamera -->
+          <input id="fotoCamera" type="file" accept="image/*" capture="environment" class="hidden" />
+          <!-- Input galleria -->
+          <input id="fotoGallery" type="file" accept="image/*" class="hidden" />
+
           <button class="danger" id="btnClearPhoto" type="button">🧹 Rimuovi</button>
         </div>
 
