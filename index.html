@@ -145,7 +145,45 @@
       padding:12px; border-radius:16px; border:1px solid rgba(25,195,125,.35);
       background:rgba(25,195,125,.12);
       color:var(--text);
-    }
+      /* =========================
+   FIX TOUCH / CLICK MOBILE
+   ========================= */
+
+body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 50%),
+    radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 55%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* tutto il contenuto sopra lo sfondo */
+.wrap,
+header,
+section,
+nav.bottom{
+  position: relative;
+  z-index: 1;
+}
+
+/* assicura che i bottoni ricevano il tap */
+.btn,
+button,
+nav a{
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+/* barra inferiore sempre sopra */
+nav.bottom{
+  z-index: 9999;
+  /* DEBUG: evidenzia eventuali overlay invisibili */
+*{
+  outline: 1px solid transparent;
+}
   </style>
 </head>
 
