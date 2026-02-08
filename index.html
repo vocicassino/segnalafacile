@@ -486,17 +486,14 @@
     const tg = document.getElementById("tgLink");
 
     function applyContacts(){
-      mail.href = `mailto:${CONFIG.email}`;
+      const subject = "Segnalazione da SegnalaFacile";
+      const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
+      mail.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(subject)}&body=${body}`;
       map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
       tg.href = "https://t.me/" + CONFIG.telegramUsername;
     }
     applyContacts();
-
-    mail.addEventListener("click", (e) => {
-      e.preventDefault();
-       e.stopPropagation();
-      });
-
+      
     // =========================
     // Local storage for reports
     // =========================
