@@ -430,86 +430,104 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
     }
 
-// =========================
-// Form logic + photo
-// =========================
-const elTitolo = document.getElementById("titolo");
-const elDescrizione = document.getElementById("descrizione");
-const elAnonimo = document.getElementById("anonimo");
+    // =========================
+    // Form logic + photo
+    // =========================
+    const elTitolo = document.getElementById("titolo");
+    const elDescrizione = document.getElementById("descrizione");
+    const elAnonimo = document.getElementById("anonimo");
 
-// NUOVI input (camera + gallery)
-const elFotoCamera = document.getElementById("fotoCamera");
-const elFotoGallery = document.getElementById("fotoGallery");
+    const elFotoCamera = document.getElementById("fotoCamera");
+    const elFotoGallery = document.getElementById("fotoGallery");
 
-// NUOVI bottoni
-const btnPickCamera = document.getElementById("btnPickCamera");
-const btnPickGallery = document.getElementById("btnPickGallery");
+    const btnPickCamera = document.getElementById("btnPickCamera");
+    const btnPickGallery = document.getElementById("btnPickGallery");
 
-const btnClearPhoto = document.getElementById("btnClearPhoto");
-const btnSend = document.getElementById("btnSend");
+    const btnClearPhoto = document.getElementById("btnClearPhoto");
+    const btnSend = document.getElementById("btnSend");
 
-const preview = document.getElementById("photoPreview");
-const photoImg = document.getElementById("photoImg");
-const photoMeta = document.getElementById("photoMeta");
+    const preview = document.getElementById("photoPreview");
+    const photoImg = document.getElementById("photoImg");
+    const photoMeta = document.getElementById("photoMeta");
 
-let photoDataUrl = null;
+    let photoDataUrl = null;        // DataURL (jpeg compresso)
+    let photoFileName = "";         // Nome originale
+    let photoFileType = "";         // MIME originale (es. image/png)
 
-// Apri fotocamera
-btnPickCamera.addEventListener("click", () => elFotoCamera.click());
+    btnPickCamera.addEventListener("click", () => elFotoCamera.click());
+    btnPickGallery.addEventListener("click", () => elFotoGallery.click());
 
-// Apri galleria
-btnPickGallery.addEventListener("click", () => elFotoGallery.click());
+    btnClearPhoto.addEventListener("click", () => {
+      elFotoCamera.value = "";
+      elFotoGallery.value = "";
+      photoDataUrl = null;
+      photoFileName = "";
+      photoFileType = "";
+      preview.style.display = "none";
+      photoImg.removeAttribute("src");
+      photoMeta.textContent = "";
+    });
 
-// Rimuovi foto
-btnClearPhoto.addEventListener("click", () => {
-  elFotoCamera.value = "";
-  elFotoGallery.value = "";
-  photoDataUrl = null;
-  preview.style.display = "none";
-});
+    async function handleSelectedFile(file){
+      if(!file) return;
 
-// Funzione unica per gestire file scelto
-function handleSelectedFile(file){
-  if(!file) return;
+      if(!file.type || !file.type.startsWith("image/")){
+        alert("Seleziona un'immagine valida.");
+        return;
+      }
 
-  if(!file.type || !file.type.startsWith("image/")){
-    alert("Seleziona un'immagine valida.");
-    return;
-  }
+      photoFileName = file.name || "foto.jpg";
+      photoFileType = file.type || "image/jpeg";
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    photoDataUrl = reader.result;
-    photoImg.src = photoDataUrl;
-    preview.style.display = "flex";
-    photoMeta.textContent = `${file.name} • ${Math.round(file.size/1024)} KB`;
-  };
-  reader.readAsDataURL(file);
-}
+      try{
+        // Compressione per ridurre dimensione (ottimo per Telegram)
+        const compressed = await compressImageToDataUrl(file, 1280, 0.82);
+        photoDataUrl = compressed;
 
-// Quando scatti foto
-elFotoCamera.addEventListener("change", () => {
-  const file = elFotoCamera.files && elFotoCamera.files[0];
-  handleSelectedFile(file);
-});
+        photoImg.src = photoDataUrl;
+        preview.style.display = "flex";
 
-// Quando scegli da galleria
-elFotoGallery.addEventListener("change", () => {
-  const file = elFotoGallery.files && elFotoGallery.files[0];
-  handleSelectedFile(file);
-});
+        const kbOriginal = Math.round((file.size || 0) / 1024);
+        photoMeta.textContent = `${photoFileName} • ${kbOriginal} KB (originale, invio ottimizzato)`;
+      }catch(e){
+        // Fallback: se compressione fallisce, usa FileReader classico
+        const reader = new FileReader();
+        reader.onload = () => {
+          photoDataUrl = reader.result;
+          photoImg.src = photoDataUrl;
+          preview.style.display = "flex";
+          const kb = Math.round((file.size || 0) / 1024);
+          photoMeta.textContent = `${photoFileName} • ${kb} KB`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
 
-function resetForm(){
-  elTitolo.value = "";
-  elDescrizione.value = "";
-  elAnonimo.checked = false;
+    elFotoCamera.addEventListener("change", () => {
+      const file = elFotoCamera.files && elFotoCamera.files[0];
+      handleSelectedFile(file);
+    });
 
-  elFotoCamera.value = "";
-  elFotoGallery.value = "";
+    elFotoGallery.addEventListener("change", () => {
+      const file = elFotoGallery.files && elFotoGallery.files[0];
+      handleSelectedFile(file);
+    });
 
-  photoDataUrl = null;
-  preview.style.display = "none";
-}
+    function resetForm(){
+      elTitolo.value = "";
+      elDescrizione.value = "";
+      elAnonimo.checked = false;
+
+      elFotoCamera.value = "";
+      elFotoGallery.value = "";
+
+      photoDataUrl = null;
+      photoFileName = "";
+      photoFileType = "";
+      preview.style.display = "none";
+      photoImg.removeAttribute("src");
+      photoMeta.textContent = "";
+    }
 
     btnSend.addEventListener("click", async () => {
       const titolo = elTitolo.value.trim();
@@ -532,7 +550,7 @@ function resetForm(){
         titolo,
         descrizione,
         anonimo: !!elAnonimo.checked,
-        photoDataUrl: photoLocalUrl, // salvataggio locale
+        photoDataUrl: photoDataUrl || "", // ✅ corretto
         createdAt: now.toISOString()
       };
       reports.unshift(item);
@@ -548,8 +566,8 @@ function resetForm(){
             when: now.toLocaleString("it-IT"),
             hasPhoto: !!photoDataUrl,
             photoBase64: photoDataUrl || "",
-            photoName,
-            photoType
+            photoName: photoFileName || "",
+            photoType: photoFileType || ""
           };
 
           await fetch(CONFIG.telegramWorkerUrl, {
@@ -563,7 +581,6 @@ function resetForm(){
         }
       }catch(e){
         console.warn("Invio Telegram fallito:", e);
-        // Non blocchiamo la UX: la segnalazione è già salvata in locale
       }
 
       resetForm();
@@ -679,10 +696,8 @@ function resetForm(){
       if(width <= maxSize && height <= maxSize) return { w: width, h: height };
       const ratio = width / height;
       if(ratio > 1){
-        // landscape
         return { w: maxSize, h: Math.round(maxSize / ratio) };
       }else{
-        // portrait
         return { w: Math.round(maxSize * ratio), h: maxSize };
       }
     }
