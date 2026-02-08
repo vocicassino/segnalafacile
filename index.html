@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>SegnalaFacile – Demo</title>
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <style>
+    :root{
+      --bg:#0b1220; --card:#0f1b33; --card2:#0d162b; --text:#e8eefc;
+      --muted:#a8b4d6; --accent:#2d7dff; --accent2:#19c37d; --danger:#ff4d4f;
+      --stroke:rgba(255,255,255,.10);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 50%),
+                  radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:860px; margin:0 auto; padding:22px 16px 90px}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:12px 0 6px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+    }
+    .logo{
+      width:38px; height:38px; border-radius:12px;
+      background: linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.9));
+      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+    }
+    .title{font-size:18px; font-weight:800; letter-spacing:.2px}
+    .badge{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--stroke); padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.04);
+    }
+
+    .grid{display:grid; gap:14px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--stroke);
+      border-radius:var(--r);
+      padding:16px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+    }
+    .hero h1{margin:0 0 8px; font-size:28px; line-height:1.15}
+    .hero p{margin:0; color:var(--muted); font-size:14px; line-height:1.5}
+    .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+    button, .btn{
+      cursor:pointer; border:0; border-radius:14px;
+      padding:12px 14px; font-weight:700; font-size:14px;
+      display:inline-flex; align-items:center; gap:10px;
+      text-decoration:none; color:var(--text);
+    }
+    .primary{background:var(--accent)}
+    .ghost{background:rgba(255,255,255,.06); border:1px solid var(--stroke)}
+    .success{background:var(--accent2)}
+    .danger{background:rgba(255,77,79,.14); border:1px solid rgba(255,77,79,.35)}
+    .small{padding:10px 12px; border-radius:12px; font-size:13px}
+
+    .row{display:flex; gap:12px; flex-wrap:wrap}
+    .row > *{flex:1 1 220px}
+
+    label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px}
+    input[type="text"], textarea{
+      width:100%; padding:12px 12px; border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+    }
+    textarea{min-height:110px; resize:vertical}
+    .hint{font-size:12px; color:var(--muted); margin-top:8px; line-height:1.45}
+
+    .toggle{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px; border-radius:14px; border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      margin-top:10px;
+    }
+    .toggle span{color:var(--muted); font-size:13px}
+    .toggle strong{font-size:13px}
+    .preview{
+      margin-top:10px; display:none; gap:10px; align-items:flex-start;
+      padding:12px; border-radius:14px; border:1px dashed var(--stroke);
+      background:rgba(0,0,0,.15);
+    }
+    .preview img{width:86px; height:86px; object-fit:cover; border-radius:14px; border:1px solid var(--stroke)}
+    .preview .meta{font-size:12px; color:var(--muted); line-height:1.4}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.06); border:1px solid var(--stroke);
+      color:var(--muted); font-size:12px;
+    }
+
+    .list{display:grid; gap:10px; margin-top:12px}
+    .item{
+      padding:12px; border-radius:16px;
+      background:rgba(0,0,0,.18);
+      border:1px solid var(--stroke);
+      display:flex; gap:12px; align-items:flex-start;
+    }
+    .thumb{width:64px; height:64px; border-radius:14px; border:1px solid var(--stroke); object-fit:cover; background:rgba(255,255,255,.05)}
+    .item h3{margin:0; font-size:14px}
+    .item p{margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.45}
+    .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
+
+    nav.bottom{
+      position:fixed; left:0; right:0; bottom:0;
+      background:rgba(9,14,28,.78);
+      border-top:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+    }
+    nav .inner{
+      max-width:860px; margin:0 auto;
+      display:flex; justify-content:space-around; gap:8px;
+      padding:10px 10px;
+    }
+    nav a{
+      flex:1; text-align:center; text-decoration:none; color:var(--muted);
+      font-size:12px; padding:10px 8px; border-radius:14px;
+      border:1px solid transparent;
+    }
+    nav a.active{
+      color:var(--text);
+      background:rgba(255,255,255,.06);
+      border-color:var(--stroke);
+    }
+
+    .hidden{display:none !important}
+    .ok{
+      display:flex; align-items:center; gap:10px;
+      padding:12px; border-radius:16px; border:1px solid rgba(25,195,125,.35);
+      background:rgba(25,195,125,.12);
+      color:var(--text);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div class="title">SegnalaFacile</div>
+          <div class="badge">DEMO • PWA installabile • salvataggio locale</div>
+        </div>
+      </div>
+      <div class="pill" id="installPill" style="display:none;">⬇️ Installa</div>
+    </header>
+
+    <!-- HOME -->
+    <section id="view-home" class="grid">
+      <div class="card hero">
+        <h1>Invia una segnalazione in pochi secondi</h1>
+        <p>
+          Descrivi il problema, aggiungi una foto e invia.  
+          Niente messaggi sparsi: tutto ordinato e tracciabile.
+        </p>
+        <div class="btnRow">
+          <a class="btn primary" href="#/report">📝 Invia segnalazione</a>
+          <a class="btn ghost" href="#/contacts">☎️ Contatti rapidi</a>
+          <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
+        </div>
+        <div class="hint">Nessuna registrazione richiesta. Questa demo salva le segnalazioni sul tuo telefono (in locale).</div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+          <div>
+            <div style="font-weight:800;margin-bottom:4px">Come funziona</div>
+            <div class="hint" style="margin:0">1) Compili • 2) Aggiungi foto • 3) Invi • 4) Ti resta lo storico</div>
+          </div>
+          <a class="btn small ghost" href="#/report">Prova ora →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORT FORM -->
+    <section id="view-report" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:900;font-size:18px">Nuova segnalazione</div>
+            <div class="hint" style="margin:6px 0 0">Compila i campi e premi “Invia”.</div>
+          </div>
+          <a class="btn small ghost" href="#/">← Home</a>
+        </div>
+
+        <label for="titolo">Titolo</label>
+        <input id="titolo" type="text" maxlength="80" placeholder="Es. Lampione spento in via…" />
+
+        <label for="descrizione">Descrizione</label>
+        <textarea id="descrizione" maxlength="700" placeholder="Spiega cosa succede, dove e quando…"></textarea>
+
+        <label>Foto (opzionale)</label>
+        <div class="row">
+          <button class="ghost" id="btnPickPhoto" type="button">📷 Aggiungi foto</button>
+          <input id="foto" type="file" accept="image/*" capture="environment" class="hidden" />
+          <button class="danger" id="btnClearPhoto" type="button">🧹 Rimuovi</button>
+        </div>
+
+        <div id="photoPreview" class="preview">
+          <img id="photoImg" alt="Anteprima" />
+          <div class="meta">
+            <div style="font-weight:800;color:var(--text)">Anteprima foto</div>
+            <div id="photoMeta"></div>
+            <div class="hint" style="margin-top:8px">La foto resta salvata nella demo solo sul tuo dispositivo.</div>
+          </div>
+        </div>
+
+        <div class="toggle">
+          <div>
+            <strong>Invia anche in forma anonima</strong><br>
+            <span>Nessun nome richiesto nella demo</span>
+          </div>
+          <input id="anonimo" type="checkbox" />
+        </div>
+
+        <div class="btnRow">
+          <button class="primary" id="btnSend" type="button">✅ Invia</button>
+          <a class="btn ghost" href="#/my">🗂️ Vedi storico</a>
+        </div>
+
+        <div class="hint">
+          Nota: questa è una demo offline. In un progetto reale, l’invio può arrivare via email, database o pannello admin.
+        </div>
+      </div>
+    </section>
+
+    <!-- SUCCESS -->
+    <section id="view-success" class="grid hidden">
+      <div class="card">
+        <div class="ok">
+          <div style="font-size:22px">✅</div>
+          <div>
+            <div style="font-weight:900;font-size:18px">Segnalazione inviata correttamente</div>
+            <div class="hint" style="margin:6px 0 0">Grazie per la collaborazione.</div>
+          </div>
+        </div>
+
+        <div class="btnRow" style="margin-top:14px">
+          <a class="btn primary" href="#/">🏠 Torna alla Home</a>
+          <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
+          <a class="btn ghost" href="#/report">➕ Nuova segnalazione</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- MY REPORTS -->
+    <section id="view-my" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:900;font-size:18px">Le mie segnalazioni</div>
+            <div class="hint" style="margin:6px 0 0">Salvate in locale sul dispositivo.</div>
+          </div>
+          <div class="row" style="flex:0 0 auto">
+            <a class="btn small ghost" href="#/report">➕ Nuova</a>
+            <button class="btn small danger" id="btnClearAll" type="button">🗑️ Svuota</button>
+          </div>
+        </div>
+
+        <div id="emptyState" class="hint" style="margin-top:12px">
+          Nessuna segnalazione salvata. Prova a inviarne una dalla schermata “Invia segnalazione”.
+        </div>
+
+        <div id="list" class="list"></div>
+      </div>
+    </section>
+
+    <!-- CONTACTS -->
+    <section id="view-contacts" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:900;font-size:18px">Contatti rapidi</div>
+            <div class="hint" style="margin:6px 0 0">Un solo punto di contatto. Niente messaggi persi.</div>
+          </div>
+          <a class="btn small ghost" href="#/">← Home</a>
+        </div>
+
+        <div class="btnRow" style="margin-top:14px">
+          <a class="btn primary" id="waLink" href="#">💬 WhatsApp</a>
+          <a class="btn ghost" id="telLink" href="#">📞 Telefono</a>
+          <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
+          <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
+        </div>
+
+        <div class="hint" style="margin-top:12px">
+          (Demo) Modifica questi contatti dentro <b>index.html</b> nella sezione “CONFIG”.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom">
+    <div class="inner">
+      <a href="#/" data-nav="home" class="active">🏠 Home</a>
+      <a href="#/report" data-nav="report">📝 Segnala</a>
+      <a href="#/my" data-nav="my">🗂️ Storico</a>
+      <a href="#/contacts" data-nav="contacts">☎️ Contatti</a>
+    </div>
+  </nav>
+
+  <script>
+    // =========================
+    // CONFIG (personalizza qui)
+    // =========================
+    const CONFIG = {
+      whatsappNumber: "393000000000",   // es: 393476183313 (senza +)
+      whatsappText: "Ciao! Ti scrivo da SegnalaFacile.",
+      phoneNumber: "390000000000",
+      email: "info@example.com",
+      mapsQuery: "Cassino Piazza+Diamare" // testo per Google Maps
+    };
+
+    // =========================
+    // PWA install prompt
+    // =========================
+    let deferredPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const pill = document.getElementById("installPill");
+      pill.style.display = "inline-flex";
+      pill.addEventListener("click", async () => {
+        try{
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          pill.style.display = "none";
+        }catch{}
+      }, { once:true });
+    });
+
+    // =========================
+    // Simple router
+    // =========================
+    const views = {
+      home: document.getElementById("view-home"),
+      report: document.getElementById("view-report"),
+      success: document.getElementById("view-success"),
+      my: document.getElementById("view-my"),
+      contacts: document.getElementById("view-contacts"),
+    };
+
+    const navLinks = Array.from(document.querySelectorAll("nav a[data-nav]"));
+    function setActiveNav(key){
+      navLinks.forEach(a => a.classList.toggle("active", a.dataset.nav === key));
+    }
+
+    function showView(key){
+      Object.values(views).forEach(v => v.classList.add("hidden"));
+      views[key].classList.remove("hidden");
+      setActiveNav(key);
+      if(key === "my") renderList();
+    }
+
+    function route(){
+      const hash = (location.hash || "#/").replace("#/", "");
+      const key = hash || "";
+      if(key === "" ) return showView("home");
+      if(key === "report") return showView("report");
+      if(key === "success") return showView("success");
+      if(key === "my") return showView("my");
+      if(key === "contacts") return showView("contacts");
+      showView("home");
+    }
+    window.addEventListener("hashchange", route);
+
+    // =========================
+    // Contacts links
+    // =========================
+    const wa = document.getElementById("waLink");
+    const tel = document.getElementById("telLink");
+    const mail = document.getElementById("mailLink");
+    const map = document.getElementById("mapLink");
+
+    function applyContacts(){
+      const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(CONFIG.whatsappText)}`;
+      wa.href = waUrl;
+      tel.href = `tel:${CONFIG.phoneNumber}`;
+      mail.href = `mailto:${CONFIG.email}`;
+      map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
+    }
+    applyContacts();
+
+    // =========================
+    // Local storage for reports
+    // =========================
+    const STORAGE_KEY = "segnalafacile_reports_v1";
+
+    function loadReports(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+      catch{ return []; }
+    }
+    function saveReports(arr){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
+
+    // =========================
+    // Form logic + photo
+    // =========================
+    const elTitolo = document.getElementById("titolo");
+    const elDescrizione = document.getElementById("descrizione");
+    const elAnonimo = document.getElementById("anonimo");
+    const elFoto = document.getElementById("foto");
+    const btnPickPhoto = document.getElementById("btnPickPhoto");
+    const btnClearPhoto = document.getElementById("btnClearPhoto");
+    const btnSend = document.getElementById("btnSend");
+
+    const preview = document.getElementById("photoPreview");
+    const photoImg = document.getElementById("photoImg");
+    const photoMeta = document.getElementById("photoMeta");
+
+    let photoDataUrl = null;
+
+    btnPickPhoto.addEventListener("click", () => elFoto.click());
+    btnClearPhoto.addEventListener("click", () => {
+      elFoto.value = "";
+      photoDataUrl = null;
+      preview.style.display = "none";
+    });
+
+    elFoto.addEventListener("change", async () => {
+      const file = elFoto.files && elFoto.files[0];
+      if(!file) return;
+      if(!file.type.startsWith("image/")){
+        alert("Seleziona un'immagine valida.");
+        return;
+      }
+      // Convert to dataURL (demo only)
+      const reader = new FileReader();
+      reader.onload = () => {
+        photoDataUrl = reader.result;
+        photoImg.src = photoDataUrl;
+        preview.style.display = "flex";
+        photoMeta.textContent = `${file.name} • ${Math.round(file.size/1024)} KB`;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function resetForm(){
+      elTitolo.value = "";
+      elDescrizione.value = "";
+      elAnonimo.checked = false;
+      elFoto.value = "";
+      photoDataUrl = null;
+      preview.style.display = "none";
+    }
+
+    btnSend.addEventListener("click", () => {
+      const titolo = elTitolo.value.trim();
+      const descrizione = elDescrizione.value.trim();
+
+      if(titolo.length < 4){
+        alert("Inserisci un titolo (minimo 4 caratteri).");
+        return;
+      }
+      if(descrizione.length < 10){
+        alert("Inserisci una descrizione (minimo 10 caratteri).");
+        return;
+      }
+
+      const reports = loadReports();
+      const now = new Date();
+      const item = {
+        id: cryptoRandomId(),
+        titolo,
+        descrizione,
+        anonimo: !!elAnonimo.checked,
+        photoDataUrl,
+        createdAt: now.toISOString()
+      };
+      reports.unshift(item);
+      saveReports(reports);
+
+      resetForm();
+      location.hash = "#/success";
+    });
+
+    function cryptoRandomId(){
+      // fallback simple
+      return (crypto?.randomUUID?.() || ("id_" + Math.random().toString(16).slice(2) + Date.now()));
+    }
+
+    // =========================
+    // List rendering
+    // =========================
+    const list = document.getElementById("list");
+    const emptyState = document.getElementById("emptyState");
+    const btnClearAll = document.getElementById("btnClearAll");
+
+    btnClearAll.addEventListener("click", () => {
+      const ok = confirm("Vuoi svuotare tutte le segnalazioni salvate su questo dispositivo?");
+      if(!ok) return;
+      saveReports([]);
+      renderList();
+    });
+
+    function fmtDate(iso){
+      const d = new Date(iso);
+      return d.toLocaleString("it-IT", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    }
+
+    function renderList(){
+      const reports = loadReports();
+      list.innerHTML = "";
+
+      if(!reports.length){
+        emptyState.style.display = "block";
+        return;
+      }
+      emptyState.style.display = "none";
+
+      for(const r of reports){
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const img = document.createElement("img");
+        img.className = "thumb";
+        if(r.photoDataUrl){
+          img.src = r.photoDataUrl;
+        }else{
+          img.alt = "";
+        }
+
+        const right = document.createElement("div");
+        right.style.flex = "1";
+
+        const h = document.createElement("h3");
+        h.textContent = r.titolo;
+
+        const p = document.createElement("p");
+        p.textContent = r.descrizione;
+
+        const meta = document.createElement("div");
+        meta.className = "metaRow";
+
+        const a1 = document.createElement("span");
+        a1.className = "pill";
+        a1.textContent = "🕒 " + fmtDate(r.createdAt);
+
+        const a2 = document.createElement("span");
+        a2.className = "pill";
+        a2.textContent = r.anonimo ? "🕶️ Anonimo" : "👤 Non anonimo";
+
+        const del = document.createElement("button");
+        del.className = "btn small danger";
+        del.type = "button";
+        del.textContent = "🗑️ Elimina";
+        del.addEventListener("click", () => {
+          const ok = confirm("Eliminare questa segnalazione?");
+          if(!ok) return;
+          const next = loadReports().filter(x => x.id !== r.id);
+          saveReports(next);
+          renderList();
+        });
+
+        meta.appendChild(a1);
+        meta.appendChild(a2);
+        meta.appendChild(del);
+
+        right.appendChild(h);
+        right.appendChild(p);
+        right.appendChild(meta);
+
+        div.appendChild(img);
+        div.appendChild(right);
+
+        list.appendChild(div);
+      }
+    }
+
+    // =========================
+    // Service worker
+    // =========================
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(()=>{});
+      });
+    }
+
+    // start
+    route();
+  </script>
+</body>
+</html>
