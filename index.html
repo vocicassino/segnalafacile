@@ -295,6 +295,7 @@
 
         <div class="btnRow" style="margin-top:14px">
           <a class="btn primary" id="waLink" href="#">💬 WhatsApp</a>
+          <a class="btn ghost" id="tgLink" href="#" target="_blank">💬 Telegram</a>
           <a class="btn ghost" id="telLink" href="#">📞 Telefono</a>
           <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
@@ -390,6 +391,7 @@
     const tel = document.getElementById("telLink");
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
+    const tg = document.getElementById("tgLink");
 
     function applyContacts(){
       const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(CONFIG.whatsappText)}`;
@@ -397,6 +399,7 @@
       tel.href = `tel:${CONFIG.phoneNumber}`;
       mail.href = `mailto:${CONFIG.email}`;
       map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
+      tg.href = "https://t.me/" + CONFIG.telegramUsername;
     }
     applyContacts();
 
