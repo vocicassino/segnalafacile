@@ -287,7 +287,7 @@
           <div class="meta">
             <div style="font-weight:800;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta"></div>
-            <div class="hint" style="margin-top:8px">Se presente, la foto viene inoltrata sul canale Telegram Segnala Facile come allegato.</div>
+            <div class="hint" style="margin-top:8px">Se presente, la foto viene inoltrata sul gruppo Telegram Segnala Facile come allegato.</div>
           </div>
         </div>
 
@@ -493,7 +493,7 @@
       tg.href = "https://t.me/" + CONFIG.telegramUsername;
     }
     applyContacts();
-      
+
     // =========================
     // Local storage for reports
     // =========================
@@ -505,6 +505,19 @@
     }
     function saveReports(arr){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
+
+    // =========================
+    // Helpers: DataURL -> Blob (per invio allegato vero)
+    // =========================
+    function dataUrlToBlob(dataUrl){
+      const [meta, b64] = dataUrl.split(",");
+      const mime = (meta.match(/data:(.*?);base64/) || [])[1] || "application/octet-stream";
+      const bin = atob(b64);
+      const len = bin.length;
+      const bytes = new Uint8Array(len);
+      for(let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
+      return new Blob([bytes], { type: mime });
     }
 
     // =========================
@@ -527,10 +540,10 @@
     const photoImg = document.getElementById("photoImg");
     const photoMeta = document.getElementById("photoMeta");
 
-    let photoDataUrl = null;     // dataURL (jpeg compresso)
+    let photoDataUrl = null;     // dataURL (jpeg compresso) per preview + salvataggio locale
     let photoName = "";
     let photoType = "";
-    let photoBlob = null;
+    let photoBlob = null;        // ✅ Blob reale da inviare al Worker (allegato vero)
 
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
     btnPickGallery.addEventListener("click", () => elFotoGallery.click());
@@ -539,9 +552,9 @@
       elFotoCamera.value = "";
       elFotoGallery.value = "";
       photoDataUrl = null;
-      photoBlob = null;
       photoName = "";
       photoType = "";
+      photoBlob = null;
       preview.style.display = "none";
       showBanner("info", "Foto rimossa.", 1800);
     });
@@ -558,9 +571,11 @@
         photoName = file.name || "foto.jpg";
         photoType = file.type || "image/jpeg";
 
-        // compress (riduce peso, evita base64 enormi)
+        // compress (riduce peso, evita payload enormi)
         photoDataUrl = await compressImageToDataUrl(file, 1280, 0.82);
-        photoBlob = dataUrlToBlob(photoDataUrl); // ✅ questo sarà l’allegato vero
+
+        // ✅ Blob per invio allegato vero al Worker
+        photoBlob = dataUrlToBlob(photoDataUrl);
 
         photoImg.src = photoDataUrl;
         preview.style.display = "flex";
@@ -594,17 +609,8 @@
       photoDataUrl = null;
       photoName = "";
       photoType = "";
+      photoBlob = null;
       preview.style.display = "none";
-    }
-
-    function dataUrlToBlob(dataUrl){
-  const [meta, b64] = dataUrl.split(",");
-  const mime = (meta.match(/data:(.*?);base64/) || [])[1] || "application/octet-stream";
-  const bin = atob(b64);
-  const len = bin.length;
-  const bytes = new Uint8Array(len);
-  for(let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
-  return new Blob([bytes], { type: mime });
     }
 
     btnSend.addEventListener("click", async () => {
@@ -641,39 +647,36 @@
       reports.unshift(item);
       saveReports(reports);
 
-      // 2) Inoltra su Telegram via Worker
+      // 2) Inoltra su Telegram via Worker (FORMDATA: allegato vero)
       let telegramOk = false;
       try{
         if(CONFIG.telegramWorkerUrl){
           const workerUrl = `${CONFIG.telegramWorkerUrl}?ak=${encodeURIComponent(CONFIG.telegramApiKey || "")}`;
 
-const fd = new FormData();
-fd.append("titolo", titolo);
-fd.append("descrizione", descrizione);
-fd.append("anonimo", String(!!elAnonimo.checked));
-fd.append("when", now.toLocaleString("it-IT"));
+          const fd = new FormData();
+          fd.append("titolo", titolo);
+          fd.append("descrizione", descrizione);
+          fd.append("anonimo", String(!!elAnonimo.checked));
+          fd.append("when", now.toLocaleString("it-IT"));
 
-if (photoBlob) {
-  // allegato vero (Telegram lo vedrà come immagine)
-  fd.append("photo", photoBlob, (photoName || "foto.jpg"));
-}
+          if(photoBlob){
+            fd.append("photo", photoBlob, (photoName || "foto.jpg"));
+          }
 
-const res = await fetch(workerUrl, {
-  method: "POST",
-  headers: {
-    // NON mettere Content-Type qui: lo gestisce il browser per FormData
-    "X-Api-Key": CONFIG.telegramApiKey || "" // lo mandiamo anche così, doppia compatibilità
-  },
-  body: fd
-});
+          const res = await fetch(workerUrl, {
+            method: "POST",
+            headers: {
+              // NON impostare Content-Type qui (FormData lo gestisce da solo)
+              "X-Api-Key": CONFIG.telegramApiKey || ""
+            },
+            body: fd
+          });
 
           telegramOk = res.ok;
+
           if(!res.ok){
             const t = await res.text().catch(()=> "");
             console.warn("Worker error:", res.status, t);
-          }
-          if(!res.ok){
-            console.warn("Worker response not ok:", res.status);
           }
         }
       }catch(e){
@@ -693,7 +696,6 @@ const res = await fetch(workerUrl, {
 
       resetForm();
       location.hash = "#/success";
-      photoBlob = null;
     });
 
     function cryptoRandomId(){
@@ -799,7 +801,6 @@ const res = await fetch(workerUrl, {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, w, h);
 
-      // convert to jpeg to keep size low
       return canvas.toDataURL("image/jpeg", quality);
     }
 
