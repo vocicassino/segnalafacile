@@ -539,6 +539,7 @@
       elFotoCamera.value = "";
       elFotoGallery.value = "";
       photoDataUrl = null;
+      photoBlob = null;
       photoName = "";
       photoType = "";
       preview.style.display = "none";
@@ -559,6 +560,7 @@
 
         // compress (riduce peso, evita base64 enormi)
         photoDataUrl = await compressImageToDataUrl(file, 1280, 0.82);
+        photoBlob = dataUrlToBlob(photoDataUrl); // ✅ questo sarà l’allegato vero
 
         photoImg.src = photoDataUrl;
         preview.style.display = "flex";
@@ -593,6 +595,16 @@
       photoName = "";
       photoType = "";
       preview.style.display = "none";
+    }
+
+    function dataUrlToBlob(dataUrl){
+  const [meta, b64] = dataUrl.split(",");
+  const mime = (meta.match(/data:(.*?);base64/) || [])[1] || "application/octet-stream";
+  const bin = atob(b64);
+  const len = bin.length;
+  const bytes = new Uint8Array(len);
+  for(let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
     }
 
     btnSend.addEventListener("click", async () => {
@@ -633,27 +645,33 @@
       let telegramOk = false;
       try{
         if(CONFIG.telegramWorkerUrl){
-          const payload = {
-            titolo,
-            descrizione,
-            anonimo: !!elAnonimo.checked,
-            when: now.toLocaleString("it-IT"),
-            hasPhoto: !!photoDataUrl,
-            photoBase64: photoDataUrl || "",
-            photoName: photoName || "",
-            photoType: photoType || ""
-          };
+          const workerUrl = `${CONFIG.telegramWorkerUrl}?ak=${encodeURIComponent(CONFIG.telegramApiKey || "")}`;
 
-          const res = await fetch(CONFIG.telegramWorkerUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type":"application/json",
-              "X-Api-Key": CONFIG.telegramApiKey || ""
-            },
-            body: JSON.stringify(payload)
-          });
+const fd = new FormData();
+fd.append("titolo", titolo);
+fd.append("descrizione", descrizione);
+fd.append("anonimo", String(!!elAnonimo.checked));
+fd.append("when", now.toLocaleString("it-IT"));
+
+if (photoBlob) {
+  // allegato vero (Telegram lo vedrà come immagine)
+  fd.append("photo", photoBlob, (photoName || "foto.jpg"));
+}
+
+const res = await fetch(workerUrl, {
+  method: "POST",
+  headers: {
+    // NON mettere Content-Type qui: lo gestisce il browser per FormData
+    "X-Api-Key": CONFIG.telegramApiKey || "" // lo mandiamo anche così, doppia compatibilità
+  },
+  body: fd
+});
 
           telegramOk = res.ok;
+          if(!res.ok){
+            const t = await res.text().catch(()=> "");
+            console.warn("Worker error:", res.status, t);
+          }
           if(!res.ok){
             console.warn("Worker response not ok:", res.status);
           }
@@ -675,6 +693,7 @@
 
       resetForm();
       location.hash = "#/success";
+      photoBlob = null;
     });
 
     function cryptoRandomId(){
