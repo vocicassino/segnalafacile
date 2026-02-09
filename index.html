@@ -287,7 +287,7 @@
           <div class="meta">
             <div style="font-weight:800;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta"></div>
-            <div class="hint" style="margin-top:8px">Se presente, la foto viene inoltrata sul gruppo Telegram Segnala Facile come allegato.</div>
+            <div class="hint" style="margin-top:8px">Se presente, la foto viene inoltrata sul canale Telegram Segnala Facile come allegato.</div>
           </div>
         </div>
 
@@ -508,19 +508,6 @@
     }
 
     // =========================
-    // Helpers: DataURL -> Blob (per invio allegato vero)
-    // =========================
-    function dataUrlToBlob(dataUrl){
-      const [meta, b64] = dataUrl.split(",");
-      const mime = (meta.match(/data:(.*?);base64/) || [])[1] || "application/octet-stream";
-      const bin = atob(b64);
-      const len = bin.length;
-      const bytes = new Uint8Array(len);
-      for(let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
-      return new Blob([bytes], { type: mime });
-    }
-
-    // =========================
     // Form logic + photo
     // =========================
     const elTitolo = document.getElementById("titolo");
@@ -540,10 +527,10 @@
     const photoImg = document.getElementById("photoImg");
     const photoMeta = document.getElementById("photoMeta");
 
-    let photoDataUrl = null;     // dataURL (jpeg compresso) per preview + salvataggio locale
+    let photoDataUrl = null;     // dataURL (jpeg compresso)
     let photoName = "";
     let photoType = "";
-    let photoBlob = null;        // ✅ Blob reale da inviare al Worker (allegato vero)
+    let photoBlob = null;
 
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
     btnPickGallery.addEventListener("click", () => elFotoGallery.click());
@@ -571,11 +558,11 @@
         photoName = file.name || "foto.jpg";
         photoType = file.type || "image/jpeg";
 
-        // compress (riduce peso, evita payload enormi)
-        photoDataUrl = await compressImageToDataUrl(file, 1280, 0.82);
+        // Manteniamo anche il Blob originale per invio "allegato vero"
+        photoBlob = file;
 
-        // ✅ Blob per invio allegato vero al Worker
-        photoBlob = dataUrlToBlob(photoDataUrl);
+        // compress (riduce peso, evita base64 enormi - usato SOLO per anteprima e salvataggio locale)
+        photoDataUrl = await compressImageToDataUrl(file, 1280, 0.82);
 
         photoImg.src = photoDataUrl;
         preview.style.display = "flex";
@@ -583,7 +570,6 @@
 
         showBanner("success", "Foto pronta ✅", 1600);
       }catch(e){
-        console.warn(e);
         showBanner("error", "Errore nel caricamento della foto.");
       }
     }
@@ -647,26 +633,24 @@
       reports.unshift(item);
       saveReports(reports);
 
-      // 2) Inoltra su Telegram via Worker (FORMDATA: allegato vero)
+      // 2) Inoltra su Telegram via Worker (allegato vero)
       let telegramOk = false;
       try{
         if(CONFIG.telegramWorkerUrl){
-          const workerUrl = `${CONFIG.telegramWorkerUrl}?ak=${encodeURIComponent(CONFIG.telegramApiKey || "")}`;
-
+          // FormData: invio "serio" con allegato
           const fd = new FormData();
           fd.append("titolo", titolo);
           fd.append("descrizione", descrizione);
           fd.append("anonimo", String(!!elAnonimo.checked));
           fd.append("when", now.toLocaleString("it-IT"));
-
+          fd.append("hasPhoto", String(!!photoBlob));
           if(photoBlob){
-            fd.append("photo", photoBlob, (photoName || "foto.jpg"));
+            fd.append("photo", photoBlob, photoName || "foto.jpg");
           }
 
-          const res = await fetch(workerUrl, {
+          const res = await fetch(CONFIG.telegramWorkerUrl, {
             method: "POST",
             headers: {
-              // NON impostare Content-Type qui (FormData lo gestisce da solo)
               "X-Api-Key": CONFIG.telegramApiKey || ""
             },
             body: fd
@@ -674,20 +658,42 @@
 
           telegramOk = res.ok;
 
+          // ===== MODIFICA: mostra status/risposta anche senza console =====
+          let respText = "";
+          try { respText = await res.text(); } catch { respText = ""; }
+
+          localStorage.setItem("last_telegram_status", String(res.status));
+          localStorage.setItem("last_telegram_body", (respText || "").slice(0, 300));
+
           if(!res.ok){
-            const t = await res.text().catch(()=> "");
-            console.warn("Worker error:", res.status, t);
+            const short = (respText || "").slice(0, 120).replace(/\s+/g, " ").trim();
+            showBanner(
+              "error",
+              `Telegram/Worker: errore ${res.status}${short ? " • " + short : ""}`,
+              9000
+            );
           }
+          // ===============================================================
         }
       }catch(e){
-        console.warn("Invio Telegram fallito:", e);
+        localStorage.setItem("last_telegram_status", "NETWORK_ERROR");
+        localStorage.setItem("last_telegram_body", String(e?.message || e || "").slice(0, 300));
+        showBanner("error", "Errore rete: Telegram/Worker non raggiungibile.", 8000);
       }
 
       // UI: esito
       if(telegramOk){
         showBanner("success", "Segnalazione salvata e inoltrata su Telegram ✅", 4500);
       }else{
-        showBanner("error", "Segnalazione salvata in locale. Telegram non ha risposto (ma non hai perso nulla).", 6500);
+        // Se non è già stato mostrato lo status (es. workerUrl vuoto), messaggio generico
+        if(!CONFIG.telegramWorkerUrl){
+          showBanner("error", "Segnalazione salvata in locale. Worker Telegram non configurato.", 6500);
+        }else{
+          // Qui può già esserci un banner con errore status; lasciamo comunque un messaggio chiaro
+          // (non sovrascrivo se hai appena visto lo status)
+          // Se vuoi, puoi commentare le 2 righe sotto.
+          // showBanner("error", "Segnalazione salvata in locale. Telegram non ha risposto (ma non hai perso nulla).", 6500);
+        }
       }
 
       // ripristina UI
@@ -801,6 +807,7 @@
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, w, h);
 
+      // convert to jpeg to keep size low
       return canvas.toDataURL("image/jpeg", quality);
     }
 
