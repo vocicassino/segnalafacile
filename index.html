@@ -696,17 +696,18 @@ async function sendToTelegramWorker(payload){
           }
 
           const payload = {
-            titolo,
-            descrizione,
-            anonimo: !!elAnonimo.checked,
-            when: now.toLocaleString("it-IT"),
-            source: "SegnalaFacile PWA",
-            photo: photoDataUrl ? {
-              dataUrl: photoDataUrl,
-              name: photoName || "foto.jpg",
-              type: photoType || "image/jpeg"
-            } : null
-          };
+  titolo,
+  descrizione,
+  anonimo: !!elAnonimo.checked,
+  when: now.toLocaleString("it-IT"),
+  source: "SegnalaFacile PWA",
+
+  // ✅ campi che il worker si aspetta
+  hasPhoto: !!photoDataUrl,
+  photoBase64: photoDataUrl || "",     // dataURL completo
+  photoName: photoName || "foto.jpg",
+  photoType: photoType || "image/jpeg"
+};
 
           const res = await fetch(url.toString(), {
             method: "POST",
