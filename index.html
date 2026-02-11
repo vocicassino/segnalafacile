@@ -416,6 +416,48 @@
       bannerText.textContent = "";
     }
     bannerClose.addEventListener("click", hideBanner);
+    // =========================
+// Telegram Worker call (robusto)
+// =========================
+async function sendToTelegramWorker(payload){
+  const url = (CONFIG.telegramWorkerUrl || "").replace(/\/$/, "");
+  if (!url) {
+    showBanner("error", "Telegram/Worker: URL non configurato", 0);
+    return { ok:false, status:0, raw:"WORKER_URL_MISSING" };
+  }
+
+  let r;
+  try {
+    r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": CONFIG.telegramApiKey || ""
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (e) {
+    showBanner("error", `Telegram/Worker: nessuna risposta (${String(e)})`, 0);
+    return { ok:false, status:0, raw:String(e) };
+  }
+
+  const raw = await r.text();
+  let j = null;
+  try { j = JSON.parse(raw); } catch {}
+
+  if (!r.ok || !j?.ok) {
+    // Caso supergruppo migrato: ti mostra il nuovo CHAT_ID
+    if (j?.newChatId) {
+      showBanner("error", `Telegram: gruppo migrato. Aggiorna CHAT_ID a ${j.newChatId}`, 0);
+    } else {
+      showBanner("error", `Telegram/Worker: errore ${r.status} • ${raw}`, 0);
+    }
+    return { ok:false, status:r.status, data:j, raw };
+  }
+
+  showBanner("success", `Telegram ok • mode: ${j.mode || "?"} ✅`, 3500);
+  return { ok:true, status:r.status, data:j, raw };
+}
 
     // =========================
     // PWA install prompt
