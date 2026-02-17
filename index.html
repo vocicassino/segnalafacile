@@ -99,62 +99,12 @@
     .toggle strong{font-size:13px}
 
     .preview{
-      margin-top:10px; display:none;
+      margin-top:10px; display:none; gap:10px; align-items:flex-start;
       padding:12px; border-radius:14px; border:1px dashed var(--stroke);
       background:rgba(0,0,0,.15);
     }
-    .previewHead{
-      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .previewHead .meta{
-      font-size:12px; color:var(--muted); line-height:1.4;
-    }
-
-    .thumbGrid{
-      display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap:10px;
-    }
-    .thumbCard{
-      position:relative;
-      border-radius:14px;
-      overflow:hidden;
-      border:1px solid var(--stroke);
-      background:rgba(255,255,255,.04);
-      aspect-ratio: 1 / 1;
-    }
-    .thumbCard img{
-      width:100%; height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    .thumbRemove{
-      position:absolute;
-      top:6px; right:6px;
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.45);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 6px 8px;
-      font-weight: 900;
-      font-size: 12px;
-      line-height: 1;
-    }
-    .thumbTag{
-      position:absolute;
-      left:8px; bottom:8px;
-      font-size:11px;
-      padding:4px 8px;
-      border-radius:999px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.45);
-      color:var(--text);
-      max-width: calc(100% - 16px);
-      overflow:hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    .preview img{width:86px; height:86px; object-fit:cover; border-radius:14px; border:1px solid var(--stroke)}
+    .preview .meta{font-size:12px; color:var(--muted); line-height:1.4}
 
     .pill{
       display:inline-flex; align-items:center; gap:8px;
@@ -170,10 +120,7 @@
       border:1px solid var(--stroke);
       display:flex; gap:12px; align-items:flex-start;
     }
-    .thumb{
-      width:64px; height:64px; border-radius:14px; border:1px solid var(--stroke);
-      object-fit:cover; background:rgba(255,255,255,.05)
-    }
+    .thumb{width:64px; height:64px; border-radius:14px; border:1px solid var(--stroke); object-fit:cover; background:rgba(255,255,255,.05)}
     .item h3{margin:0; font-size:14px}
     .item p{margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.45}
     .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
@@ -210,13 +157,9 @@
       color:var(--text);
     }
 
-    /* Router: mostra solo la section non-hidden */
     section{display:none;}
     section:not(.hidden){display:block;}
 
-    /* =========================
-       BANNER (in alto, bello)
-       ========================= */
     .banner{
       position: sticky;
       top: 10px;
@@ -237,7 +180,6 @@
       font-size:13px;
       line-height:1.35;
       color: var(--text);
-      word-break: break-word;
     }
     .banner .close{
       flex: 0 0 auto;
@@ -276,7 +218,6 @@
       <div class="pill" id="installPill" style="display:none;">⬇️ Installa</div>
     </header>
 
-    <!-- BANNER (globale, visibile su tutte le viste) -->
     <div id="banner" class="banner hidden" role="status" aria-live="polite">
       <div class="text" id="bannerText"></div>
       <button class="close" id="bannerClose" type="button">✕</button>
@@ -328,24 +269,19 @@
           <button class="ghost" id="btnPickCamera" type="button">📷 Scatta foto</button>
           <button class="ghost" id="btnPickGallery" type="button">🖼️ Scegli dalla galleria</button>
 
-          <!-- Input fotocamera (di solito 1 foto) -->
           <input id="fotoCamera" type="file" accept="image/*" capture="environment" class="hidden" />
-          <!-- Input galleria (MULTI FOTO) -->
-          <input id="fotoGallery" type="file" accept="image/*" multiple class="hidden" />
+          <input id="fotoGallery" type="file" accept="image/*" class="hidden" />
 
           <button class="danger" id="btnClearPhoto" type="button">🧹 Rimuovi</button>
         </div>
 
         <div id="photoPreview" class="preview">
-          <div class="previewHead">
-            <div class="meta">
-              <div style="font-weight:800;color:var(--text)">Foto selezionate</div>
-              <div id="photoMeta"></div>
-              <div class="hint" style="margin-top:8px">Se presenti, le foto vengono inoltrate sul gruppo Telegram Segnala Facile come allegati (album).</div>
-            </div>
-            <span class="pill" id="photoCountPill">0 foto</span>
+          <img id="photoImg" alt="Anteprima" />
+          <div class="meta">
+            <div style="font-weight:800;color:var(--text)">Anteprima foto</div>
+            <div id="photoMeta"></div>
+            <div class="hint" style="margin-top:8px">Se presente, la foto viene inoltrata sul canale Telegram Segnala Facile come allegato.</div>
           </div>
-          <div class="thumbGrid" id="thumbGrid"></div>
         </div>
 
         <div class="toggle">
@@ -373,8 +309,8 @@
         <div class="ok">
           <div style="font-size:22px">✅</div>
           <div>
-            <div style="font-weight:900;font-size:18px" id="successTitle">Segnalazione inviata correttamente</div>
-            <div class="hint" style="margin:6px 0 0" id="successHint">Salvata in locale e inoltrata su gruppo Telegram Segnala Facile.</div>
+            <div style="font-weight:900;font-size:18px">Segnalazione inviata correttamente</div>
+            <div class="hint" style="margin:6px 0 0">Salvata in locale e inoltrata su gruppo Telegram Segnala Facile.</div>
           </div>
         </div>
 
@@ -420,7 +356,7 @@
         </div>
 
         <div class="btnRow" style="margin-top:14px">
-          <a class="btn ghost" id="tgLink" href="#" target="_blank" rel="noreferrer">💬 Telegram</a>
+          <!-- ✅ SOLO EMAIL (Telegram rimosso) -->
           <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
         </div>
@@ -446,7 +382,7 @@
     // CONFIG (personalizza qui)
     // =========================
     const CONFIG = {
-      telegramUsername: "SegnalaFacileBot",
+      // ✅ Email “anonima” (contatto pubblico)
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
 
@@ -536,25 +472,23 @@
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts links
+    // Contacts links (solo Email + Mappa)
     // =========================
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
-    const tg = document.getElementById("tgLink");
 
     function applyContacts(){
       const subject = "Segnalazione da SegnalaFacile";
       const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
       mail.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(subject)}&body=${body}`;
       map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
-      tg.href = "https://t.me/" + CONFIG.telegramUsername;
     }
     applyContacts();
 
     // =========================
     // Local storage for reports
     // =========================
-    const STORAGE_KEY = "segnalafacile_reports_v4";
+    const STORAGE_KEY = "segnalafacile_reports_v3";
 
     function loadReports(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -565,7 +499,7 @@
     }
 
     // =========================
-    // Form logic + multi photo
+    // Form logic + photo
     // =========================
     const elTitolo = document.getElementById("titolo");
     const elDescrizione = document.getElementById("descrizione");
@@ -581,15 +515,13 @@
     const btnSend = document.getElementById("btnSend");
 
     const preview = document.getElementById("photoPreview");
+    const photoImg = document.getElementById("photoImg");
     const photoMeta = document.getElementById("photoMeta");
-    const thumbGrid = document.getElementById("thumbGrid");
-    const photoCountPill = document.getElementById("photoCountPill");
 
-    const successTitle = document.getElementById("successTitle");
-    const successHint = document.getElementById("successHint");
-
-    // ✅ Array di foto (max 10)
-    let photos = []; // [{ dataUrl, name, type }]
+    let photoDataUrl = null;
+    let photoName = "";
+    let photoType = "";
+    let photoBlob = null;
 
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
     btnPickGallery.addEventListener("click", () => elFotoGallery.click());
@@ -597,298 +529,211 @@
     btnClearPhoto.addEventListener("click", () => {
       elFotoCamera.value = "";
       elFotoGallery.value = "";
-      photos = [];
-      renderPhotoPreview();
-      showBanner("info", "Foto rimosse.", 2000);
+      photoDataUrl = null;
+      photoName = "";
+      photoType = "";
+      photoBlob = null;
+      preview.style.display = "none";
+      photoImg.src = "";
+      photoMeta.textContent = "";
     });
 
-    elFotoCamera.addEventListener("change", async (e) => {
-      const file = (e.target.files && e.target.files[0]) ? e.target.files[0] : null;
-      if (!file) return;
+    function formatBytes(bytes){
+      if (!bytes && bytes !== 0) return "";
+      const units = ["B","KB","MB","GB"];
+      let i = 0, n = bytes;
+      while(n >= 1024 && i < units.length-1){ n /= 1024; i++; }
+      return `${n.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+    }
 
-      // aggiunge 1 foto (camera)
-      if (photos.length >= 10) {
-        showBanner("error", "Hai già selezionato 10 foto (limite Telegram).", 3500);
-        return;
-      }
-
-      try{
-        const dataUrl = await readAndCompressImage(file, 1280, 0.78);
-        photos.push({
-          dataUrl,
-          name: file.name || `foto_${Date.now()}.jpg`,
-          type: file.type || "image/jpeg"
-        });
-        renderPhotoPreview();
-      }catch(err){
-        showBanner("error", "Errore lettura foto (camera).", 3500);
-      }finally{
-        elFotoCamera.value = "";
-      }
-    });
-
-    elFotoGallery.addEventListener("change", async (e) => {
-      const files = Array.from(e.target.files || []);
-      if (!files.length) return;
-
-      // max 10
-      const space = 10 - photos.length;
-      if (space <= 0) {
-        showBanner("error", "Hai già selezionato 10 foto (limite Telegram).", 3500);
-        elFotoGallery.value = "";
-        return;
-      }
-
-      const toAdd = files.slice(0, space);
-
-      try{
-        for (const f of toAdd) {
-          const dataUrl = await readAndCompressImage(f, 1280, 0.78);
-          photos.push({
-            dataUrl,
-            name: f.name || `foto_${Date.now()}.jpg`,
-            type: f.type || "image/jpeg"
-          });
-        }
-        if (files.length > toAdd.length) {
-          showBanner("info", "Aggiunte le prime 10 foto (limite Telegram).", 3500);
-        }
-        renderPhotoPreview();
-      }catch(err){
-        showBanner("error", "Errore lettura foto (galleria).", 3500);
-      }finally{
-        elFotoGallery.value = "";
-      }
-    });
-
-    function renderPhotoPreview(){
-      const n = photos.length;
-      if (!n) {
-        preview.style.display = "none";
-        thumbGrid.innerHTML = "";
-        photoMeta.textContent = "";
-        photoCountPill.textContent = "0 foto";
-        return;
-      }
-
-      preview.style.display = "block";
-      photoCountPill.textContent = `${n} foto`;
-      photoMeta.textContent = `Puoi inviare fino a 10 foto. Attuali: ${n}.`;
-
-      thumbGrid.innerHTML = photos.map((p, idx) => {
-        const safeName = escapeHtml(p.name || `foto_${idx+1}.jpg`);
-        return `
-          <div class="thumbCard">
-            <img src="${p.dataUrl}" alt="Foto ${idx+1}">
-            <button class="thumbRemove" type="button" data-remove="${idx}">✕</button>
-            <div class="thumbTag">${safeName}</div>
-          </div>
-        `;
-      }).join("");
-
-      // bind remove
-      thumbGrid.querySelectorAll("button[data-remove]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const i = Number(btn.getAttribute("data-remove"));
-          if (Number.isFinite(i)) {
-            photos.splice(i, 1);
-            renderPhotoPreview();
-          }
-        });
+    async function fileToCompressedJpegDataUrl(file){
+      // compressione semplice su canvas
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = URL.createObjectURL(file);
       });
-    }
-
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    async function readAndCompressImage(file, maxSide = 1280, quality = 0.78){
-      // legge immagine -> ridimensiona lato maxSide -> jpeg compresso -> dataURL
-      const img = await loadImageFromFile(file);
-      const { w, h } = fitBox(img.naturalWidth || img.width, img.naturalHeight || img.height, maxSide);
+      const maxSide = 1400;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const ratio = Math.min(1, maxSide / Math.max(w,h));
+      w = Math.round(w * ratio);
+      h = Math.round(h * ratio);
 
       const canvas = document.createElement("canvas");
       canvas.width = w;
       canvas.height = h;
-      const ctx = canvas.getContext("2d", { alpha: false });
-
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, w, h);
 
-      // Converti tutto in JPEG per alleggerire (Telegram va benissimo)
+      const quality = 0.82;
       const dataUrl = canvas.toDataURL("image/jpeg", quality);
-      return dataUrl;
+
+      // blob equivalente
+      const blob = await (await fetch(dataUrl)).blob();
+      return { dataUrl, blob };
     }
 
-    function fitBox(srcW, srcH, maxSide){
-      if (!srcW || !srcH) return { w: maxSide, h: maxSide };
-      const scale = Math.min(1, maxSide / Math.max(srcW, srcH));
-      return { w: Math.round(srcW * scale), h: Math.round(srcH * scale) };
+    async function handlePickedFile(file){
+      if(!file) return;
+      photoName = file.name || "foto.jpg";
+      photoType = file.type || "image/jpeg";
+
+      const { dataUrl, blob } = await fileToCompressedJpegDataUrl(file);
+      photoDataUrl = dataUrl;
+      photoBlob = blob;
+
+      photoImg.src = photoDataUrl;
+      preview.style.display = "flex";
+      photoMeta.textContent = `${photoName} • ${formatBytes(photoBlob.size)} • ${photoType}`;
     }
 
-    function loadImageFromFile(file){
-      return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("IMG_LOAD_FAIL")); };
-        img.src = url;
-      });
-    }
-
-    // =========================
-    // Send report (save local + worker)
-    // =========================
-    btnSend.addEventListener("click", async () => {
-      const titolo = (elTitolo.value || "").trim();
-      const descrizione = (elDescrizione.value || "").trim();
-      const anonimo = !!elAnonimo.checked;
-
-      if (!titolo || !descrizione) {
-        showBanner("error", "Compila Titolo e Descrizione.", 3500);
-        return;
-      }
-
-      const now = new Date();
-
-      // salva in locale SEMPRE
-      const reports = loadReports();
-      const reportItem = {
-        id: `${now.getTime()}_${Math.random().toString(16).slice(2)}`,
-        titolo,
-        descrizione,
-        anonimo,
-        when: now.toLocaleString("it-IT"),
-        // salva solo 1 mini-anteprima per non saturare storage
-        thumb: photos[0]?.dataUrl || null,
-        photosCount: photos.length
-      };
-      reports.unshift(reportItem);
-      saveReports(reports);
-
-      // prepara UI
-      btnSend.disabled = true;
-      showBanner("info", "Invio in corso…", 0);
-
-      // payload worker (nuovo)
-      const payload = {
-        titolo,
-        descrizione,
-        anonimo,
-        when: now.toLocaleString("it-IT"),
-        source: "SegnalaFacile PWA",
-        photos: photos.map(p => ({
-          dataUrl: p.dataUrl,
-          name: p.name || "foto.jpg",
-          type: p.type || "image/jpeg"
-        }))
-      };
-
-      let telegramOk = false;
-      let telegramMsg = "";
-
-      try{
-        const url = new URL(CONFIG.telegramWorkerUrl);
-        const res = await fetch(url.toString(), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Api-Key": CONFIG.telegramApiKey || ""
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const j = await res.json().catch(() => null);
-
-        if (res.ok && j && j.ok) {
-          telegramOk = true;
-          telegramMsg = "Segnalazione salvata e inoltrata su Telegram ✅";
-          showBanner("success", telegramMsg, 3500);
-        } else {
-          const detail = j ? JSON.stringify(j) : "Nessuna risposta JSON";
-          telegramOk = false;
-          telegramMsg = `Telegram/Worker: errore ${res.status} · ${detail}`;
-          showBanner("error", telegramMsg, 0);
-        }
-      } catch (e) {
-        telegramOk = false;
-        telegramMsg = `Telegram/Worker: errore di rete · ${String(e)}`;
-        showBanner("error", telegramMsg, 0);
-      } finally {
-        btnSend.disabled = false;
-
-        // aggiorna schermata success dinamica
-        if (telegramOk) {
-          successTitle.textContent = "Segnalazione inviata correttamente";
-          successHint.textContent = "Salvata in locale e inoltrata su gruppo Telegram Segnala Facile.";
-        } else {
-          successTitle.textContent = "Segnalazione salvata correttamente";
-          successHint.textContent = "Salvata in locale. Telegram non ha inoltrato (nessun dato perso).";
-        }
-
-        // reset form (ma lascia banner se errore)
-        elTitolo.value = "";
-        elDescrizione.value = "";
-        elAnonimo.checked = false;
-        photos = [];
-        renderPhotoPreview();
-
-        location.hash = "#/success";
-      }
+    elFotoCamera.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      await handlePickedFile(file);
+    });
+    elFotoGallery.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      await handlePickedFile(file);
     });
 
     // =========================
-    // Render list
+    // Reports list UI
     // =========================
-    const list = document.getElementById("list");
+    const listEl = document.getElementById("list");
     const emptyState = document.getElementById("emptyState");
     const btnClearAll = document.getElementById("btnClearAll");
 
     function renderList(){
-      const reports = loadReports();
-      emptyState.style.display = reports.length ? "none" : "block";
+      const arr = loadReports();
+      listEl.innerHTML = "";
+      emptyState.style.display = arr.length ? "none" : "block";
 
-      list.innerHTML = reports.map(r => {
-        const t = escapeHtml(r.titolo || "");
-        const d = escapeHtml(r.descrizione || "");
-        const when = escapeHtml(r.when || "");
-        const anon = r.anonimo ? "Sì" : "No";
-        const photosCount = Number(r.photosCount || 0);
-        const thumb = r.thumb ? `<img class="thumb" src="${r.thumb}" alt="foto">` : `<div class="thumb"></div>`;
+      arr.slice().reverse().forEach((r) => {
+        const item = document.createElement("div");
+        item.className = "item";
 
-        return `
-          <div class="item">
-            ${thumb}
-            <div style="flex:1">
-              <h3>📌 ${t}</h3>
-              <p>${d}</p>
-              <div class="metaRow">
-                <span class="pill">🕒 ${when}</span>
-                <span class="pill">🕶️ Anonimo: ${anon}</span>
-                <span class="pill">📷 Foto: ${photosCount}</span>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
+        const img = document.createElement("img");
+        img.className = "thumb";
+        img.alt = "Foto";
+        img.src = r.photoDataUrl || "";
+        if(!r.photoDataUrl) img.style.display = "none";
+
+        const body = document.createElement("div");
+        body.style.flex = "1";
+
+        const h3 = document.createElement("h3");
+        h3.textContent = r.titolo || "(senza titolo)";
+
+        const p = document.createElement("p");
+        p.textContent = r.descrizione || "";
+
+        const meta = document.createElement("div");
+        meta.className = "metaRow";
+        const pill1 = document.createElement("span");
+        pill1.className = "pill";
+        pill1.textContent = "🕒 " + (r.when || "");
+        const pill2 = document.createElement("span");
+        pill2.className = "pill";
+        pill2.textContent = "🕶️ " + (r.anonimo ? "Anonimo" : "Non anonimo");
+        const pill3 = document.createElement("span");
+        pill3.className = "pill";
+        pill3.textContent = r.photoDataUrl ? "📷 Foto" : "📷 Nessuna foto";
+        meta.append(pill1,pill2,pill3);
+
+        body.append(h3,p,meta);
+        item.append(img, body);
+        listEl.append(item);
+      });
     }
 
     btnClearAll.addEventListener("click", () => {
-      if (!confirm("Vuoi svuotare tutte le segnalazioni salvate in locale?")) return;
+      if(!confirm("Vuoi svuotare lo storico locale?")) return;
       saveReports([]);
       renderList();
       showBanner("info", "Storico svuotato.", 2500);
     });
 
     // =========================
-    // Init
+    // Send report
     // =========================
+    async function sendToTelegramWorker(payload){
+      const url = new URL(CONFIG.telegramWorkerUrl);
+      const res = await fetch(url.toString(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": CONFIG.telegramApiKey || ""
+        },
+        body: JSON.stringify(payload)
+      });
+
+      let data = null;
+      try { data = await res.json(); } catch {}
+      if(!res.ok || !data || data.ok !== true){
+        const msg = data?.error ? `${data.error}` : `HTTP_${res.status}`;
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    btnSend.addEventListener("click", async () => {
+      const titolo = (elTitolo.value || "").trim();
+      const descrizione = (elDescrizione.value || "").trim();
+
+      if(!titolo || !descrizione){
+        showBanner("error", "Compila Titolo e Descrizione.", 3500);
+        return;
+      }
+
+      btnSend.disabled = true;
+      showBanner("info", "Invio in corso…");
+
+      const now = new Date();
+
+      const payload = {
+        titolo,
+        descrizione,
+        anonimo: !!elAnonimo.checked,
+        when: now.toLocaleString("it-IT"),
+        source: "SegnalaFacile PWA",
+        // invio singola foto (come già funzionante con il worker)
+        photo: photoDataUrl ? {
+          dataUrl: photoDataUrl,
+          name: photoName || "foto.jpg",
+          type: photoType || "image/jpeg"
+        } : null
+      };
+
+      // salva in locale SEMPRE
+      const arr = loadReports();
+      arr.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        titolo,
+        descrizione,
+        anonimo: !!elAnonimo.checked,
+        when: payload.when,
+        photoDataUrl: photoDataUrl || null
+      });
+      saveReports(arr);
+
+      try{
+        await sendToTelegramWorker(payload);
+        hideBanner();
+        location.hash = "#/success";
+        showBanner("success", "Segnalazione salvata e inoltrata su Telegram ✅", 4000);
+      }catch(e){
+        hideBanner();
+        location.hash = "#/success";
+        showBanner("error", "Telegram non ha inoltrato (nessun dato perso).", 6000);
+        console.warn("Telegram/Worker error:", e);
+      }finally{
+        btnSend.disabled = false;
+      }
+    });
+
+    // init
     route();
-    renderPhotoPreview();
   </script>
 </body>
 </html>
