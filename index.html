@@ -103,8 +103,24 @@
       padding:12px; border-radius:14px; border:1px dashed var(--stroke);
       background:rgba(0,0,0,.15);
     }
-    .preview img{width:86px; height:86px; object-fit:cover; border-radius:14px; border:1px solid var(--stroke)}
     .preview .meta{font-size:12px; color:var(--muted); line-height:1.4}
+
+    /* ✅ mini-gallery preview */
+    .thumbs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:flex-start;
+      padding:2px;
+    }
+    .thumbs img{
+      width:72px;
+      height:72px;
+      object-fit:cover;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.05);
+    }
 
     .pill{
       display:inline-flex; align-items:center; gap:8px;
@@ -270,18 +286,18 @@
           <button class="ghost" id="btnPickGallery" type="button">🖼️ Scegli dalla galleria</button>
 
           <input id="fotoCamera" type="file" accept="image/*" capture="environment" class="hidden" />
-          <input id="fotoGallery" type="file" accept="image/*" class="hidden" />
+          <!-- ✅ MULTIPLE per più foto da galleria -->
+          <input id="fotoGallery" type="file" accept="image/*" multiple class="hidden" />
 
           <button class="danger" id="btnClearPhoto" type="button">🧹 Rimuovi</button>
         </div>
 
         <div id="photoPreview" class="preview">
-          <img id="photoImg" alt="Anteprima" />
-          <div class="meta">
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:160px">
             <div style="font-weight:800;color:var(--text)">Anteprima foto</div>
-            <div id="photoMeta"></div>
-            <div class="hint" style="margin-top:8px">Se presente, la foto viene inoltrata sul canale Telegram Segnala Facile come allegato.</div>
+            <div id="photoMeta" class="meta"></div>
           </div>
+          <div class="thumbs" id="thumbs"></div>
         </div>
 
         <div class="toggle">
@@ -356,7 +372,6 @@
         </div>
 
         <div class="btnRow" style="margin-top:14px">
-          <!-- ✅ SOLO EMAIL (Telegram rimosso) -->
           <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
         </div>
@@ -382,7 +397,6 @@
     // CONFIG (personalizza qui)
     // =========================
     const CONFIG = {
-      // ✅ Email “anonima” (contatto pubblico)
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
 
@@ -499,7 +513,7 @@
     }
 
     // =========================
-    // Form logic + photo
+    // Form logic + multi-photo
     // =========================
     const elTitolo = document.getElementById("titolo");
     const elDescrizione = document.getElementById("descrizione");
@@ -515,13 +529,11 @@
     const btnSend = document.getElementById("btnSend");
 
     const preview = document.getElementById("photoPreview");
-    const photoImg = document.getElementById("photoImg");
     const photoMeta = document.getElementById("photoMeta");
+    const thumbs = document.getElementById("thumbs");
 
-    let photoDataUrl = null;
-    let photoName = "";
-    let photoType = "";
-    let photoBlob = null;
+    // ✅ array di foto
+    let photos = []; // [{dataUrl, name, type, blobSize}]
 
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
     btnPickGallery.addEventListener("click", () => elFotoGallery.click());
@@ -529,13 +541,8 @@
     btnClearPhoto.addEventListener("click", () => {
       elFotoCamera.value = "";
       elFotoGallery.value = "";
-      photoDataUrl = null;
-      photoName = "";
-      photoType = "";
-      photoBlob = null;
-      preview.style.display = "none";
-      photoImg.src = "";
-      photoMeta.textContent = "";
+      photos = [];
+      renderPhotoPreview();
     });
 
     function formatBytes(bytes){
@@ -547,13 +554,13 @@
     }
 
     async function fileToCompressedJpegDataUrl(file){
-      // compressione semplice su canvas
       const img = await new Promise((resolve, reject) => {
         const i = new Image();
         i.onload = () => resolve(i);
         i.onerror = reject;
         i.src = URL.createObjectURL(file);
       });
+
       const maxSide = 1400;
       let w = img.naturalWidth, h = img.naturalHeight;
       const ratio = Math.min(1, maxSide / Math.max(w,h));
@@ -568,33 +575,63 @@
 
       const quality = 0.82;
       const dataUrl = canvas.toDataURL("image/jpeg", quality);
-
-      // blob equivalente
       const blob = await (await fetch(dataUrl)).blob();
       return { dataUrl, blob };
     }
 
-    async function handlePickedFile(file){
-      if(!file) return;
-      photoName = file.name || "foto.jpg";
-      photoType = file.type || "image/jpeg";
+    function renderPhotoPreview(){
+      thumbs.innerHTML = "";
 
-      const { dataUrl, blob } = await fileToCompressedJpegDataUrl(file);
-      photoDataUrl = dataUrl;
-      photoBlob = blob;
+      if(!photos.length){
+        preview.style.display = "none";
+        photoMeta.textContent = "";
+        return;
+      }
 
-      photoImg.src = photoDataUrl;
       preview.style.display = "flex";
-      photoMeta.textContent = `${photoName} • ${formatBytes(photoBlob.size)} • ${photoType}`;
+      const totalBytes = photos.reduce((s,p) => s + (p.blobSize || 0), 0);
+      photoMeta.textContent = `${photos.length} foto selezionate • ${formatBytes(totalBytes)} (totale)`;
+
+      photos.forEach(p => {
+        const im = document.createElement("img");
+        im.src = p.dataUrl;
+        im.alt = p.name || "foto";
+        thumbs.appendChild(im);
+      });
+    }
+
+    async function addFiles(fileList, replace = false){
+      const files = Array.from(fileList || []).filter(Boolean);
+      if(!files.length) return;
+
+      if(replace) photos = [];
+
+      // limite sicurezza: max 6 foto (puoi aumentare)
+      const MAX = 6;
+      const space = MAX - photos.length;
+      const picked = files.slice(0, Math.max(0, space));
+      if(files.length > picked.length){
+        showBanner("info", `Puoi inviare al massimo ${MAX} foto. Selezionate le prime ${picked.length}.`, 4500);
+      }
+
+      for(const f of picked){
+        const name = f.name || "foto.jpg";
+        const type = f.type || "image/jpeg";
+        const { dataUrl, blob } = await fileToCompressedJpegDataUrl(f);
+        photos.push({ dataUrl, name, type, blobSize: blob.size });
+      }
+
+      renderPhotoPreview();
     }
 
     elFotoCamera.addEventListener("change", async (e) => {
-      const file = e.target.files && e.target.files[0];
-      await handlePickedFile(file);
+      // fotocamera: sostituisce (di solito 1 foto)
+      await addFiles(e.target.files, true);
     });
+
     elFotoGallery.addEventListener("change", async (e) => {
-      const file = e.target.files && e.target.files[0];
-      await handlePickedFile(file);
+      // galleria: aggiunge (multiple)
+      await addFiles(e.target.files, false);
     });
 
     // =========================
@@ -691,21 +728,32 @@
 
       const now = new Date();
 
+      // compatibilità: prima foto come "photo" + tutte in "photos"
+      const first = photos[0] || null;
+
       const payload = {
         titolo,
         descrizione,
         anonimo: !!elAnonimo.checked,
         when: now.toLocaleString("it-IT"),
         source: "SegnalaFacile PWA",
-        // invio singola foto (come già funzionante con il worker)
-        photo: photoDataUrl ? {
-          dataUrl: photoDataUrl,
-          name: photoName || "foto.jpg",
-          type: photoType || "image/jpeg"
-        } : null
+
+        // ✅ per worker attuale (singola foto)
+        photo: first ? {
+          dataUrl: first.dataUrl,
+          name: first.name || "foto.jpg",
+          type: first.type || "image/jpeg"
+        } : null,
+
+        // ✅ pronto per worker multi-foto (se lo aggiorniamo dopo)
+        photos: photos.map(p => ({
+          dataUrl: p.dataUrl,
+          name: p.name || "foto.jpg",
+          type: p.type || "image/jpeg"
+        }))
       };
 
-      // salva in locale SEMPRE
+      // salva in locale SEMPRE (qui salviamo solo la prima come miniatura nello storico)
       const arr = loadReports();
       arr.push({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
@@ -713,7 +761,7 @@
         descrizione,
         anonimo: !!elAnonimo.checked,
         when: payload.when,
-        photoDataUrl: photoDataUrl || null
+        photoDataUrl: first ? first.dataUrl : null
       });
       saveReports(arr);
 
@@ -734,6 +782,7 @@
 
     // init
     route();
+    renderPhotoPreview();
   </script>
 </body>
 </html>
