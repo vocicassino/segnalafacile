@@ -50,7 +50,7 @@
     .wrap{
       max-width: 880px;
       margin: 0 auto;
-      padding: 18px 16px 92px;
+      padding: 20px 16px 92px;
     }
 
     header{
@@ -58,12 +58,12 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding: 10px 0 12px;
+      padding: 12px 0 10px;
     }
 
     .brand{display:flex; align-items:center; gap:14px;}
 
-    /* ✅ LOGO PIÙ GRANDE */
+    /* ✅ icona più grande e più “premium” */
     .logo{
       width:58px;
       height:58px;
@@ -71,29 +71,41 @@
       background:
         url("icons/icon-192.png") center/cover no-repeat,
         linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
-      box-shadow: var(--shadow2);
+      box-shadow: 0 16px 35px rgba(0,0,0,.42);
       outline: 1px solid rgba(255,255,255,.12);
-      flex:0 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+    .logo::after{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), transparent 55%);
+      transform: rotate(12deg);
+      pointer-events:none;
     }
 
-    /* ✅ TITOLO PIÙ GRANDE */
+    /* ✅ titolo più grande */
     .title{
-      font-size: 26px;
+      font-size: 21px;
       font-weight: 950;
-      letter-spacing: -.3px;
-      line-height: 1.05;
+      letter-spacing: .2px;
+      line-height: 1.08;
     }
 
-    /* ✅ SOTTOTITOLO NEUTRO (niente Telegram, niente dettagli tecnici) */
+    /* ✅ badge senza riferimenti a Telegram/gruppi */
     .badge{
-      font-size:13px;
+      font-size:12px;
       color: var(--muted);
       border: 1px solid var(--stroke);
-      padding: 8px 12px;
+      padding: 7px 10px;
       border-radius: 999px;
       background: rgba(255,255,255,.045);
       backdrop-filter: blur(8px);
       margin-top: 7px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
     }
 
     .grid{display:grid; gap:14px}
@@ -233,6 +245,13 @@
       border:1px dashed rgba(255,255,255,.18);
       background: rgba(0,0,0,.16);
     }
+    .preview img{
+      width: 96px; height: 96px;
+      object-fit: cover;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      box-shadow: 0 10px 18px rgba(0,0,0,.30);
+    }
     .preview .meta{font-size:12px; color:var(--muted); line-height:1.45}
 
     .thumbs{
@@ -243,13 +262,12 @@
       padding:2px;
     }
     .thumbs img{
-      width:84px;
-      height:84px;
+      width:72px;
+      height:72px;
       object-fit:cover;
-      border-radius:18px;
+      border-radius:14px;
       border:1px solid var(--stroke);
       background:rgba(255,255,255,.05);
-      box-shadow: 0 10px 18px rgba(0,0,0,.30);
     }
 
     .pill{
@@ -291,7 +309,6 @@
     .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
 
     .hidden{display:none !important}
-
     section{display:none}
     section:not(.hidden){display:block}
 
@@ -383,10 +400,10 @@
   <div class="wrap">
     <header>
       <div class="brand">
-        <div class="logo"></div>
+        <div class="logo" aria-hidden="true"></div>
         <div>
           <div class="title">SegnalaFacile</div>
-          <div class="badge">Invia segnalazioni in modo semplice e riservato</div>
+          <div class="badge">✨ PWA installabile • salvataggio locale + invio segnalazioni</div>
         </div>
       </div>
       <button class="pill" id="installPill" style="display:none; cursor:pointer;" type="button">⬇️ Installa</button>
@@ -401,20 +418,20 @@
     <section id="view-home" class="grid">
       <div class="card hero">
         <h1>Invia una segnalazione in pochi secondi</h1>
-        <p>Descrivi il problema, aggiungi una foto e invia. Il tuo storico rimane sul dispositivo.</p>
+        <p>Descrivi il problema, aggiungi una o più foto e invia. Niente messaggi sparsi: tutto ordinato e tracciabile.</p>
         <div class="btnRow">
           <a class="btn primary" href="#/report">📝 Invia segnalazione</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti rapidi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
         </div>
-        <div class="hint">Nessuna registrazione richiesta. Puoi scegliere anche l’invio anonimo.</div>
+        <div class="hint">Nessuna registrazione richiesta. La segnalazione viene salvata sul dispositivo e inviata automaticamente.</div>
       </div>
 
       <div class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
           <div>
-            <div style="font-weight:800;margin-bottom:4px">Come funziona</div>
-            <div class="hint" style="margin:0">1) Compili • 2) Aggiungi foto • 3) Invi • 4) Ti resta lo storico</div>
+            <div style="font-weight:900;margin-bottom:4px">Come funziona</div>
+            <div class="hint" style="margin:0">1) Compili • 2) Aggiungi foto (camera o galleria) • 3) Invi • 4) Ti resta lo storico</div>
           </div>
           <a class="btn small ghost" href="#/report">Prova ora →</a>
         </div>
@@ -426,7 +443,7 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:900;font-size:18px">Nuova segnalazione</div>
+            <div style="font-weight:950;font-size:18px">Nuova segnalazione</div>
             <div class="hint" style="margin:6px 0 0">Compila i campi e premi “Invia”.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
@@ -451,7 +468,7 @@
 
         <div id="photoPreview" class="preview">
           <div style="display:flex;flex-direction:column;gap:8px;min-width:160px">
-            <div style="font-weight:800;color:var(--text)">Foto selezionate</div>
+            <div style="font-weight:900;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta" class="meta"></div>
           </div>
           <div class="thumbs" id="thumbs"></div>
@@ -459,7 +476,7 @@
 
         <div class="toggle">
           <div>
-            <strong>Invio anonimo</strong><br>
+            <strong>Invia anche in forma anonima</strong><br>
             <span>Nessun nome richiesto</span>
           </div>
           <input id="anonimo" type="checkbox" />
@@ -471,7 +488,7 @@
         </div>
 
         <div class="hint">
-          Suggerimento: inserisci dettagli utili (luogo, orario, riferimenti).
+          Nota: la segnalazione viene salvata sul dispositivo e inviata automaticamente.
         </div>
       </div>
     </section>
@@ -482,8 +499,8 @@
         <div class="ok">
           <div style="font-size:22px">✅</div>
           <div>
-            <div style="font-weight:900;font-size:18px">Segnalazione inviata</div>
-            <div class="hint" style="margin:6px 0 0">La segnalazione è stata registrata correttamente.</div>
+            <div style="font-weight:950;font-size:18px">Segnalazione inviata correttamente</div>
+            <div class="hint" style="margin:6px 0 0">Salvata in locale e inviata automaticamente.</div>
           </div>
         </div>
 
@@ -500,7 +517,7 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:900;font-size:18px">Le mie segnalazioni</div>
+            <div style="font-weight:950;font-size:18px">Le mie segnalazioni</div>
             <div class="hint" style="margin:6px 0 0">Salvate in locale sul dispositivo.</div>
           </div>
           <div class="row" style="flex:0 0 auto">
@@ -522,8 +539,8 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:900;font-size:18px">Contatti</div>
-            <div class="hint" style="margin:6px 0 0">Per informazioni o comunicazioni.</div>
+            <div style="font-weight:950;font-size:18px">Contatti rapidi</div>
+            <div class="hint" style="margin:6px 0 0">Per richieste o informazioni generali.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
@@ -534,7 +551,7 @@
         </div>
 
         <div class="hint" style="margin-top:12px">
-          Se vuoi, puoi inviare una comunicazione via email.
+          Per l’invio di segnalazioni usa la sezione <b>Segnala</b>.
         </div>
       </div>
     </section>
@@ -557,7 +574,7 @@
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
 
-      // Invio segnalazioni (backend)
+      // Worker (invio segnalazioni)
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026"
     };
@@ -643,7 +660,7 @@
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts links (Email + Mappa)
+    // Contacts links (solo Email + Mappa)
     // =========================
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
@@ -746,7 +763,7 @@
 
       preview.style.display = "flex";
       const totalBytes = photos.reduce((s,p) => s + (p.blobSize || 0), 0);
-      photoMeta.textContent = `${photos.length} foto • ${formatBytes(totalBytes)} (totale)`;
+      photoMeta.textContent = `${photos.length} foto selezionate • ${formatBytes(totalBytes)} (totale)`;
 
       photos.forEach(p => {
         const im = document.createElement("img");
@@ -766,7 +783,7 @@
       const space = MAX - photos.length;
       const picked = files.slice(0, Math.max(0, space));
       if(files.length > picked.length){
-        showBanner("info", `Puoi allegare al massimo ${MAX} foto.`, 4500);
+        showBanner("info", `Puoi inviare al massimo ${MAX} foto. Selezionate le prime ${picked.length}.`, 4500);
       }
 
       for(const f of picked){
@@ -820,19 +837,15 @@
 
         const meta = document.createElement("div");
         meta.className = "metaRow";
-
         const pill1 = document.createElement("span");
         pill1.className = "pill";
         pill1.textContent = "🕒 " + (r.when || "");
-
         const pill2 = document.createElement("span");
         pill2.className = "pill";
         pill2.textContent = "🕶️ " + (r.anonimo ? "Anonimo" : "Non anonimo");
-
         const pill3 = document.createElement("span");
         pill3.className = "pill";
         pill3.textContent = r.photoDataUrl ? "📷 Foto" : "📷 Nessuna foto";
-
         meta.append(pill1,pill2,pill3);
 
         body.append(h3,p,meta);
@@ -891,7 +904,7 @@
         descrizione,
         anonimo: !!elAnonimo.checked,
         when: now.toLocaleString("it-IT"),
-        source: "SegnalaFacile",
+        source: "SegnalaFacile PWA",
 
         photo: first ? {
           dataUrl: first.dataUrl,
