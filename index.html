@@ -12,100 +12,229 @@
 
   <style>
     :root{
-      --bg:#0b1220; --text:#e8eefc;
-      --muted:#a8b4d6; --accent:#2d7dff; --accent2:#19c37d; --danger:#ff4d4f;
+      --bg:#0b1220;
+      --bg2:#070c18;
+      --text:#eaf0ff;
+      --muted:#a9b6db;
+
+      --accent:#2d7dff;
+      --accent2:#19c37d;
+      --danger:#ff4d4f;
+
       --stroke:rgba(255,255,255,.10);
-      --r:18px;
+      --stroke2:rgba(255,255,255,.14);
+
+      --r:20px;
+      --r2:26px;
+
+      --shadow: 0 18px 45px rgba(0,0,0,.40);
+      --shadow2: 0 10px 25px rgba(0,0,0,.35);
+
+      --glass1: rgba(255,255,255,.075);
+      --glass2: rgba(255,255,255,.035);
     }
+
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
-      margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background: radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 50%),
-                  radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 55%),
-                  var(--bg);
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
       color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 55%),
+        radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 60%),
+        radial-gradient(900px 650px at 50% 120%, rgba(45,125,255,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
     }
-    .wrap{max-width:860px; margin:0 auto; padding:22px 16px 90px}
+
+    .wrap{
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 18px 16px 92px;
+    }
+
     header{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding:12px 0 6px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 10px 0 12px;
     }
-    .brand{display:flex; align-items:center; gap:10px;}
+
+    .brand{display:flex; align-items:center; gap:14px;}
+
+    /* ✅ LOGO PIÙ GRANDE */
     .logo{
-      width:38px; height:38px; border-radius:12px;
-      background:url("icons/icon-192.png") center/cover no-repeat,linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.9));
-      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:
+        url("icons/icon-192.png") center/cover no-repeat,
+        linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
+      box-shadow: var(--shadow2);
+      outline: 1px solid rgba(255,255,255,.12);
+      flex:0 0 auto;
     }
-    .title{font-size:18px; font-weight:800; letter-spacing:.2px}
+
+    /* ✅ TITOLO PIÙ GRANDE */
+    .title{
+      font-size: 26px;
+      font-weight: 950;
+      letter-spacing: -.3px;
+      line-height: 1.05;
+    }
+
+    /* ✅ SOTTOTITOLO NEUTRO (niente Telegram, niente dettagli tecnici) */
     .badge{
-      font-size:12px; color:var(--muted);
-      border:1px solid var(--stroke); padding:6px 10px; border-radius:999px;
-      background:rgba(255,255,255,.04);
+      font-size:13px;
+      color: var(--muted);
+      border: 1px solid var(--stroke);
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.045);
+      backdrop-filter: blur(8px);
+      margin-top: 7px;
     }
 
     .grid{display:grid; gap:14px}
+
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--stroke);
-      border-radius:var(--r);
-      padding:16px;
-      box-shadow: 0 18px 45px rgba(0,0,0,.35);
-      backdrop-filter: blur(6px);
+      background: linear-gradient(180deg, var(--glass1), var(--glass2));
+      border: 1px solid var(--stroke);
+      border-radius: var(--r2);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
     }
-    .hero h1{margin:0 0 8px; font-size:28px; line-height:1.15}
-    .hero p{margin:0; color:var(--muted); font-size:14px; line-height:1.5}
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background:
+        radial-gradient(600px 120px at 20% 0%, rgba(45,125,255,.16), transparent 55%),
+        radial-gradient(600px 120px at 80% 0%, rgba(25,195,125,.12), transparent 55%);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .card > *{position:relative}
+
+    .hero h1{
+      margin:0 0 10px;
+      font-size: 30px;
+      line-height: 1.12;
+      letter-spacing: -.4px;
+    }
+    .hero p{
+      margin:0;
+      color: var(--muted);
+      font-size: 14.5px;
+      line-height: 1.55;
+    }
+
     .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
 
     button, .btn{
-      cursor:pointer; border:0; border-radius:14px;
-      padding:12px 14px; font-weight:700; font-size:14px;
-      display:inline-flex; align-items:center; gap:10px;
-      text-decoration:none; color:var(--text);
+      cursor:pointer;
+      border:0;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-weight: 850;
+      font-size: 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      text-decoration:none;
+      color: var(--text);
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      transition: transform .12s ease, filter .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
     }
-    button:disabled{
-      opacity:.65;
-      cursor:not-allowed;
-      transform:none !important;
-    }
+    button:active, .btn:active{transform: translateY(1px) scale(.99)}
+    button:disabled{opacity:.65; cursor:not-allowed; transform:none !important}
 
-    .primary{background:var(--accent)}
-    .ghost{background:rgba(255,255,255,.06); border:1px solid var(--stroke)}
-    .danger{background:rgba(255,77,79,.14); border:1px solid rgba(255,77,79,.35)}
-    .small{padding:10px 12px; border-radius:12px; font-size:13px}
+    .primary{
+      background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.78));
+      box-shadow: 0 14px 28px rgba(45,125,255,.18);
+    }
+    .primary:hover{filter: brightness(1.05)}
+    .ghost{
+      background: rgba(255,255,255,.055);
+      border:1px solid var(--stroke);
+    }
+    .ghost:hover{border-color: var(--stroke2)}
+    .danger{
+      background: rgba(255,77,79,.14);
+      border:1px solid rgba(255,77,79,.35);
+    }
+    .danger:hover{border-color: rgba(255,77,79,.55)}
+    .small{padding:10px 12px; border-radius:14px; font-size:13px}
 
     .row{display:flex; gap:12px; flex-wrap:wrap}
     .row > *{flex:1 1 220px}
 
-    label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px}
-    input[type="text"], textarea{
-      width:100%; padding:12px 12px; border-radius:14px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.22);
-      color:var(--text);
-      outline:none;
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 12px 0 7px;
+      font-weight: 750;
+      letter-spacing: .2px;
     }
-    textarea{min-height:110px; resize:vertical}
-    .hint{font-size:12px; color:var(--muted); margin-top:8px; line-height:1.45}
+
+    input[type="text"], textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      outline:none;
+      transition: border-color .12s ease, box-shadow .12s ease;
+    }
+    input[type="text"]:focus, textarea:focus{
+      border-color: rgba(45,125,255,.55);
+      box-shadow: 0 0 0 3px rgba(45,125,255,.16);
+    }
+    textarea{min-height:120px; resize:vertical}
+
+    .hint{
+      font-size:12.5px;
+      color: var(--muted);
+      margin-top:10px;
+      line-height:1.5;
+    }
 
     .toggle{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      padding:12px; border-radius:14px; border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
-      margin-top:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 12px;
+      border-radius: 18px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      margin-top: 12px;
     }
     .toggle span{color:var(--muted); font-size:13px}
-    .toggle strong{font-size:13px}
+    .toggle strong{font-size:13px; font-weight:900}
+    .toggle input{transform: scale(1.15)}
 
     .preview{
-      margin-top:10px; display:none; gap:10px; align-items:flex-start;
-      padding:12px; border-radius:14px; border:1px dashed var(--stroke);
-      background:rgba(0,0,0,.15);
+      margin-top: 12px;
+      display:none;
+      gap: 12px;
+      align-items:flex-start;
+      padding: 12px;
+      border-radius: 18px;
+      border:1px dashed rgba(255,255,255,.18);
+      background: rgba(0,0,0,.16);
     }
-    .preview .meta{font-size:12px; color:var(--muted); line-height:1.4}
+    .preview .meta{font-size:12px; color:var(--muted); line-height:1.45}
 
-    /* ✅ mini-gallery preview */
     .thumbs{
       display:flex;
       flex-wrap:wrap;
@@ -114,422 +243,140 @@
       padding:2px;
     }
     .thumbs img{
-      width:72px;
-      height:72px;
+      width:84px;
+      height:84px;
       object-fit:cover;
-      border-radius:14px;
+      border-radius:18px;
       border:1px solid var(--stroke);
       background:rgba(255,255,255,.05);
+      box-shadow: 0 10px 18px rgba(0,0,0,.30);
     }
 
     .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
-      background:rgba(255,255,255,.06); border:1px solid var(--stroke);
-      color:var(--muted); font-size:12px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 850;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
     }
 
     .list{display:grid; gap:10px; margin-top:12px}
     .item{
-      padding:12px; border-radius:16px;
-      background:rgba(0,0,0,.18);
-      border:1px solid var(--stroke);
-      display:flex; gap:12px; align-items:flex-start;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid var(--stroke);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      transition: border-color .12s ease, transform .12s ease;
     }
-    .thumb{width:64px; height:64px; border-radius:14px; border:1px solid var(--stroke); object-fit:cover; background:rgba(255,255,255,.05)}
-    .item h3{margin:0; font-size:14px}
-    .item p{margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.45}
+    .item:hover{border-color: var(--stroke2)}
+    .thumb{
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      object-fit: cover;
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 10px 18px rgba(0,0,0,.28);
+    }
+    .item h3{margin:0; font-size:14px; font-weight:900}
+    .item p{margin:6px 0 0; color:var(--muted); font-size:12.5px; line-height:1.45}
     .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
 
-    nav.bottom{
-      position:fixed; left:0; right:0; bottom:0;
-      background:rgba(9,14,28,.78);
-      border-top:1px solid var(--stroke);
+    .hidden{display:none !important}
+
+    section{display:none}
+    section:not(.hidden){display:block}
+
+    .ok{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(25,195,125,.35);
+      background: rgba(25,195,125,.12);
+    }
+
+    .banner{
+      position: sticky;
+      top: 10px;
+      z-index: 2000;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 12px;
+      border-radius: 18px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
       backdrop-filter: blur(10px);
-      z-index:9999;
+      box-shadow: var(--shadow2);
+      margin: 0 0 12px;
+    }
+    .banner .text{font-size:13px; line-height:1.35; color:var(--text)}
+    .banner .close{
+      flex:0 0 auto;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 8px 10px;
+      font-weight: 950;
+    }
+    .banner.info{border-color: rgba(45,125,255,.35); background: rgba(45,125,255,.10)}
+    .banner.success{border-color: rgba(25,195,125,.35); background: rgba(25,195,125,.12)}
+    .banner.error{border-color: rgba(255,77,79,.35); background: rgba(255,77,79,.12)}
+
+    nav.bottom{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: rgba(9,14,28,.78);
+      border-top: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(12px);
+      z-index: 9999;
     }
     nav .inner{
-      max-width:860px; margin:0 auto;
-      display:flex; justify-content:space-around; gap:8px;
-      padding:10px 10px;
+      max-width: 880px;
+      margin: 0 auto;
+      display:flex;
+      justify-content:space-around;
+      gap: 10px;
+      padding: 10px 12px;
     }
     nav a{
-      flex:1; text-align:center; text-decoration:none; color:var(--muted);
-      font-size:12px; padding:10px 8px; border-radius:14px;
-      border:1px solid transparent;
-      touch-action: manipulation;
+      flex: 1;
+      text-align:center;
+      text-decoration:none;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 10px 8px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      transition: background .12s ease, border-color .12s ease, transform .12s ease;
     }
+    nav a:active{transform: translateY(1px)}
     nav a.active{
-      color:var(--text);
-      background:rgba(255,255,255,.06);
-      border-color:var(--stroke);
+      color: var(--text);
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.12);
     }
 
-    .hidden{display:none !important}
-    .ok{
-      display:flex; align-items:center; gap:10px;
-      padding:12px; border-radius:16px; border:1px solid rgba(25,195,125,.35);
-      background:rgba(25,195,125,.12);
-<style>
-  :root{
-    --bg:#0b1220;
-    --bg2:#070c18;
-    --text:#eaf0ff;
-    --muted:#a9b6db;
-
-    --accent:#2d7dff;
-    --accent2:#19c37d;
-    --danger:#ff4d4f;
-
-    --stroke:rgba(255,255,255,.10);
-    --stroke2:rgba(255,255,255,.14);
-
-    --r:20px;
-    --r2:26px;
-
-    --shadow: 0 18px 45px rgba(0,0,0,.40);
-    --shadow2: 0 10px 25px rgba(0,0,0,.35);
-
-    --glass1: rgba(255,255,255,.075);
-    --glass2: rgba(255,255,255,.035);
-  }
-
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    color:var(--text);
-    background:
-      radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 55%),
-      radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 60%),
-      radial-gradient(900px 650px at 50% 120%, rgba(45,125,255,.12), transparent 60%),
-      linear-gradient(180deg, var(--bg), var(--bg2));
-  }
-
-  /* layout */
-  .wrap{
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 20px 16px 92px;
-  }
-
-  header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding: 12px 0 10px;
-  }
-
-  .brand{display:flex; align-items:center; gap:12px;}
-  .logo{
-    width:42px; height:42px; border-radius:14px;
-    background:
-      url("icons/icon-192.png") center/cover no-repeat,
-      linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
-    box-shadow: var(--shadow2);
-    outline: 1px solid rgba(255,255,255,.10);
-  }
-  .title{
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: .2px;
-    line-height: 1.1;
-  }
-  .badge{
-    font-size:12px;
-    color: var(--muted);
-    border: 1px solid var(--stroke);
-    padding: 7px 10px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.045);
-    backdrop-filter: blur(8px);
-    margin-top: 6px;
-  }
-
-  .grid{display:grid; gap:14px}
-
-  /* cards */
-  .card{
-    background: linear-gradient(180deg, var(--glass1), var(--glass2));
-    border: 1px solid var(--stroke);
-    border-radius: var(--r2);
-    padding: 16px;
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-  }
-  .card::before{
-    content:"";
-    position:absolute;
-    inset:-1px;
-    background: radial-gradient(600px 120px at 20% 0%, rgba(45,125,255,.16), transparent 55%),
-                radial-gradient(600px 120px at 80% 0%, rgba(25,195,125,.12), transparent 55%);
-    pointer-events:none;
-    opacity:.9;
-  }
-  .card > *{position:relative}
-
-  /* hero */
-  .hero h1{
-    margin:0 0 10px;
-    font-size: 30px;
-    line-height: 1.12;
-    letter-spacing: -.4px;
-  }
-  .hero p{
-    margin:0;
-    color: var(--muted);
-    font-size: 14.5px;
-    line-height: 1.55;
-  }
-
-  .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
-
-  /* buttons */
-  button, .btn{
-    cursor:pointer;
-    border:0;
-    border-radius: 16px;
-    padding: 12px 14px;
-    font-weight: 850;
-    font-size: 14px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    text-decoration:none;
-    color: var(--text);
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    transition: transform .12s ease, filter .12s ease, background .12s ease, border-color .12s ease;
-    user-select:none;
-  }
-  button:active, .btn:active{transform: translateY(1px) scale(.99)}
-  button:disabled{opacity:.65; cursor:not-allowed; transform:none !important}
-
-  .primary{
-    background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.78));
-    box-shadow: 0 14px 28px rgba(45,125,255,.18);
-  }
-  .primary:hover{filter: brightness(1.05)}
-  .ghost{
-    background: rgba(255,255,255,.055);
-    border:1px solid var(--stroke);
-  }
-  .ghost:hover{border-color: var(--stroke2)}
-  .danger{
-    background: rgba(255,77,79,.14);
-    border:1px solid rgba(255,77,79,.35);
-  }
-  .danger:hover{border-color: rgba(255,77,79,.55)}
-  .small{padding:10px 12px; border-radius:14px; font-size:13px}
-
-  .row{display:flex; gap:12px; flex-wrap:wrap}
-  .row > *{flex:1 1 220px}
-
-  /* form */
-  label{
-    display:block;
-    font-size: 12px;
-    color: var(--muted);
-    margin: 12px 0 7px;
-    font-weight: 750;
-    letter-spacing: .2px;
-  }
-
-  input[type="text"], textarea{
-    width:100%;
-    padding: 12px 12px;
-    border-radius: 16px;
-    border: 1px solid var(--stroke);
-    background: rgba(0,0,0,.22);
-    color: var(--text);
-    outline:none;
-    transition: border-color .12s ease, box-shadow .12s ease;
-  }
-  input[type="text"]:focus, textarea:focus{
-    border-color: rgba(45,125,255,.55);
-    box-shadow: 0 0 0 3px rgba(45,125,255,.16);
-  }
-  textarea{min-height:120px; resize:vertical}
-
-  .hint{
-    font-size:12.5px;
-    color: var(--muted);
-    margin-top:10px;
-    line-height:1.5;
-  }
-
-  /* toggle */
-  .toggle{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding: 12px 12px;
-    border-radius: 18px;
-    border:1px solid var(--stroke);
-    background: rgba(0,0,0,.18);
-    margin-top: 12px;
-  }
-  .toggle span{color:var(--muted); font-size:13px}
-  .toggle strong{font-size:13px; font-weight:900}
-  .toggle input{transform: scale(1.15)}
-
-  /* photo preview */
-  .preview{
-    margin-top: 12px;
-    display:none;
-    gap: 12px;
-    align-items:flex-start;
-    padding: 12px;
-    border-radius: 18px;
-    border:1px dashed rgba(255,255,255,.18);
-    background: rgba(0,0,0,.16);
-  }
-  .preview img{
-    width: 96px; height: 96px;
-    object-fit: cover;
-    border-radius: 18px;
-    border: 1px solid var(--stroke);
-    box-shadow: 0 10px 18px rgba(0,0,0,.30);
-  }
-  .preview .meta{font-size:12px; color:var(--muted); line-height:1.45}
-
-  /* pills */
-  .pill{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid var(--stroke);
-    color: var(--text);
-    font-size: 12px;
-    font-weight: 850;
-    box-shadow: 0 10px 24px rgba(0,0,0,.25);
-  }
-
-  /* list */
-  .list{display:grid; gap:10px; margin-top:12px}
-  .item{
-    padding: 12px;
-    border-radius: 18px;
-    background: rgba(0,0,0,.18);
-    border: 1px solid var(--stroke);
-    display:flex;
-    gap:12px;
-    align-items:flex-start;
-    transition: border-color .12s ease, transform .12s ease;
-  }
-  .item:hover{border-color: var(--stroke2)}
-  .thumb{
-    width: 72px; height: 72px;
-    border-radius: 18px;
-    border: 1px solid var(--stroke);
-    object-fit: cover;
-    background: rgba(255,255,255,.05);
-    box-shadow: 0 10px 18px rgba(0,0,0,.28);
-  }
-  .item h3{margin:0; font-size:14px; font-weight:900}
-  .item p{margin:6px 0 0; color:var(--muted); font-size:12.5px; line-height:1.45}
-  .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
-
-  /* router */
-  .hidden{display:none !important}
-  section{display:none}
-  section:not(.hidden){display:block}
-
-  /* ok box */
-  .ok{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding: 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(25,195,125,.35);
-    background: rgba(25,195,125,.12);
-  }
-
-  /* banner */
-  .banner{
-    position: sticky;
-    top: 10px;
-    z-index: 2000;
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:12px;
-    padding: 12px 12px;
-    border-radius: 18px;
-    border:1px solid var(--stroke);
-    background: rgba(255,255,255,.06);
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow2);
-    margin: 0 0 12px;
-  }
-  .banner .text{font-size:13px; line-height:1.35; color:var(--text)}
-  .banner .close{
-    flex:0 0 auto;
-    border:1px solid var(--stroke);
-    background: rgba(0,0,0,.20);
-    color: var(--text);
-    border-radius: 14px;
-    padding: 8px 10px;
-    font-weight: 950;
-  }
-  .banner.info{border-color: rgba(45,125,255,.35); background: rgba(45,125,255,.10)}
-  .banner.success{border-color: rgba(25,195,125,.35); background: rgba(25,195,125,.12)}
-  .banner.error{border-color: rgba(255,77,79,.35); background: rgba(255,77,79,.12)}
-
-  /* bottom nav */
-  nav.bottom{
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: rgba(9,14,28,.78);
-    border-top: 1px solid rgba(255,255,255,.10);
-    backdrop-filter: blur(12px);
-    z-index: 9999;
-  }
-  nav .inner{
-    max-width: 880px;
-    margin: 0 auto;
-    display:flex;
-    justify-content:space-around;
-    gap: 10px;
-    padding: 10px 12px;
-  }
-  nav a{
-    flex: 1;
-    text-align:center;
-    text-decoration:none;
-    color: var(--muted);
-    font-size: 12px;
-    padding: 10px 8px;
-    border-radius: 16px;
-    border: 1px solid transparent;
-    transition: background .12s ease, border-color .12s ease, transform .12s ease;
-  }
-  nav a:active{transform: translateY(1px)}
-  nav a.active{
-    color: var(--text);
-    background: rgba(255,255,255,.07);
-    border-color: rgba(255,255,255,.12);
-  }
-
-  /* micro-animazioni */
-  @media (prefers-reduced-motion: no-preference){
-    .card{animation: pop .18s ease both}
-    @keyframes pop{
-      from{transform: translateY(6px); opacity:.0}
-      to{transform: translateY(0); opacity:1}
+    @media (prefers-reduced-motion: no-preference){
+      .card{animation: pop .18s ease both}
+      @keyframes pop{
+        from{transform: translateY(6px); opacity:.0}
+        to{transform: translateY(0); opacity:1}
+      }
     }
-  }
-</style>
+  </style>
 </head>
 
 <body>
@@ -539,7 +386,7 @@
         <div class="logo"></div>
         <div>
           <div class="title">SegnalaFacile</div>
-          <div class="badge">PWA installabile • salvataggio locale + invio gruppo TelegramSegnala Facile</div>
+          <div class="badge">Invia segnalazioni in modo semplice e riservato</div>
         </div>
       </div>
       <button class="pill" id="installPill" style="display:none; cursor:pointer;" type="button">⬇️ Installa</button>
@@ -554,20 +401,20 @@
     <section id="view-home" class="grid">
       <div class="card hero">
         <h1>Invia una segnalazione in pochi secondi</h1>
-        <p>Descrivi il problema, aggiungi una foto e invia. Niente messaggi sparsi: tutto ordinato e tracciabile.</p>
+        <p>Descrivi il problema, aggiungi una foto e invia. Il tuo storico rimane sul dispositivo.</p>
         <div class="btnRow">
           <a class="btn primary" href="#/report">📝 Invia segnalazione</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti rapidi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
         </div>
-        <div class="hint">Nessuna registrazione richiesta. Salvataggio locale + inoltro su gruppo Telegram Segnala Facile.</div>
+        <div class="hint">Nessuna registrazione richiesta. Puoi scegliere anche l’invio anonimo.</div>
       </div>
 
       <div class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
           <div>
             <div style="font-weight:800;margin-bottom:4px">Come funziona</div>
-            <div class="hint" style="margin:0">1) Compili • 2) Aggiungi foto (camera o galleria) • 3) Invi • 4) Ti resta lo storico</div>
+            <div class="hint" style="margin:0">1) Compili • 2) Aggiungi foto • 3) Invi • 4) Ti resta lo storico</div>
           </div>
           <a class="btn small ghost" href="#/report">Prova ora →</a>
         </div>
@@ -597,7 +444,6 @@
           <button class="ghost" id="btnPickGallery" type="button">🖼️ Scegli dalla galleria</button>
 
           <input id="fotoCamera" type="file" accept="image/*" capture="environment" class="hidden" />
-          <!-- ✅ MULTIPLE per più foto da galleria -->
           <input id="fotoGallery" type="file" accept="image/*" multiple class="hidden" />
 
           <button class="danger" id="btnClearPhoto" type="button">🧹 Rimuovi</button>
@@ -605,7 +451,7 @@
 
         <div id="photoPreview" class="preview">
           <div style="display:flex;flex-direction:column;gap:8px;min-width:160px">
-            <div style="font-weight:800;color:var(--text)">Anteprima foto</div>
+            <div style="font-weight:800;color:var(--text)">Foto selezionate</div>
             <div id="photoMeta" class="meta"></div>
           </div>
           <div class="thumbs" id="thumbs"></div>
@@ -613,7 +459,7 @@
 
         <div class="toggle">
           <div>
-            <strong>Invia anche in forma anonima</strong><br>
+            <strong>Invio anonimo</strong><br>
             <span>Nessun nome richiesto</span>
           </div>
           <input id="anonimo" type="checkbox" />
@@ -625,7 +471,7 @@
         </div>
 
         <div class="hint">
-          Nota: salvataggio locale + inoltro su gruppo Telegram Segnala Facile.
+          Suggerimento: inserisci dettagli utili (luogo, orario, riferimenti).
         </div>
       </div>
     </section>
@@ -636,8 +482,8 @@
         <div class="ok">
           <div style="font-size:22px">✅</div>
           <div>
-            <div style="font-weight:900;font-size:18px">Segnalazione inviata correttamente</div>
-            <div class="hint" style="margin:6px 0 0">Salvata in locale e inoltrata su gruppo Telegram Segnala Facile.</div>
+            <div style="font-weight:900;font-size:18px">Segnalazione inviata</div>
+            <div class="hint" style="margin:6px 0 0">La segnalazione è stata registrata correttamente.</div>
           </div>
         </div>
 
@@ -676,8 +522,8 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:900;font-size:18px">Contatti rapidi</div>
-            <div class="hint" style="margin:6px 0 0">Un solo punto di contatto. Niente messaggi persi.</div>
+            <div style="font-weight:900;font-size:18px">Contatti</div>
+            <div class="hint" style="margin:6px 0 0">Per informazioni o comunicazioni.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
@@ -688,7 +534,7 @@
         </div>
 
         <div class="hint" style="margin-top:12px">
-          Modifica questi contatti dentro <b>index.html</b> nella sezione “CONFIG”.
+          Se vuoi, puoi inviare una comunicazione via email.
         </div>
       </div>
     </section>
@@ -711,7 +557,7 @@
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
 
-      // Worker (invio segnalazioni a Telegram)
+      // Invio segnalazioni (backend)
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026"
     };
@@ -797,7 +643,7 @@
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts links (solo Email + Mappa)
+    // Contacts links (Email + Mappa)
     // =========================
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
@@ -843,7 +689,6 @@
     const photoMeta = document.getElementById("photoMeta");
     const thumbs = document.getElementById("thumbs");
 
-    // ✅ array di foto
     let photos = []; // [{dataUrl, name, type, blobSize}]
 
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
@@ -901,7 +746,7 @@
 
       preview.style.display = "flex";
       const totalBytes = photos.reduce((s,p) => s + (p.blobSize || 0), 0);
-      photoMeta.textContent = `${photos.length} foto selezionate • ${formatBytes(totalBytes)} (totale)`;
+      photoMeta.textContent = `${photos.length} foto • ${formatBytes(totalBytes)} (totale)`;
 
       photos.forEach(p => {
         const im = document.createElement("img");
@@ -917,12 +762,11 @@
 
       if(replace) photos = [];
 
-      // limite sicurezza: max 6 foto (puoi aumentare)
       const MAX = 6;
       const space = MAX - photos.length;
       const picked = files.slice(0, Math.max(0, space));
       if(files.length > picked.length){
-        showBanner("info", `Puoi inviare al massimo ${MAX} foto. Selezionate le prime ${picked.length}.`, 4500);
+        showBanner("info", `Puoi allegare al massimo ${MAX} foto.`, 4500);
       }
 
       for(const f of picked){
@@ -936,12 +780,10 @@
     }
 
     elFotoCamera.addEventListener("change", async (e) => {
-      // fotocamera: sostituisce (di solito 1 foto)
       await addFiles(e.target.files, true);
     });
 
     elFotoGallery.addEventListener("change", async (e) => {
-      // galleria: aggiunge (multiple)
       await addFiles(e.target.files, false);
     });
 
@@ -978,15 +820,19 @@
 
         const meta = document.createElement("div");
         meta.className = "metaRow";
+
         const pill1 = document.createElement("span");
         pill1.className = "pill";
         pill1.textContent = "🕒 " + (r.when || "");
+
         const pill2 = document.createElement("span");
         pill2.className = "pill";
         pill2.textContent = "🕶️ " + (r.anonimo ? "Anonimo" : "Non anonimo");
+
         const pill3 = document.createElement("span");
         pill3.className = "pill";
         pill3.textContent = r.photoDataUrl ? "📷 Foto" : "📷 Nessuna foto";
+
         meta.append(pill1,pill2,pill3);
 
         body.append(h3,p,meta);
@@ -1038,8 +884,6 @@
       showBanner("info", "Invio in corso…");
 
       const now = new Date();
-
-      // compatibilità: prima foto come "photo" + tutte in "photos"
       const first = photos[0] || null;
 
       const payload = {
@@ -1047,16 +891,14 @@
         descrizione,
         anonimo: !!elAnonimo.checked,
         when: now.toLocaleString("it-IT"),
-        source: "SegnalaFacile PWA",
+        source: "SegnalaFacile",
 
-        // ✅ per worker attuale (singola foto)
         photo: first ? {
           dataUrl: first.dataUrl,
           name: first.name || "foto.jpg",
           type: first.type || "image/jpeg"
         } : null,
 
-        // ✅ pronto per worker multi-foto (se lo aggiorniamo dopo)
         photos: photos.map(p => ({
           dataUrl: p.dataUrl,
           name: p.name || "foto.jpg",
@@ -1064,7 +906,6 @@
         }))
       };
 
-      // salva in locale SEMPRE (qui salviamo solo la prima come miniatura nello storico)
       const arr = loadReports();
       arr.push({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
@@ -1080,12 +921,12 @@
         await sendToTelegramWorker(payload);
         hideBanner();
         location.hash = "#/success";
-        showBanner("success", "Segnalazione salvata e inoltrata su Telegram ✅", 4000);
+        showBanner("success", "Segnalazione inviata ✅", 4000);
       }catch(e){
         hideBanner();
         location.hash = "#/success";
-        showBanner("error", "Telegram non ha inoltrato (nessun dato perso).", 6000);
-        console.warn("Telegram/Worker error:", e);
+        showBanner("error", "Invio non riuscito (nessun dato perso).", 6000);
+        console.warn("Worker error:", e);
       }finally{
         btnSend.disabled = false;
       }
