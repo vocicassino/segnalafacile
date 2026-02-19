@@ -13,8 +13,8 @@
   <style>
     :root{
       --bg:#0b1220;
-      --bg2:#070c18;
-      --text:#eaf0ff;
+      --bg2:#060a14;
+      --text:#eef3ff;
       --muted:#a9b6db;
 
       --accent:#2d7dff;
@@ -22,35 +22,39 @@
       --danger:#ff4d4f;
 
       --stroke:rgba(255,255,255,.10);
-      --stroke2:rgba(255,255,255,.14);
+      --stroke2:rgba(255,255,255,.16);
 
       --r:20px;
-      --r2:26px;
+      --r2:28px;
 
-      --shadow: 0 18px 45px rgba(0,0,0,.40);
-      --shadow2: 0 10px 25px rgba(0,0,0,.35);
+      --shadow: 0 22px 55px rgba(0,0,0,.44);
+      --shadow2: 0 12px 30px rgba(0,0,0,.36);
 
-      --glass1: rgba(255,255,255,.075);
+      --glass1: rgba(255,255,255,.085);
       --glass2: rgba(255,255,255,.035);
+
+      --glowA: rgba(45,125,255,.28);
+      --glowB: rgba(25,195,125,.18);
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
+
     body{
       margin:0;
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
       color:var(--text);
       background:
-        radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 55%),
-        radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 60%),
-        radial-gradient(900px 650px at 50% 120%, rgba(45,125,255,.12), transparent 60%),
+        radial-gradient(1200px 800px at 18% -12%, rgba(45,125,255,.34), transparent 58%),
+        radial-gradient(1100px 720px at 86% 6%, rgba(25,195,125,.22), transparent 60%),
+        radial-gradient(900px 650px at 55% 115%, rgba(45,125,255,.14), transparent 60%),
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
 
     .wrap{
-      max-width: 880px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 20px 16px 92px;
+      padding: 18px 16px 96px;
     }
 
     header{
@@ -58,54 +62,76 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding: 12px 0 10px;
+      padding: 10px 0 12px;
     }
 
     .brand{display:flex; align-items:center; gap:14px;}
-
-    /* ✅ icona più grande e più “premium” */
     .logo{
-      width:58px;
-      height:58px;
-      border-radius:18px;
+      width:58px; height:58px; border-radius:18px;
       background:
         url("icons/icon-192.png") center/cover no-repeat,
-        linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
-      box-shadow: 0 16px 35px rgba(0,0,0,.42);
-      outline: 1px solid rgba(255,255,255,.12);
+        linear-gradient(135deg, rgba(45,125,255,.98), rgba(25,195,125,.92));
+      box-shadow: 0 16px 40px rgba(0,0,0,.45);
+      outline: 1px solid rgba(255,255,255,.10);
       position: relative;
-      overflow: hidden;
+      overflow:hidden;
     }
     .logo::after{
       content:"";
       position:absolute;
-      inset:-40%;
-      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), transparent 55%);
+      inset:-20%;
+      background: radial-gradient(120px 120px at 25% 20%, rgba(255,255,255,.25), transparent 60%);
       transform: rotate(12deg);
+      opacity:.9;
       pointer-events:none;
     }
 
-    /* ✅ titolo più grande */
     .title{
-      font-size: 21px;
+      font-size: 22px;
       font-weight: 950;
       letter-spacing: .2px;
-      line-height: 1.08;
+      line-height: 1.05;
+      text-shadow: 0 8px 30px rgba(0,0,0,.35);
     }
-
-    /* ✅ badge senza riferimenti a Telegram/gruppi */
     .badge{
       font-size:12px;
       color: var(--muted);
-      border: 1px solid var(--stroke);
-      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,.045);
-      backdrop-filter: blur(8px);
+      background: rgba(255,255,255,.05);
+      backdrop-filter: blur(10px);
       margin-top: 7px;
       display:inline-flex;
       align-items:center;
       gap:8px;
+      max-width: 520px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: var(--shadow2);
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .pill:active{transform: translateY(1px)}
+    #installPill{
+      background: linear-gradient(135deg, rgba(45,125,255,.18), rgba(255,255,255,.06));
+      border-color: rgba(45,125,255,.25);
     }
 
     .grid{display:grid; gap:14px}
@@ -116,32 +142,39 @@
       border-radius: var(--r2);
       padding: 16px;
       box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
       position: relative;
       overflow: hidden;
     }
     .card::before{
       content:"";
       position:absolute;
-      inset:-1px;
+      inset:-2px;
       background:
-        radial-gradient(600px 120px at 20% 0%, rgba(45,125,255,.16), transparent 55%),
-        radial-gradient(600px 120px at 80% 0%, rgba(25,195,125,.12), transparent 55%);
-      pointer-events:none;
+        radial-gradient(700px 140px at 20% 0%, var(--glowA), transparent 60%),
+        radial-gradient(700px 140px at 80% 0%, var(--glowB), transparent 60%);
       opacity:.9;
+      pointer-events:none;
     }
     .card > *{position:relative}
 
     .hero h1{
       margin:0 0 10px;
-      font-size: 30px;
-      line-height: 1.12;
-      letter-spacing: -.4px;
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: -.6px;
+    }
+    .hero h1 .hl{
+      background: linear-gradient(90deg, rgba(45,125,255,1), rgba(25,195,125,.95));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
     }
     .hero p{
       margin:0;
       color: var(--muted);
-      font-size: 14.5px;
+      font-size: 15px;
       line-height: 1.55;
     }
 
@@ -150,9 +183,9 @@
     button, .btn{
       cursor:pointer;
       border:0;
-      border-radius: 16px;
-      padding: 12px 14px;
-      font-weight: 850;
+      border-radius: 18px;
+      padding: 13px 14px;
+      font-weight: 950;
       font-size: 14px;
       display:inline-flex;
       align-items:center;
@@ -164,18 +197,20 @@
       touch-action: manipulation;
       transition: transform .12s ease, filter .12s ease, background .12s ease, border-color .12s ease;
       user-select:none;
+      min-height: 48px;
     }
     button:active, .btn:active{transform: translateY(1px) scale(.99)}
     button:disabled{opacity:.65; cursor:not-allowed; transform:none !important}
 
     .primary{
-      background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.78));
-      box-shadow: 0 14px 28px rgba(45,125,255,.18);
+      background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.72));
+      box-shadow: 0 18px 34px rgba(45,125,255,.18);
+      border: 1px solid rgba(45,125,255,.25);
     }
-    .primary:hover{filter: brightness(1.05)}
+    .primary:hover{filter: brightness(1.06)}
     .ghost{
       background: rgba(255,255,255,.055);
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.12);
     }
     .ghost:hover{border-color: var(--stroke2)}
     .danger{
@@ -183,7 +218,7 @@
       border:1px solid rgba(255,77,79,.35);
     }
     .danger:hover{border-color: rgba(255,77,79,.55)}
-    .small{padding:10px 12px; border-radius:14px; font-size:13px}
+    .small{padding:10px 12px; border-radius:16px; font-size:13px; min-height: 42px}
 
     .row{display:flex; gap:12px; flex-wrap:wrap}
     .row > *{flex:1 1 220px}
@@ -193,31 +228,31 @@
       font-size: 12px;
       color: var(--muted);
       margin: 12px 0 7px;
-      font-weight: 750;
+      font-weight: 900;
       letter-spacing: .2px;
     }
 
     input[type="text"], textarea{
       width:100%;
-      padding: 12px 12px;
-      border-radius: 16px;
-      border: 1px solid var(--stroke);
+      padding: 13px 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.22);
       color: var(--text);
       outline:none;
       transition: border-color .12s ease, box-shadow .12s ease;
     }
     input[type="text"]:focus, textarea:focus{
-      border-color: rgba(45,125,255,.55);
+      border-color: rgba(45,125,255,.60);
       box-shadow: 0 0 0 3px rgba(45,125,255,.16);
     }
     textarea{min-height:120px; resize:vertical}
 
     .hint{
-      font-size:12.5px;
+      font-size:13px;
       color: var(--muted);
       margin-top:10px;
-      line-height:1.5;
+      line-height:1.55;
     }
 
     .toggle{
@@ -226,14 +261,14 @@
       justify-content:space-between;
       gap:12px;
       padding: 12px 12px;
-      border-radius: 18px;
-      border:1px solid var(--stroke);
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.18);
       margin-top: 12px;
     }
     .toggle span{color:var(--muted); font-size:13px}
-    .toggle strong{font-size:13px; font-weight:900}
-    .toggle input{transform: scale(1.15)}
+    .toggle strong{font-size:13px; font-weight:950}
+    .toggle input{transform: scale(1.18)}
 
     .preview{
       margin-top: 12px;
@@ -241,72 +276,60 @@
       gap: 12px;
       align-items:flex-start;
       padding: 12px;
-      border-radius: 18px;
-      border:1px dashed rgba(255,255,255,.18);
+      border-radius: 20px;
+      border:1px dashed rgba(255,255,255,.20);
       background: rgba(0,0,0,.16);
     }
-    .preview img{
-      width: 96px; height: 96px;
-      object-fit: cover;
-      border-radius: 18px;
-      border: 1px solid var(--stroke);
-      box-shadow: 0 10px 18px rgba(0,0,0,.30);
-    }
-    .preview .meta{font-size:12px; color:var(--muted); line-height:1.45}
-
     .thumbs{
       display:flex;
       flex-wrap:wrap;
-      gap:8px;
+      gap:10px;
       align-items:flex-start;
       padding:2px;
     }
     .thumbs img{
-      width:72px;
-      height:72px;
+      width:78px;
+      height:78px;
       object-fit:cover;
-      border-radius:14px;
-      border:1px solid var(--stroke);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.05);
+      box-shadow: 0 10px 18px rgba(0,0,0,.28);
     }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid var(--stroke);
-      color: var(--text);
-      font-size: 12px;
-      font-weight: 850;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
-    }
+    .preview .meta{font-size:12px; color:var(--muted); line-height:1.45}
 
     .list{display:grid; gap:10px; margin-top:12px}
     .item{
       padding: 12px;
-      border-radius: 18px;
+      border-radius: 20px;
       background: rgba(0,0,0,.18);
-      border: 1px solid var(--stroke);
+      border: 1px solid rgba(255,255,255,.12);
       display:flex;
       gap:12px;
       align-items:flex-start;
       transition: border-color .12s ease, transform .12s ease;
     }
-    .item:hover{border-color: var(--stroke2)}
+    .item:active{transform: translateY(1px)}
     .thumb{
-      width: 72px; height: 72px;
-      border-radius: 18px;
-      border: 1px solid var(--stroke);
+      width: 78px; height: 78px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.12);
       object-fit: cover;
       background: rgba(255,255,255,.05);
       box-shadow: 0 10px 18px rgba(0,0,0,.28);
     }
-    .item h3{margin:0; font-size:14px; font-weight:900}
-    .item p{margin:6px 0 0; color:var(--muted); font-size:12.5px; line-height:1.45}
+    .item h3{margin:0; font-size:14px; font-weight:950}
+    .item p{margin:6px 0 0; color:var(--muted); font-size:12.8px; line-height:1.45}
     .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
+    .metaRow .pillSmall{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      font-size:12px;
+      font-weight:900;
+    }
 
     .hidden{display:none !important}
     section{display:none}
@@ -317,7 +340,7 @@
       align-items:center;
       gap:12px;
       padding: 14px;
-      border-radius: 20px;
+      border-radius: 22px;
       border: 1px solid rgba(25,195,125,.35);
       background: rgba(25,195,125,.12);
     }
@@ -331,21 +354,21 @@
       justify-content:space-between;
       gap:12px;
       padding: 12px 12px;
-      border-radius: 18px;
-      border:1px solid var(--stroke);
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.06);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
       box-shadow: var(--shadow2);
       margin: 0 0 12px;
     }
     .banner .text{font-size:13px; line-height:1.35; color:var(--text)}
     .banner .close{
       flex:0 0 auto;
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.20);
       color: var(--text);
-      border-radius: 14px;
-      padding: 8px 10px;
+      border-radius: 16px;
+      padding: 9px 11px;
       font-weight: 950;
     }
     .banner.info{border-color: rgba(45,125,255,.35); background: rgba(45,125,255,.10)}
@@ -355,13 +378,13 @@
     nav.bottom{
       position: fixed;
       left: 0; right: 0; bottom: 0;
-      background: rgba(9,14,28,.78);
+      background: rgba(9,14,28,.82);
       border-top: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
       z-index: 9999;
     }
     nav .inner{
-      max-width: 880px;
+      max-width: 900px;
       margin: 0 auto;
       display:flex;
       justify-content:space-around;
@@ -372,24 +395,25 @@
       flex: 1;
       text-align:center;
       text-decoration:none;
-      color: var(--muted);
+      color: rgba(169,182,219,.95);
       font-size: 12px;
       padding: 10px 8px;
-      border-radius: 16px;
+      border-radius: 18px;
       border: 1px solid transparent;
-      transition: background .12s ease, border-color .12s ease, transform .12s ease;
+      transition: background .12s ease, border-color .12s ease, transform .12s ease, box-shadow .12s ease;
     }
     nav a:active{transform: translateY(1px)}
     nav a.active{
       color: var(--text);
-      background: rgba(255,255,255,.07);
-      border-color: rgba(255,255,255,.12);
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.14);
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
     }
 
     @media (prefers-reduced-motion: no-preference){
       .card{animation: pop .18s ease both}
       @keyframes pop{
-        from{transform: translateY(6px); opacity:.0}
+        from{transform: translateY(8px); opacity:0}
         to{transform: translateY(0); opacity:1}
       }
     }
@@ -403,7 +427,9 @@
         <div class="logo" aria-hidden="true"></div>
         <div>
           <div class="title">SegnalaFacile</div>
-          <div class="badge">✨ PWA installabile • salvataggio locale + invio segnalazioni</div>
+
+          <!-- ✅ BADGE RIPULITO: niente PWA / niente salvataggio / niente invio -->
+          <div class="badge">📩 Invia segnalazioni</div>
         </div>
       </div>
       <button class="pill" id="installPill" style="display:none; cursor:pointer;" type="button">⬇️ Installa</button>
@@ -417,7 +443,7 @@
     <!-- HOME -->
     <section id="view-home" class="grid">
       <div class="card hero">
-        <h1>Invia una segnalazione in pochi secondi</h1>
+        <h1>Invia una segnalazione <span class="hl">in pochi secondi</span></h1>
         <p>Descrivi il problema, aggiungi una o più foto e invia. Niente messaggi sparsi: tutto ordinato e tracciabile.</p>
         <div class="btnRow">
           <a class="btn primary" href="#/report">📝 Invia segnalazione</a>
@@ -430,7 +456,7 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
           <div>
-            <div style="font-weight:900;margin-bottom:4px">Come funziona</div>
+            <div style="font-weight:950;margin-bottom:4px;font-size:16px">Come funziona</div>
             <div class="hint" style="margin:0">1) Compili • 2) Aggiungi foto (camera o galleria) • 3) Invi • 4) Ti resta lo storico</div>
           </div>
           <a class="btn small ghost" href="#/report">Prova ora →</a>
@@ -467,8 +493,8 @@
         </div>
 
         <div id="photoPreview" class="preview">
-          <div style="display:flex;flex-direction:column;gap:8px;min-width:160px">
-            <div style="font-weight:900;color:var(--text)">Anteprima foto</div>
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
+            <div style="font-weight:950;color:var(--text);font-size:14px">Anteprima foto</div>
             <div id="photoMeta" class="meta"></div>
           </div>
           <div class="thumbs" id="thumbs"></div>
@@ -487,9 +513,7 @@
           <a class="btn ghost" href="#/my">🗂️ Vedi storico</a>
         </div>
 
-        <div class="hint">
-          Nota: la segnalazione viene salvata sul dispositivo e inviata automaticamente.
-        </div>
+        <div class="hint">Nota: salvataggio locale + invio segnalazioni.</div>
       </div>
     </section>
 
@@ -497,10 +521,10 @@
     <section id="view-success" class="grid hidden">
       <div class="card">
         <div class="ok">
-          <div style="font-size:22px">✅</div>
+          <div style="font-size:24px">✅</div>
           <div>
-            <div style="font-weight:950;font-size:18px">Segnalazione inviata correttamente</div>
-            <div class="hint" style="margin:6px 0 0">Salvata in locale e inviata automaticamente.</div>
+            <div style="font-weight:950;font-size:18px">Segnalazione inviata</div>
+            <div class="hint" style="margin:6px 0 0">Salvata sul dispositivo e inviata automaticamente.</div>
           </div>
         </div>
 
@@ -540,18 +564,14 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
             <div style="font-weight:950;font-size:18px">Contatti rapidi</div>
-            <div class="hint" style="margin:6px 0 0">Per richieste o informazioni generali.</div>
+            <div class="hint" style="margin:6px 0 0">Per contattarci usa l’email. Per inviare segnalazioni usa la sezione “Segnala”.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
 
         <div class="btnRow" style="margin-top:14px">
-          <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
+          <a class="btn primary" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
-        </div>
-
-        <div class="hint" style="margin-top:12px">
-          Per l’invio di segnalazioni usa la sezione <b>Segnala</b>.
         </div>
       </div>
     </section>
@@ -660,7 +680,7 @@
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts links (solo Email + Mappa)
+    // Contacts links
     // =========================
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
@@ -837,15 +857,19 @@
 
         const meta = document.createElement("div");
         meta.className = "metaRow";
+
         const pill1 = document.createElement("span");
-        pill1.className = "pill";
+        pill1.className = "pillSmall";
         pill1.textContent = "🕒 " + (r.when || "");
+
         const pill2 = document.createElement("span");
-        pill2.className = "pill";
+        pill2.className = "pillSmall";
         pill2.textContent = "🕶️ " + (r.anonimo ? "Anonimo" : "Non anonimo");
+
         const pill3 = document.createElement("span");
-        pill3.className = "pill";
+        pill3.className = "pillSmall";
         pill3.textContent = r.photoDataUrl ? "📷 Foto" : "📷 Nessuna foto";
+
         meta.append(pill1,pill2,pill3);
 
         body.append(h3,p,meta);
@@ -905,13 +929,11 @@
         anonimo: !!elAnonimo.checked,
         when: now.toLocaleString("it-IT"),
         source: "SegnalaFacile PWA",
-
         photo: first ? {
           dataUrl: first.dataUrl,
           name: first.name || "foto.jpg",
           type: first.type || "image/jpeg"
         } : null,
-
         photos: photos.map(p => ({
           dataUrl: p.dataUrl,
           name: p.name || "foto.jpg",
@@ -934,11 +956,11 @@
         await sendToTelegramWorker(payload);
         hideBanner();
         location.hash = "#/success";
-        showBanner("success", "Segnalazione inviata ✅", 4000);
+        showBanner("success", "Segnalazione salvata e inviata ✅", 4000);
       }catch(e){
         hideBanner();
         location.hash = "#/success";
-        showBanner("error", "Invio non riuscito (nessun dato perso).", 6000);
+        showBanner("error", "Invio automatico non riuscito (nessun dato perso).", 6000);
         console.warn("Worker error:", e);
       }finally{
         btnSend.disabled = false;
