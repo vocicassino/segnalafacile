@@ -25,7 +25,7 @@
       --stroke2:rgba(255,255,255,.14);
 
       --r:20px;
-      --r2:28px;
+      --r2:26px;
 
       --shadow: 0 18px 45px rgba(0,0,0,.40);
       --shadow2: 0 10px 25px rgba(0,0,0,.35);
@@ -48,9 +48,9 @@
     }
 
     .wrap{
-      max-width: 920px;
+      max-width: 880px;
       margin: 0 auto;
-      padding: 18px 16px 104px;
+      padding: 20px 16px 92px;
     }
 
     header{
@@ -62,44 +62,27 @@
     }
 
     .brand{display:flex; align-items:center; gap:16px;}
+
+    /* ✅ logo più grande e predominante */
     .logo{
-      width:76px; height:76px; border-radius:24px;
+      width:76px;
+      height:76px;
+      border-radius:24px;
       background:
         url("icons/icon-192.png") center/cover no-repeat,
         linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
       box-shadow: var(--shadow2);
       outline: 1px solid rgba(255,255,255,.12);
       position: relative;
-      overflow: hidden;
-    }
-    .logo::after{
-      content:"";
-      position:absolute;
-      inset:-40%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 45%);
-      transform: rotate(25deg);
-      opacity: .7;
+      overflow:hidden;
     }
 
+    /* ✅ titolo più grande */
     .title{
       font-size: 26px;
       font-weight: 1000;
       letter-spacing: .2px;
       line-height: 1.05;
-    }
-
-    .badge{
-      font-size:12.5px;
-      color: var(--muted);
-      border: 1px solid var(--stroke);
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.05);
-      backdrop-filter: blur(8px);
-      margin-top: 6px;
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
     }
 
     .grid{display:grid; gap:14px}
@@ -118,24 +101,23 @@
       content:"";
       position:absolute;
       inset:-1px;
-      background:
-        radial-gradient(600px 140px at 15% 0%, rgba(45,125,255,.18), transparent 55%),
-        radial-gradient(600px 140px at 85% 0%, rgba(25,195,125,.14), transparent 55%);
+      background: radial-gradient(600px 120px at 20% 0%, rgba(45,125,255,.16), transparent 55%),
+                  radial-gradient(600px 120px at 80% 0%, rgba(25,195,125,.12), transparent 55%);
       pointer-events:none;
-      opacity:.95;
+      opacity:.9;
     }
     .card > *{position:relative}
 
     .hero h1{
       margin:0 0 10px;
-      font-size: 34px;
-      line-height: 1.08;
-      letter-spacing: -.6px;
+      font-size: 30px;
+      line-height: 1.12;
+      letter-spacing: -.4px;
     }
     .hero p{
       margin:0;
       color: var(--muted);
-      font-size: 15px;
+      font-size: 14.5px;
       line-height: 1.55;
     }
 
@@ -144,10 +126,10 @@
     button, .btn{
       cursor:pointer;
       border:0;
-      border-radius: 18px;
-      padding: 13px 14px;
-      font-weight: 900;
-      font-size: 14.5px;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-weight: 850;
+      font-size: 14px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -158,16 +140,15 @@
       touch-action: manipulation;
       transition: transform .12s ease, filter .12s ease, background .12s ease, border-color .12s ease;
       user-select:none;
-      min-height: 48px;
     }
     button:active, .btn:active{transform: translateY(1px) scale(.99)}
     button:disabled{opacity:.65; cursor:not-allowed; transform:none !important}
 
     .primary{
       background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.78));
-      box-shadow: 0 14px 28px rgba(45,125,255,.20);
+      box-shadow: 0 14px 28px rgba(45,125,255,.18);
     }
-    .primary:hover{filter: brightness(1.06)}
+    .primary:hover{filter: brightness(1.05)}
     .ghost{
       background: rgba(255,255,255,.055);
       border:1px solid var(--stroke);
@@ -178,7 +159,7 @@
       border:1px solid rgba(255,77,79,.35);
     }
     .danger:hover{border-color: rgba(255,77,79,.55)}
-    .small{padding:10px 12px; border-radius:16px; font-size:13.5px; min-height: 44px}
+    .small{padding:10px 12px; border-radius:14px; font-size:13px}
 
     .row{display:flex; gap:12px; flex-wrap:wrap}
     .row > *{flex:1 1 220px}
@@ -188,29 +169,28 @@
       font-size: 12px;
       color: var(--muted);
       margin: 12px 0 7px;
-      font-weight: 850;
+      font-weight: 750;
       letter-spacing: .2px;
     }
 
-    input[type="text"], textarea{
+    input[type="text"], input[type="email"], input[type="tel"], textarea{
       width:100%;
       padding: 12px 12px;
-      border-radius: 18px;
+      border-radius: 16px;
       border: 1px solid var(--stroke);
       background: rgba(0,0,0,.22);
       color: var(--text);
       outline:none;
       transition: border-color .12s ease, box-shadow .12s ease;
-      font-size: 15px;
     }
-    input[type="text"]:focus, textarea:focus{
+    input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, textarea:focus{
       border-color: rgba(45,125,255,.55);
       box-shadow: 0 0 0 3px rgba(45,125,255,.16);
     }
-    textarea{min-height:128px; resize:vertical}
+    textarea{min-height:120px; resize:vertical}
 
     .hint{
-      font-size:13px;
+      font-size:12.5px;
       color: var(--muted);
       margin-top:10px;
       line-height:1.5;
@@ -222,14 +202,39 @@
       justify-content:space-between;
       gap:12px;
       padding: 12px 12px;
-      border-radius: 20px;
+      border-radius: 18px;
       border:1px solid var(--stroke);
       background: rgba(0,0,0,.18);
       margin-top: 12px;
     }
-    .toggle span{color:var(--muted); font-size:13.5px}
-    .toggle strong{font-size:13.5px; font-weight:950}
+    .toggle span{color:var(--muted); font-size:13px}
+    .toggle strong{font-size:13px; font-weight:900}
     .toggle input{transform: scale(1.15)}
+
+    /* ✅ box dati segnalante */
+    .senderBox{
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.16);
+    }
+    .senderHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom: 6px;
+    }
+    .senderHead .t{
+      font-weight: 950;
+      font-size: 13px;
+    }
+    .senderHead .sub{
+      color: var(--muted);
+      font-size: 12px;
+    }
 
     .preview{
       margin-top: 12px;
@@ -237,47 +242,46 @@
       gap: 12px;
       align-items:flex-start;
       padding: 12px;
-      border-radius: 20px;
+      border-radius: 18px;
       border:1px dashed rgba(255,255,255,.18);
       background: rgba(0,0,0,.16);
     }
-    .preview .meta{font-size:12.5px; color:var(--muted); line-height:1.45}
+    .preview .meta{font-size:12px; color:var(--muted); line-height:1.45}
 
     .thumbs{
       display:flex;
       flex-wrap:wrap;
-      gap:10px;
+      gap:8px;
       align-items:flex-start;
       padding:2px;
     }
     .thumbs img{
-      width:78px;
-      height:78px;
+      width:72px;
+      height:72px;
       object-fit:cover;
-      border-radius:18px;
+      border-radius:14px;
       border:1px solid var(--stroke);
       background:rgba(255,255,255,.05);
-      box-shadow: 0 10px 18px rgba(0,0,0,.30);
     }
 
     .pill{
       display:inline-flex;
       align-items:center;
       gap:8px;
-      padding: 9px 12px;
+      padding: 8px 12px;
       border-radius: 999px;
       background: rgba(255,255,255,.06);
       border: 1px solid var(--stroke);
       color: var(--text);
       font-size: 12px;
-      font-weight: 900;
-      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+      font-weight: 850;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
     }
 
     .list{display:grid; gap:10px; margin-top:12px}
     .item{
       padding: 12px;
-      border-radius: 20px;
+      border-radius: 18px;
       background: rgba(0,0,0,.18);
       border: 1px solid var(--stroke);
       display:flex;
@@ -287,15 +291,15 @@
     }
     .item:hover{border-color: var(--stroke2)}
     .thumb{
-      width: 74px; height: 74px;
-      border-radius: 20px;
+      width: 72px; height: 72px;
+      border-radius: 18px;
       border: 1px solid var(--stroke);
       object-fit: cover;
       background: rgba(255,255,255,.05);
       box-shadow: 0 10px 18px rgba(0,0,0,.28);
     }
-    .item h3{margin:0; font-size:15px; font-weight:950}
-    .item p{margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.45}
+    .item h3{margin:0; font-size:14px; font-weight:900}
+    .item p{margin:6px 0 0; color:var(--muted); font-size:12.5px; line-height:1.45}
     .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
 
     .hidden{display:none !important}
@@ -307,7 +311,7 @@
       align-items:center;
       gap:12px;
       padding: 14px;
-      border-radius: 22px;
+      border-radius: 20px;
       border: 1px solid rgba(25,195,125,.35);
       background: rgba(25,195,125,.12);
     }
@@ -321,7 +325,7 @@
       justify-content:space-between;
       gap:12px;
       padding: 12px 12px;
-      border-radius: 20px;
+      border-radius: 18px;
       border:1px solid var(--stroke);
       background: rgba(255,255,255,.06);
       backdrop-filter: blur(10px);
@@ -334,7 +338,7 @@
       border:1px solid var(--stroke);
       background: rgba(0,0,0,.20);
       color: var(--text);
-      border-radius: 16px;
+      border-radius: 14px;
       padding: 8px 10px;
       font-weight: 950;
     }
@@ -342,17 +346,17 @@
     .banner.success{border-color: rgba(25,195,125,.35); background: rgba(25,195,125,.12)}
     .banner.error{border-color: rgba(255,77,79,.35); background: rgba(255,77,79,.12)}
 
+    /* ✅ bottom nav con icone più grandi e d'effetto */
     nav.bottom{
       position: fixed;
       left: 0; right: 0; bottom: 0;
-      background: rgba(9,14,28,.80);
+      background: rgba(9,14,28,.78);
       border-top: 1px solid rgba(255,255,255,.10);
       backdrop-filter: blur(12px);
       z-index: 9999;
-      padding-bottom: env(safe-area-inset-bottom);
     }
     nav .inner{
-      max-width: 920px;
+      max-width: 880px;
       margin: 0 auto;
       display:flex;
       justify-content:space-around;
@@ -368,28 +372,25 @@
       border-radius: 18px;
       border: 1px solid transparent;
       transition: background .12s ease, border-color .12s ease, transform .12s ease;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap: 5px;
-      min-height: 56px;
+    }
+    nav a .ico{
+      display:block;
+      font-size: 22px;
+      line-height: 1;
+      margin-bottom: 4px;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,.35));
+    }
+    nav a .lbl{
+      display:block;
+      font-size: 12.5px;
+      font-weight: 900;
+      letter-spacing: .2px;
     }
     nav a:active{transform: translateY(1px)}
     nav a.active{
       color: var(--text);
-      background: rgba(255,255,255,.075);
-      border-color: rgba(255,255,255,.14);
-    }
-    .navIcon{
-      font-size: 20px;
-      line-height: 1;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-    }
-    .navLabel{
-      font-size: 12.5px;
-      font-weight: 900;
-      letter-spacing: .15px;
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.12);
     }
 
     @media (prefers-reduced-motion: no-preference){
@@ -422,21 +423,21 @@
     <!-- HOME -->
     <section id="view-home" class="grid">
       <div class="card hero">
-        <h1>Segnala subito. Fai la differenza.</h1>
-        <p>Scrivi cosa succede, aggiungi una o più foto e invia. In pochi secondi: chiaro, ordinato, senza confusione.</p>
+        <h1>Segnala. Subito. In modo chiaro.</h1>
+        <p>Scrivi cosa succede, aggiungi una o più foto e invia. Tutto resta ordinato sul tuo dispositivo: nessuna segnalazione va persa.</p>
         <div class="btnRow">
           <a class="btn primary" href="#/report">📝 Invia segnalazione</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti rapidi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
         </div>
-        <div class="hint">Nessuna registrazione. Le segnalazioni restano sul tuo dispositivo e vengono inoltrate automaticamente.</div>
+        <div class="hint">Nessuna registrazione. Compila e invia: semplice, veloce, diretto.</div>
       </div>
 
       <div class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
           <div>
-            <div style="font-weight:950;margin-bottom:4px;font-size:16px">Come funziona</div>
-            <div class="hint" style="margin:0">1) Compili • 2) Aggiungi foto (camera o galleria) • 3) Invi • 4) Ti resta lo storico</div>
+            <div style="font-weight:950;margin-bottom:4px">Come funziona</div>
+            <div class="hint" style="margin:0">1) Scrivi • 2) Aggiungi foto • 3) Invia • 4) Ti resta lo storico</div>
           </div>
           <a class="btn small ghost" href="#/report">Prova ora →</a>
         </div>
@@ -448,7 +449,7 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:950;font-size:19px">Nuova segnalazione</div>
+            <div style="font-weight:1000;font-size:18px">Nuova segnalazione</div>
             <div class="hint" style="margin:6px 0 0">Compila i campi e premi “Invia”.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
@@ -472,19 +473,46 @@
         </div>
 
         <div id="photoPreview" class="preview">
-          <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:160px">
             <div style="font-weight:950;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta" class="meta"></div>
           </div>
           <div class="thumbs" id="thumbs"></div>
         </div>
 
+        <!-- ✅ toggle anonimo -->
         <div class="toggle">
           <div>
             <strong>Invia anche in forma anonima</strong><br>
-            <span>Nessun nome richiesto</span>
+            <span>Se attivo, non inserisci i tuoi dati</span>
           </div>
           <input id="anonimo" type="checkbox" />
+        </div>
+
+        <!-- ✅ dati segnalante (solo se NON anonimo) -->
+        <div id="senderBox" class="senderBox hidden">
+          <div class="senderHead">
+            <div class="t">Dati del segnalante (opzionali)</div>
+            <div class="sub">Se vuoi essere ricontattato</div>
+          </div>
+
+          <label for="senderName">Nome e Cognome (opz.)</label>
+          <input id="senderName" type="text" maxlength="60" placeholder="Es. Mario Rossi" />
+
+          <div class="row">
+            <div>
+              <label for="senderPhone">Telefono (opz.)</label>
+              <input id="senderPhone" type="tel" maxlength="30" placeholder="Es. 333 1234567" />
+            </div>
+            <div>
+              <label for="senderEmail">Email (opz.)</label>
+              <input id="senderEmail" type="email" maxlength="80" placeholder="Es. nome@email.it" />
+            </div>
+          </div>
+
+          <div class="hint" style="margin-top:10px">
+            Questi dati vengono inviati solo se li compili e solo se non invii in forma anonima.
+          </div>
         </div>
 
         <div class="btnRow">
@@ -502,8 +530,8 @@
         <div class="ok">
           <div style="font-size:22px">✅</div>
           <div>
-            <div style="font-weight:950;font-size:19px">Segnalazione inviata</div>
-            <div class="hint" style="margin:6px 0 0">Salvata sul dispositivo e inoltrata automaticamente.</div>
+            <div style="font-weight:1000;font-size:18px">Segnalazione inviata correttamente</div>
+            <div class="hint" style="margin:6px 0 0">Salvata in locale e inviata automaticamente.</div>
           </div>
         </div>
 
@@ -520,8 +548,8 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:950;font-size:19px">Le mie segnalazioni</div>
-            <div class="hint" style="margin:6px 0 0">Archivio locale sul dispositivo.</div>
+            <div style="font-weight:1000;font-size:18px">Le mie segnalazioni</div>
+            <div class="hint" style="margin:6px 0 0">Salvate in locale sul dispositivo.</div>
           </div>
           <div class="row" style="flex:0 0 auto">
             <a class="btn small ghost" href="#/report">➕ Nuova</a>
@@ -530,7 +558,7 @@
         </div>
 
         <div id="emptyState" class="hint" style="margin-top:12px">
-          Nessuna segnalazione salvata. Premi “Segnala” per inviarne una.
+          Nessuna segnalazione salvata. Prova a inviarne una dalla schermata “Segnala”.
         </div>
 
         <div id="list" class="list"></div>
@@ -542,7 +570,7 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:950;font-size:19px">Contatti rapidi</div>
+            <div style="font-weight:1000;font-size:18px">Contatti rapidi</div>
             <div class="hint" style="margin:6px 0 0">Per comunicazioni dirette via email.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
@@ -560,24 +588,12 @@
     </section>
   </div>
 
-  <nav class="bottom" aria-label="Navigazione">
+  <nav class="bottom">
     <div class="inner">
-      <a href="#/" data-nav="home" class="active">
-        <div class="navIcon">🏠</div>
-        <div class="navLabel">Home</div>
-      </a>
-      <a href="#/report" data-nav="report">
-        <div class="navIcon">📝</div>
-        <div class="navLabel">Segnala</div>
-      </a>
-      <a href="#/my" data-nav="my">
-        <div class="navIcon">🗂️</div>
-        <div class="navLabel">Storico</div>
-      </a>
-      <a href="#/contacts" data-nav="contacts">
-        <div class="navIcon">☎️</div>
-        <div class="navLabel">Contatti</div>
-      </a>
+      <a href="#/" data-nav="home" class="active"><span class="ico">🏠</span><span class="lbl">Home</span></a>
+      <a href="#/report" data-nav="report"><span class="ico">📝</span><span class="lbl">Segnala</span></a>
+      <a href="#/my" data-nav="my"><span class="ico">🗂️</span><span class="lbl">Storico</span></a>
+      <a href="#/contacts" data-nav="contacts"><span class="ico">☎️</span><span class="lbl">Contatti</span></a>
     </div>
   </nav>
 
@@ -589,7 +605,7 @@
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
 
-      // endpoint tecnico (non mostrato nella UI)
+      // Worker (invio segnalazioni)
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026"
     };
@@ -675,7 +691,7 @@
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts links (Email + Mappa)
+    // Contacts links
     // =========================
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
@@ -691,7 +707,7 @@
     // =========================
     // Local storage for reports
     // =========================
-    const STORAGE_KEY = "segnalafacile_reports_v3";
+    const STORAGE_KEY = "segnalafacile_reports_v4";
 
     function loadReports(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -708,6 +724,11 @@
     const elDescrizione = document.getElementById("descrizione");
     const elAnonimo = document.getElementById("anonimo");
 
+    const senderBox = document.getElementById("senderBox");
+    const elSenderName = document.getElementById("senderName");
+    const elSenderPhone = document.getElementById("senderPhone");
+    const elSenderEmail = document.getElementById("senderEmail");
+
     const elFotoCamera = document.getElementById("fotoCamera");
     const elFotoGallery = document.getElementById("fotoGallery");
 
@@ -721,6 +742,7 @@
     const photoMeta = document.getElementById("photoMeta");
     const thumbs = document.getElementById("thumbs");
 
+    // ✅ array di foto
     let photos = []; // [{dataUrl, name, type, blobSize}]
 
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
@@ -732,6 +754,20 @@
       photos = [];
       renderPhotoPreview();
     });
+
+    function syncAnonimoUI(){
+      const isAnon = !!elAnonimo.checked;
+      senderBox.classList.toggle("hidden", isAnon);
+
+      // se passo ad anonimo, pulisco i dati
+      if(isAnon){
+        elSenderName.value = "";
+        elSenderPhone.value = "";
+        elSenderEmail.value = "";
+      }
+    }
+    elAnonimo.addEventListener("change", syncAnonimoUI);
+    syncAnonimoUI();
 
     function formatBytes(bytes){
       if (!bytes && bytes !== 0) return "";
@@ -912,23 +948,37 @@
       showBanner("info", "Invio in corso…");
 
       const now = new Date();
+
       const first = photos[0] || null;
+
+      const isAnon = !!elAnonimo.checked;
+      const sender = (!isAnon) ? {
+        nome: (elSenderName.value || "").trim(),
+        telefono: (elSenderPhone.value || "").trim(),
+        email: (elSenderEmail.value || "").trim()
+      } : null;
+
+      // invia "sender" solo se c'è almeno un dato
+      const senderClean = sender && (sender.nome || sender.telefono || sender.email) ? sender : null;
 
       const payload = {
         titolo,
         descrizione,
-        anonimo: !!elAnonimo.checked,
+        anonimo: isAnon,
         when: now.toLocaleString("it-IT"),
         source: "SegnalaFacile PWA",
 
-        // compatibilità: worker singola foto
+        // ✅ dati segnalante (solo se non anonimo e compilati)
+        sender: senderClean,
+
+        // ✅ per worker attuale (singola foto)
         photo: first ? {
           dataUrl: first.dataUrl,
           name: first.name || "foto.jpg",
           type: first.type || "image/jpeg"
         } : null,
 
-        // multi-foto
+        // ✅ pronto per worker multi-foto
         photos: photos.map(p => ({
           dataUrl: p.dataUrl,
           name: p.name || "foto.jpg",
@@ -938,10 +988,10 @@
 
       const arr = loadReports();
       arr.push({
-        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         titolo,
         descrizione,
-        anonimo: !!elAnonimo.checked,
+        anonimo: isAnon,
         when: payload.when,
         photoDataUrl: first ? first.dataUrl : null
       });
@@ -951,17 +1001,18 @@
         await sendToTelegramWorker(payload);
         hideBanner();
         location.hash = "#/success";
-        showBanner("success", "Segnalazione inviata ✅", 3500);
+        showBanner("success", "Segnalazione salvata e inviata ✅", 4000);
       }catch(e){
         hideBanner();
         location.hash = "#/success";
-        showBanner("error", "Invio automatico non riuscito (nessun dato perso).", 6000);
+        showBanner("error", "Invio non riuscito (nessun dato perso).", 6000);
         console.warn("Worker error:", e);
       }finally{
         btnSend.disabled = false;
       }
     });
 
+    // init
     route();
     renderPhotoPreview();
   </script>
