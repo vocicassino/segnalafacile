@@ -13,8 +13,8 @@
   <style>
     :root{
       --bg:#0b1220;
-      --bg2:#060a14;
-      --text:#eef3ff;
+      --bg2:#070c18;
+      --text:#eaf0ff;
       --muted:#a9b6db;
 
       --accent:#2d7dff;
@@ -22,39 +22,35 @@
       --danger:#ff4d4f;
 
       --stroke:rgba(255,255,255,.10);
-      --stroke2:rgba(255,255,255,.16);
+      --stroke2:rgba(255,255,255,.14);
 
       --r:20px;
       --r2:28px;
 
-      --shadow: 0 22px 55px rgba(0,0,0,.44);
-      --shadow2: 0 12px 30px rgba(0,0,0,.36);
+      --shadow: 0 18px 45px rgba(0,0,0,.40);
+      --shadow2: 0 10px 25px rgba(0,0,0,.35);
 
-      --glass1: rgba(255,255,255,.085);
+      --glass1: rgba(255,255,255,.075);
       --glass2: rgba(255,255,255,.035);
-
-      --glowA: rgba(45,125,255,.28);
-      --glowB: rgba(25,195,125,.18);
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
-
     body{
       margin:0;
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
       color:var(--text);
       background:
-        radial-gradient(1200px 800px at 18% -12%, rgba(45,125,255,.34), transparent 58%),
-        radial-gradient(1100px 720px at 86% 6%, rgba(25,195,125,.22), transparent 60%),
-        radial-gradient(900px 650px at 55% 115%, rgba(45,125,255,.14), transparent 60%),
+        radial-gradient(1200px 800px at 20% -10%, rgba(45,125,255,.25), transparent 55%),
+        radial-gradient(1000px 700px at 80% 10%, rgba(25,195,125,.18), transparent 60%),
+        radial-gradient(900px 650px at 50% 120%, rgba(45,125,255,.12), transparent 60%),
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
 
     .wrap{
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 18px 16px 96px;
+      padding: 18px 16px 104px;
     }
 
     header{
@@ -67,71 +63,43 @@
 
     .brand{display:flex; align-items:center; gap:14px;}
     .logo{
-      width:58px; height:58px; border-radius:18px;
+      width:56px; height:56px; border-radius:18px;
       background:
         url("icons/icon-192.png") center/cover no-repeat,
-        linear-gradient(135deg, rgba(45,125,255,.98), rgba(25,195,125,.92));
-      box-shadow: 0 16px 40px rgba(0,0,0,.45);
-      outline: 1px solid rgba(255,255,255,.10);
+        linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
+      box-shadow: var(--shadow2);
+      outline: 1px solid rgba(255,255,255,.12);
       position: relative;
-      overflow:hidden;
+      overflow: hidden;
     }
     .logo::after{
       content:"";
       position:absolute;
-      inset:-20%;
-      background: radial-gradient(120px 120px at 25% 20%, rgba(255,255,255,.25), transparent 60%);
-      transform: rotate(12deg);
-      opacity:.9;
-      pointer-events:none;
+      inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 45%);
+      transform: rotate(25deg);
+      opacity: .7;
     }
 
     .title{
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 950;
       letter-spacing: .2px;
-      line-height: 1.05;
-      text-shadow: 0 8px 30px rgba(0,0,0,.35);
+      line-height: 1.1;
     }
+
     .badge{
-      font-size:12px;
+      font-size:12.5px;
       color: var(--muted);
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid var(--stroke);
       padding: 8px 12px;
       border-radius: 999px;
       background: rgba(255,255,255,.05);
-      backdrop-filter: blur(10px);
-      margin-top: 7px;
+      backdrop-filter: blur(8px);
+      margin-top: 6px;
       display:inline-flex;
-      align-items:center;
       gap:8px;
-      max-width: 520px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .pill{
-      display:inline-flex;
       align-items:center;
-      justify-content:center;
-      gap:10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 900;
-      box-shadow: var(--shadow2);
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-    .pill:active{transform: translateY(1px)}
-    #installPill{
-      background: linear-gradient(135deg, rgba(45,125,255,.18), rgba(255,255,255,.06));
-      border-color: rgba(45,125,255,.25);
     }
 
     .grid{display:grid; gap:14px}
@@ -142,19 +110,19 @@
       border-radius: var(--r2);
       padding: 16px;
       box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(10px);
       position: relative;
       overflow: hidden;
     }
     .card::before{
       content:"";
       position:absolute;
-      inset:-2px;
+      inset:-1px;
       background:
-        radial-gradient(700px 140px at 20% 0%, var(--glowA), transparent 60%),
-        radial-gradient(700px 140px at 80% 0%, var(--glowB), transparent 60%);
-      opacity:.9;
+        radial-gradient(600px 140px at 15% 0%, rgba(45,125,255,.18), transparent 55%),
+        radial-gradient(600px 140px at 85% 0%, rgba(25,195,125,.14), transparent 55%);
       pointer-events:none;
+      opacity:.95;
     }
     .card > *{position:relative}
 
@@ -163,13 +131,6 @@
       font-size: 34px;
       line-height: 1.08;
       letter-spacing: -.6px;
-    }
-    .hero h1 .hl{
-      background: linear-gradient(90deg, rgba(45,125,255,1), rgba(25,195,125,.95));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-shadow: none;
     }
     .hero p{
       margin:0;
@@ -185,8 +146,8 @@
       border:0;
       border-radius: 18px;
       padding: 13px 14px;
-      font-weight: 950;
-      font-size: 14px;
+      font-weight: 900;
+      font-size: 14.5px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -203,14 +164,13 @@
     button:disabled{opacity:.65; cursor:not-allowed; transform:none !important}
 
     .primary{
-      background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.72));
-      box-shadow: 0 18px 34px rgba(45,125,255,.18);
-      border: 1px solid rgba(45,125,255,.25);
+      background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.78));
+      box-shadow: 0 14px 28px rgba(45,125,255,.20);
     }
     .primary:hover{filter: brightness(1.06)}
     .ghost{
       background: rgba(255,255,255,.055);
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid var(--stroke);
     }
     .ghost:hover{border-color: var(--stroke2)}
     .danger{
@@ -218,7 +178,7 @@
       border:1px solid rgba(255,77,79,.35);
     }
     .danger:hover{border-color: rgba(255,77,79,.55)}
-    .small{padding:10px 12px; border-radius:16px; font-size:13px; min-height: 42px}
+    .small{padding:10px 12px; border-radius:16px; font-size:13.5px; min-height: 44px}
 
     .row{display:flex; gap:12px; flex-wrap:wrap}
     .row > *{flex:1 1 220px}
@@ -228,31 +188,32 @@
       font-size: 12px;
       color: var(--muted);
       margin: 12px 0 7px;
-      font-weight: 900;
+      font-weight: 850;
       letter-spacing: .2px;
     }
 
     input[type="text"], textarea{
       width:100%;
-      padding: 13px 12px;
+      padding: 12px 12px;
       border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid var(--stroke);
       background: rgba(0,0,0,.22);
       color: var(--text);
       outline:none;
       transition: border-color .12s ease, box-shadow .12s ease;
+      font-size: 15px;
     }
     input[type="text"]:focus, textarea:focus{
-      border-color: rgba(45,125,255,.60);
+      border-color: rgba(45,125,255,.55);
       box-shadow: 0 0 0 3px rgba(45,125,255,.16);
     }
-    textarea{min-height:120px; resize:vertical}
+    textarea{min-height:128px; resize:vertical}
 
     .hint{
       font-size:13px;
       color: var(--muted);
       margin-top:10px;
-      line-height:1.55;
+      line-height:1.5;
     }
 
     .toggle{
@@ -262,13 +223,13 @@
       gap:12px;
       padding: 12px 12px;
       border-radius: 20px;
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid var(--stroke);
       background: rgba(0,0,0,.18);
       margin-top: 12px;
     }
-    .toggle span{color:var(--muted); font-size:13px}
-    .toggle strong{font-size:13px; font-weight:950}
-    .toggle input{transform: scale(1.18)}
+    .toggle span{color:var(--muted); font-size:13.5px}
+    .toggle strong{font-size:13.5px; font-weight:950}
+    .toggle input{transform: scale(1.15)}
 
     .preview{
       margin-top: 12px;
@@ -277,9 +238,11 @@
       align-items:flex-start;
       padding: 12px;
       border-radius: 20px;
-      border:1px dashed rgba(255,255,255,.20);
+      border:1px dashed rgba(255,255,255,.18);
       background: rgba(0,0,0,.16);
     }
+    .preview .meta{font-size:12.5px; color:var(--muted); line-height:1.45}
+
     .thumbs{
       display:flex;
       flex-wrap:wrap;
@@ -292,44 +255,48 @@
       height:78px;
       object-fit:cover;
       border-radius:18px;
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid var(--stroke);
       background:rgba(255,255,255,.05);
-      box-shadow: 0 10px 18px rgba(0,0,0,.28);
+      box-shadow: 0 10px 18px rgba(0,0,0,.30);
     }
-    .preview .meta{font-size:12px; color:var(--muted); line-height:1.45}
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+    }
 
     .list{display:grid; gap:10px; margin-top:12px}
     .item{
       padding: 12px;
       border-radius: 20px;
       background: rgba(0,0,0,.18);
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid var(--stroke);
       display:flex;
       gap:12px;
       align-items:flex-start;
       transition: border-color .12s ease, transform .12s ease;
     }
-    .item:active{transform: translateY(1px)}
+    .item:hover{border-color: var(--stroke2)}
     .thumb{
-      width: 78px; height: 78px;
+      width: 74px; height: 74px;
       border-radius: 20px;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid var(--stroke);
       object-fit: cover;
       background: rgba(255,255,255,.05);
       box-shadow: 0 10px 18px rgba(0,0,0,.28);
     }
-    .item h3{margin:0; font-size:14px; font-weight:950}
-    .item p{margin:6px 0 0; color:var(--muted); font-size:12.8px; line-height:1.45}
+    .item h3{margin:0; font-size:15px; font-weight:950}
+    .item p{margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.45}
     .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
-    .metaRow .pillSmall{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:7px 10px; border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--text);
-      font-size:12px;
-      font-weight:900;
-    }
 
     .hidden{display:none !important}
     section{display:none}
@@ -355,20 +322,20 @@
       gap:12px;
       padding: 12px 12px;
       border-radius: 20px;
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid var(--stroke);
       background: rgba(255,255,255,.06);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(10px);
       box-shadow: var(--shadow2);
       margin: 0 0 12px;
     }
     .banner .text{font-size:13px; line-height:1.35; color:var(--text)}
     .banner .close{
       flex:0 0 auto;
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid var(--stroke);
       background: rgba(0,0,0,.20);
       color: var(--text);
       border-radius: 16px;
-      padding: 9px 11px;
+      padding: 8px 10px;
       font-weight: 950;
     }
     .banner.info{border-color: rgba(45,125,255,.35); background: rgba(45,125,255,.10)}
@@ -378,13 +345,14 @@
     nav.bottom{
       position: fixed;
       left: 0; right: 0; bottom: 0;
-      background: rgba(9,14,28,.82);
+      background: rgba(9,14,28,.80);
       border-top: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(14px);
+      backdrop-filter: blur(12px);
       z-index: 9999;
+      padding-bottom: env(safe-area-inset-bottom);
     }
     nav .inner{
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
       display:flex;
       justify-content:space-around;
@@ -395,25 +363,39 @@
       flex: 1;
       text-align:center;
       text-decoration:none;
-      color: rgba(169,182,219,.95);
-      font-size: 12px;
+      color: var(--muted);
       padding: 10px 8px;
       border-radius: 18px;
       border: 1px solid transparent;
-      transition: background .12s ease, border-color .12s ease, transform .12s ease, box-shadow .12s ease;
+      transition: background .12s ease, border-color .12s ease, transform .12s ease;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 5px;
+      min-height: 56px;
     }
     nav a:active{transform: translateY(1px)}
     nav a.active{
       color: var(--text);
-      background: rgba(255,255,255,.08);
+      background: rgba(255,255,255,.075);
       border-color: rgba(255,255,255,.14);
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    }
+    .navIcon{
+      font-size: 20px;
+      line-height: 1;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+    }
+    .navLabel{
+      font-size: 12.5px;
+      font-weight: 900;
+      letter-spacing: .15px;
     }
 
     @media (prefers-reduced-motion: no-preference){
       .card{animation: pop .18s ease both}
       @keyframes pop{
-        from{transform: translateY(8px); opacity:0}
+        from{transform: translateY(6px); opacity:.0}
         to{transform: translateY(0); opacity:1}
       }
     }
@@ -427,9 +409,7 @@
         <div class="logo" aria-hidden="true"></div>
         <div>
           <div class="title">SegnalaFacile</div>
-
-          <!-- ✅ BADGE RIPULITO: niente PWA / niente salvataggio / niente invio -->
-          <div class="badge">📩 Invia segnalazioni</div>
+          <div class="badge">✨ PWA installabile • salvataggio locale • invio segnalazioni</div>
         </div>
       </div>
       <button class="pill" id="installPill" style="display:none; cursor:pointer;" type="button">⬇️ Installa</button>
@@ -443,14 +423,14 @@
     <!-- HOME -->
     <section id="view-home" class="grid">
       <div class="card hero">
-        <h1>Invia una segnalazione <span class="hl">in pochi secondi</span></h1>
-        <p>Descrivi il problema, aggiungi una o più foto e invia. Niente messaggi sparsi: tutto ordinato e tracciabile.</p>
+        <h1>Segnala subito. Fai la differenza.</h1>
+        <p>Scrivi cosa succede, aggiungi una o più foto e invia. In pochi secondi: chiaro, ordinato, senza confusione.</p>
         <div class="btnRow">
           <a class="btn primary" href="#/report">📝 Invia segnalazione</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti rapidi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
         </div>
-        <div class="hint">Nessuna registrazione richiesta. La segnalazione viene salvata sul dispositivo e inviata automaticamente.</div>
+        <div class="hint">Nessuna registrazione. Le segnalazioni restano sul tuo dispositivo e vengono inoltrate automaticamente.</div>
       </div>
 
       <div class="card">
@@ -469,7 +449,7 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:950;font-size:18px">Nuova segnalazione</div>
+            <div style="font-weight:950;font-size:19px">Nuova segnalazione</div>
             <div class="hint" style="margin:6px 0 0">Compila i campi e premi “Invia”.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
@@ -494,7 +474,7 @@
 
         <div id="photoPreview" class="preview">
           <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
-            <div style="font-weight:950;color:var(--text);font-size:14px">Anteprima foto</div>
+            <div style="font-weight:950;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta" class="meta"></div>
           </div>
           <div class="thumbs" id="thumbs"></div>
@@ -513,7 +493,7 @@
           <a class="btn ghost" href="#/my">🗂️ Vedi storico</a>
         </div>
 
-        <div class="hint">Nota: salvataggio locale + invio segnalazioni.</div>
+        <div class="hint">Consiglio: più dettagli scrivi, più la segnalazione è utile.</div>
       </div>
     </section>
 
@@ -521,10 +501,10 @@
     <section id="view-success" class="grid hidden">
       <div class="card">
         <div class="ok">
-          <div style="font-size:24px">✅</div>
+          <div style="font-size:22px">✅</div>
           <div>
-            <div style="font-weight:950;font-size:18px">Segnalazione inviata</div>
-            <div class="hint" style="margin:6px 0 0">Salvata sul dispositivo e inviata automaticamente.</div>
+            <div style="font-weight:950;font-size:19px">Segnalazione inviata</div>
+            <div class="hint" style="margin:6px 0 0">Salvata sul dispositivo e inoltrata automaticamente.</div>
           </div>
         </div>
 
@@ -541,8 +521,8 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:950;font-size:18px">Le mie segnalazioni</div>
-            <div class="hint" style="margin:6px 0 0">Salvate in locale sul dispositivo.</div>
+            <div style="font-weight:950;font-size:19px">Le mie segnalazioni</div>
+            <div class="hint" style="margin:6px 0 0">Archivio locale sul dispositivo.</div>
           </div>
           <div class="row" style="flex:0 0 auto">
             <a class="btn small ghost" href="#/report">➕ Nuova</a>
@@ -551,7 +531,7 @@
         </div>
 
         <div id="emptyState" class="hint" style="margin-top:12px">
-          Nessuna segnalazione salvata. Prova a inviarne una dalla schermata “Segnala”.
+          Nessuna segnalazione salvata. Premi “Segnala” per inviarne una.
         </div>
 
         <div id="list" class="list"></div>
@@ -563,26 +543,42 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:950;font-size:18px">Contatti rapidi</div>
-            <div class="hint" style="margin:6px 0 0">Per contattarci usa l’email. Per inviare segnalazioni usa la sezione “Segnala”.</div>
+            <div style="font-weight:950;font-size:19px">Contatti rapidi</div>
+            <div class="hint" style="margin:6px 0 0">Per comunicazioni dirette via email.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
 
         <div class="btnRow" style="margin-top:14px">
-          <a class="btn primary" id="mailLink" href="#">✉️ Email</a>
+          <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
+        </div>
+
+        <div class="hint" style="margin-top:12px">
+          L’email apre il tuo client di posta. Puoi scrivere senza inserire alcun nome.
         </div>
       </div>
     </section>
   </div>
 
-  <nav class="bottom">
+  <nav class="bottom" aria-label="Navigazione">
     <div class="inner">
-      <a href="#/" data-nav="home" class="active">🏠 Home</a>
-      <a href="#/report" data-nav="report">📝 Segnala</a>
-      <a href="#/my" data-nav="my">🗂️ Storico</a>
-      <a href="#/contacts" data-nav="contacts">☎️ Contatti</a>
+      <a href="#/" data-nav="home" class="active">
+        <div class="navIcon">🏠</div>
+        <div class="navLabel">Home</div>
+      </a>
+      <a href="#/report" data-nav="report">
+        <div class="navIcon">📝</div>
+        <div class="navLabel">Segnala</div>
+      </a>
+      <a href="#/my" data-nav="my">
+        <div class="navIcon">🗂️</div>
+        <div class="navLabel">Storico</div>
+      </a>
+      <a href="#/contacts" data-nav="contacts">
+        <div class="navIcon">☎️</div>
+        <div class="navLabel">Contatti</div>
+      </a>
     </div>
   </nav>
 
@@ -594,7 +590,7 @@
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
 
-      // Worker (invio segnalazioni)
+      // endpoint tecnico (non mostrato nella UI)
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026"
     };
@@ -680,7 +676,7 @@
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts links
+    // Contacts links (Email + Mappa)
     // =========================
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
@@ -857,19 +853,15 @@
 
         const meta = document.createElement("div");
         meta.className = "metaRow";
-
         const pill1 = document.createElement("span");
-        pill1.className = "pillSmall";
+        pill1.className = "pill";
         pill1.textContent = "🕒 " + (r.when || "");
-
         const pill2 = document.createElement("span");
-        pill2.className = "pillSmall";
+        pill2.className = "pill";
         pill2.textContent = "🕶️ " + (r.anonimo ? "Anonimo" : "Non anonimo");
-
         const pill3 = document.createElement("span");
-        pill3.className = "pillSmall";
+        pill3.className = "pill";
         pill3.textContent = r.photoDataUrl ? "📷 Foto" : "📷 Nessuna foto";
-
         meta.append(pill1,pill2,pill3);
 
         body.append(h3,p,meta);
@@ -929,11 +921,15 @@
         anonimo: !!elAnonimo.checked,
         when: now.toLocaleString("it-IT"),
         source: "SegnalaFacile PWA",
+
+        // compatibilità: worker singola foto
         photo: first ? {
           dataUrl: first.dataUrl,
           name: first.name || "foto.jpg",
           type: first.type || "image/jpeg"
         } : null,
+
+        // multi-foto
         photos: photos.map(p => ({
           dataUrl: p.dataUrl,
           name: p.name || "foto.jpg",
@@ -943,7 +939,7 @@
 
       const arr = loadReports();
       arr.push({
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
         titolo,
         descrizione,
         anonimo: !!elAnonimo.checked,
@@ -956,7 +952,7 @@
         await sendToTelegramWorker(payload);
         hideBanner();
         location.hash = "#/success";
-        showBanner("success", "Segnalazione salvata e inviata ✅", 4000);
+        showBanner("success", "Segnalazione inviata ✅", 3500);
       }catch(e){
         hideBanner();
         location.hash = "#/success";
@@ -967,7 +963,6 @@
       }
     });
 
-    // init
     route();
     renderPhotoPreview();
   </script>
