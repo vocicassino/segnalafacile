@@ -50,7 +50,7 @@
     .wrap{
       max-width: 880px;
       margin: 0 auto;
-      padding: 20px 16px 92px;
+      padding: 20px 16px 104px;
     }
 
     header{
@@ -58,31 +58,38 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding: 14px 0 14px;
+      padding: 10px 0 12px;
     }
 
-    .brand{display:flex; align-items:center; gap:16px;}
-
-    /* ✅ logo più grande e predominante */
+    .brand{display:flex; align-items:center; gap:14px;}
     .logo{
-      width:76px;
-      height:76px;
-      border-radius:24px;
+      width:64px; height:64px; border-radius:18px;
       background:
         url("icons/icon-192.png") center/cover no-repeat,
         linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
       box-shadow: var(--shadow2);
       outline: 1px solid rgba(255,255,255,.12);
-      position: relative;
-      overflow:hidden;
+      flex: 0 0 auto;
     }
-
-    /* ✅ titolo più grande */
     .title{
-      font-size: 26px;
-      font-weight: 1000;
+      font-size: 24px;
+      font-weight: 950;
       letter-spacing: .2px;
       line-height: 1.05;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
     }
 
     .grid{display:grid; gap:14px}
@@ -101,8 +108,8 @@
       content:"";
       position:absolute;
       inset:-1px;
-      background: radial-gradient(600px 120px at 20% 0%, rgba(45,125,255,.16), transparent 55%),
-                  radial-gradient(600px 120px at 80% 0%, rgba(25,195,125,.12), transparent 55%);
+      background: radial-gradient(650px 130px at 20% 0%, rgba(45,125,255,.16), transparent 55%),
+                  radial-gradient(650px 130px at 80% 0%, rgba(25,195,125,.12), transparent 55%);
       pointer-events:none;
       opacity:.9;
     }
@@ -110,14 +117,15 @@
 
     .hero h1{
       margin:0 0 10px;
-      font-size: 30px;
-      line-height: 1.12;
-      letter-spacing: -.4px;
+      font-size: 32px;
+      line-height: 1.08;
+      letter-spacing: -.6px;
+      font-weight: 950;
     }
     .hero p{
       margin:0;
       color: var(--muted);
-      font-size: 14.5px;
+      font-size: 15px;
       line-height: 1.55;
     }
 
@@ -126,9 +134,9 @@
     button, .btn{
       cursor:pointer;
       border:0;
-      border-radius: 16px;
-      padding: 12px 14px;
-      font-weight: 850;
+      border-radius: 18px;
+      padding: 13px 14px;
+      font-weight: 950;
       font-size: 14px;
       display:inline-flex;
       align-items:center;
@@ -159,7 +167,7 @@
       border:1px solid rgba(255,77,79,.35);
     }
     .danger:hover{border-color: rgba(255,77,79,.55)}
-    .small{padding:10px 12px; border-radius:14px; font-size:13px}
+    .small{padding:11px 12px; border-radius:16px; font-size:13px}
 
     .row{display:flex; gap:12px; flex-wrap:wrap}
     .row > *{flex:1 1 220px}
@@ -169,31 +177,31 @@
       font-size: 12px;
       color: var(--muted);
       margin: 12px 0 7px;
-      font-weight: 750;
+      font-weight: 850;
       letter-spacing: .2px;
     }
 
     input[type="text"], input[type="email"], input[type="tel"], textarea{
       width:100%;
       padding: 12px 12px;
-      border-radius: 16px;
+      border-radius: 18px;
       border: 1px solid var(--stroke);
       background: rgba(0,0,0,.22);
       color: var(--text);
       outline:none;
       transition: border-color .12s ease, box-shadow .12s ease;
     }
-    input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, textarea:focus{
+    input:focus, textarea:focus{
       border-color: rgba(45,125,255,.55);
       box-shadow: 0 0 0 3px rgba(45,125,255,.16);
     }
     textarea{min-height:120px; resize:vertical}
 
     .hint{
-      font-size:12.5px;
+      font-size:13px;
       color: var(--muted);
       margin-top:10px;
-      line-height:1.5;
+      line-height:1.55;
     }
 
     .toggle{
@@ -208,32 +216,15 @@
       margin-top: 12px;
     }
     .toggle span{color:var(--muted); font-size:13px}
-    .toggle strong{font-size:13px; font-weight:900}
+    .toggle strong{font-size:13px; font-weight:950}
     .toggle input{transform: scale(1.15)}
 
-    /* ✅ box dati segnalante */
     .senderBox{
-      margin-top: 10px;
+      margin-top: 12px;
       padding: 12px;
       border-radius: 18px;
-      border: 1px solid var(--stroke);
-      background: rgba(0,0,0,.16);
-    }
-    .senderHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom: 6px;
-    }
-    .senderHead .t{
-      font-weight: 950;
-      font-size: 13px;
-    }
-    .senderHead .sub{
-      color: var(--muted);
-      font-size: 12px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.14);
     }
 
     .preview{
@@ -251,31 +242,18 @@
     .thumbs{
       display:flex;
       flex-wrap:wrap;
-      gap:8px;
+      gap:10px;
       align-items:flex-start;
       padding:2px;
     }
     .thumbs img{
-      width:72px;
-      height:72px;
+      width:82px;
+      height:82px;
       object-fit:cover;
-      border-radius:14px;
+      border-radius:18px;
       border:1px solid var(--stroke);
       background:rgba(255,255,255,.05);
-    }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid var(--stroke);
-      color: var(--text);
-      font-size: 12px;
-      font-weight: 850;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      box-shadow: 0 10px 18px rgba(0,0,0,.28);
     }
 
     .list{display:grid; gap:10px; margin-top:12px}
@@ -291,16 +269,23 @@
     }
     .item:hover{border-color: var(--stroke2)}
     .thumb{
-      width: 72px; height: 72px;
+      width: 76px; height: 76px;
       border-radius: 18px;
       border: 1px solid var(--stroke);
       object-fit: cover;
       background: rgba(255,255,255,.05);
       box-shadow: 0 10px 18px rgba(0,0,0,.28);
     }
-    .item h3{margin:0; font-size:14px; font-weight:900}
-    .item p{margin:6px 0 0; color:var(--muted); font-size:12.5px; line-height:1.45}
+    .item h3{margin:0; font-size:14px; font-weight:950}
+    .item p{margin:6px 0 0; color:var(--muted); font-size:12.8px; line-height:1.45}
+
     .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
+    .metaPill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      background:rgba(255,255,255,.06); border:1px solid var(--stroke);
+      color:var(--text); font-size:12px; font-weight:900;
+    }
 
     .hidden{display:none !important}
     section{display:none}
@@ -334,7 +319,6 @@
     }
     .banner .text{font-size:13px; line-height:1.35; color:var(--text)}
     .banner .close{
-      flex:0 0 auto;
       border:1px solid var(--stroke);
       background: rgba(0,0,0,.20);
       color: var(--text);
@@ -346,7 +330,6 @@
     .banner.success{border-color: rgba(25,195,125,.35); background: rgba(25,195,125,.12)}
     .banner.error{border-color: rgba(255,77,79,.35); background: rgba(255,77,79,.12)}
 
-    /* ✅ bottom nav con icone più grandi e d'effetto */
     nav.bottom{
       position: fixed;
       left: 0; right: 0; bottom: 0;
@@ -361,45 +344,33 @@
       display:flex;
       justify-content:space-around;
       gap: 10px;
-      padding: 10px 12px;
+      padding: 10px 12px 12px;
     }
     nav a{
       flex: 1;
       text-align:center;
       text-decoration:none;
       color: var(--muted);
+      font-size: 12px;
       padding: 10px 8px;
       border-radius: 18px;
       border: 1px solid transparent;
       transition: background .12s ease, border-color .12s ease, transform .12s ease;
-    }
-    nav a .ico{
-      display:block;
-      font-size: 22px;
-      line-height: 1;
-      margin-bottom: 4px;
-      filter: drop-shadow(0 8px 12px rgba(0,0,0,.35));
-    }
-    nav a .lbl{
-      display:block;
-      font-size: 12.5px;
-      font-weight: 900;
-      letter-spacing: .2px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
     }
     nav a:active{transform: translateY(1px)}
     nav a.active{
       color: var(--text);
-      background: rgba(255,255,255,.07);
-      border-color: rgba(255,255,255,.12);
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.14);
+      box-shadow: 0 10px 22px rgba(0,0,0,.28);
     }
-
-    @media (prefers-reduced-motion: no-preference){
-      .card{animation: pop .18s ease both}
-      @keyframes pop{
-        from{transform: translateY(6px); opacity:.0}
-        to{transform: translateY(0); opacity:1}
-      }
-    }
+    nav .navIcon{font-size:24px; line-height:1}
+    nav .navLabel{font-weight:900; letter-spacing:.2px}
   </style>
 </head>
 
@@ -423,21 +394,21 @@
     <!-- HOME -->
     <section id="view-home" class="grid">
       <div class="card hero">
-        <h1>Segnala. Subito. In modo chiaro.</h1>
-        <p>Scrivi cosa succede, aggiungi una o più foto e invia. Tutto resta ordinato sul tuo dispositivo: nessuna segnalazione va persa.</p>
+        <h1>Segnala. Documenta. Fai arrivare la tua voce.</h1>
+        <p>Invia una segnalazione chiara e completa, con una o più foto. Tutto resta salvato sul tuo dispositivo e viene inoltrato automaticamente.</p>
         <div class="btnRow">
           <a class="btn primary" href="#/report">📝 Invia segnalazione</a>
-          <a class="btn ghost" href="#/contacts">☎️ Contatti rapidi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
+          <a class="btn ghost" href="#/contacts">☎️ Contatti rapidi</a>
         </div>
-        <div class="hint">Nessuna registrazione. Compila e invia: semplice, veloce, diretto.</div>
+        <div class="hint">Nessuna registrazione. Rapido, ordinato, tracciabile.</div>
       </div>
 
       <div class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
           <div>
             <div style="font-weight:950;margin-bottom:4px">Come funziona</div>
-            <div class="hint" style="margin:0">1) Scrivi • 2) Aggiungi foto • 3) Invia • 4) Ti resta lo storico</div>
+            <div class="hint" style="margin:0">1) Compili • 2) Aggiungi foto • 3) Invi • 4) Ti resta lo storico</div>
           </div>
           <a class="btn small ghost" href="#/report">Prova ora →</a>
         </div>
@@ -449,8 +420,8 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:1000;font-size:18px">Nuova segnalazione</div>
-            <div class="hint" style="margin:6px 0 0">Compila i campi e premi “Invia”.</div>
+            <div style="font-weight:950;font-size:18px">Nuova segnalazione</div>
+            <div class="hint" style="margin:6px 0 0">Più dettagli scrivi, più la segnalazione è utile.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
@@ -473,45 +444,40 @@
         </div>
 
         <div id="photoPreview" class="preview">
-          <div style="display:flex;flex-direction:column;gap:8px;min-width:160px">
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
             <div style="font-weight:950;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta" class="meta"></div>
           </div>
           <div class="thumbs" id="thumbs"></div>
         </div>
 
-        <!-- ✅ toggle anonimo -->
+        <!-- ✅ regola: se NON spuntato, si inseriscono dati -->
         <div class="toggle">
           <div>
-            <strong>Invia anche in forma anonima</strong><br>
-            <span>Se attivo, non inserisci i tuoi dati</span>
+            <strong>Invia in forma anonima</strong><br>
+            <span>Se disattivi, inserisci almeno Email o Telefono</span>
           </div>
           <input id="anonimo" type="checkbox" />
         </div>
 
-        <!-- ✅ dati segnalante (solo se NON anonimo) -->
         <div id="senderBox" class="senderBox hidden">
-          <div class="senderHead">
-            <div class="t">Dati del segnalante (opzionali)</div>
-            <div class="sub">Se vuoi essere ricontattato</div>
+          <div style="font-weight:950; margin-bottom:6px;">Dati di chi invia</div>
+          <div class="hint" style="margin:0 0 10px;">
+            Obbligatorio inserire <b>almeno Email oppure Telefono</b>. Il nome è facoltativo.
           </div>
 
-          <label for="senderName">Nome e Cognome (opz.)</label>
+          <label for="senderName">Nome (facoltativo)</label>
           <input id="senderName" type="text" maxlength="60" placeholder="Es. Mario Rossi" />
 
           <div class="row">
             <div>
-              <label for="senderPhone">Telefono (opz.)</label>
-              <input id="senderPhone" type="tel" maxlength="30" placeholder="Es. 333 1234567" />
+              <label for="senderPhone">Telefono (obbligatorio se manca email)</label>
+              <input id="senderPhone" type="tel" maxlength="30" placeholder="Es. 333 1234567" inputmode="tel" />
             </div>
             <div>
-              <label for="senderEmail">Email (opz.)</label>
-              <input id="senderEmail" type="email" maxlength="80" placeholder="Es. nome@email.it" />
+              <label for="senderEmail">Email (obbligatoria se manca telefono)</label>
+              <input id="senderEmail" type="email" maxlength="80" placeholder="Es. nome@email.it" inputmode="email" />
             </div>
-          </div>
-
-          <div class="hint" style="margin-top:10px">
-            Questi dati vengono inviati solo se li compili e solo se non invii in forma anonima.
           </div>
         </div>
 
@@ -520,7 +486,9 @@
           <a class="btn ghost" href="#/my">🗂️ Vedi storico</a>
         </div>
 
-        <div class="hint">Consiglio: più dettagli scrivi, più la segnalazione è utile.</div>
+        <div class="hint">
+          Consiglio: indica sempre luogo e riferimenti utili (via, zona, punto preciso).
+        </div>
       </div>
     </section>
 
@@ -530,8 +498,8 @@
         <div class="ok">
           <div style="font-size:22px">✅</div>
           <div>
-            <div style="font-weight:1000;font-size:18px">Segnalazione inviata correttamente</div>
-            <div class="hint" style="margin:6px 0 0">Salvata in locale e inviata automaticamente.</div>
+            <div style="font-weight:950;font-size:18px">Segnalazione inviata correttamente</div>
+            <div class="hint" style="margin:6px 0 0">Salvata in locale e inoltrata automaticamente.</div>
           </div>
         </div>
 
@@ -548,7 +516,7 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:1000;font-size:18px">Le mie segnalazioni</div>
+            <div style="font-weight:950;font-size:18px">Le mie segnalazioni</div>
             <div class="hint" style="margin:6px 0 0">Salvate in locale sul dispositivo.</div>
           </div>
           <div class="row" style="flex:0 0 auto">
@@ -570,7 +538,7 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:1000;font-size:18px">Contatti rapidi</div>
+            <div style="font-weight:950;font-size:18px">Contatti rapidi</div>
             <div class="hint" style="margin:6px 0 0">Per comunicazioni dirette via email.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
@@ -582,7 +550,7 @@
         </div>
 
         <div class="hint" style="margin-top:12px">
-          L’email apre il tuo client di posta. Puoi scrivere senza inserire alcun nome.
+          L’email apre il tuo client di posta. Puoi scrivere anche senza inserire alcun nome.
         </div>
       </div>
     </section>
@@ -590,22 +558,28 @@
 
   <nav class="bottom">
     <div class="inner">
-      <a href="#/" data-nav="home" class="active"><span class="ico">🏠</span><span class="lbl">Home</span></a>
-      <a href="#/report" data-nav="report"><span class="ico">📝</span><span class="lbl">Segnala</span></a>
-      <a href="#/my" data-nav="my"><span class="ico">🗂️</span><span class="lbl">Storico</span></a>
-      <a href="#/contacts" data-nav="contacts"><span class="ico">☎️</span><span class="lbl">Contatti</span></a>
+      <a href="#/" data-nav="home" class="active">
+        <span class="navIcon">🏠</span><span class="navLabel">Home</span>
+      </a>
+      <a href="#/report" data-nav="report">
+        <span class="navIcon">📝</span><span class="navLabel">Segnala</span>
+      </a>
+      <a href="#/my" data-nav="my">
+        <span class="navIcon">🗂️</span><span class="navLabel">Storico</span>
+      </a>
+      <a href="#/contacts" data-nav="contacts">
+        <span class="navIcon">☎️</span><span class="navLabel">Contatti</span>
+      </a>
     </div>
   </nav>
 
   <script>
     // =========================
-    // CONFIG (personalizza qui)
+    // CONFIG
     // =========================
     const CONFIG = {
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
-
-      // Worker (invio segnalazioni)
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026"
     };
@@ -655,7 +629,7 @@
     });
 
     // =========================
-    // Simple router
+    // Router
     // =========================
     const views = {
       home: document.getElementById("view-home"),
@@ -705,9 +679,9 @@
     applyContacts();
 
     // =========================
-    // Local storage for reports
+    // Local storage
     // =========================
-    const STORAGE_KEY = "segnalafacile_reports_v4";
+    const STORAGE_KEY = "segnalafacile_reports_v5";
 
     function loadReports(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -718,7 +692,7 @@
     }
 
     // =========================
-    // Form logic + multi-photo
+    // Form logic + multi-photo + mittente
     // =========================
     const elTitolo = document.getElementById("titolo");
     const elDescrizione = document.getElementById("descrizione");
@@ -728,6 +702,19 @@
     const elSenderName = document.getElementById("senderName");
     const elSenderPhone = document.getElementById("senderPhone");
     const elSenderEmail = document.getElementById("senderEmail");
+
+    function syncAnonimoUI(){
+      const isAnon = !!elAnonimo.checked;
+      senderBox.classList.toggle("hidden", isAnon);
+
+      if(isAnon){
+        elSenderName.value = "";
+        elSenderPhone.value = "";
+        elSenderEmail.value = "";
+      }
+    }
+    elAnonimo.addEventListener("change", syncAnonimoUI);
+    syncAnonimoUI();
 
     const elFotoCamera = document.getElementById("fotoCamera");
     const elFotoGallery = document.getElementById("fotoGallery");
@@ -742,8 +729,7 @@
     const photoMeta = document.getElementById("photoMeta");
     const thumbs = document.getElementById("thumbs");
 
-    // ✅ array di foto
-    let photos = []; // [{dataUrl, name, type, blobSize}]
+    let photos = [];
 
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
     btnPickGallery.addEventListener("click", () => elFotoGallery.click());
@@ -754,20 +740,6 @@
       photos = [];
       renderPhotoPreview();
     });
-
-    function syncAnonimoUI(){
-      const isAnon = !!elAnonimo.checked;
-      senderBox.classList.toggle("hidden", isAnon);
-
-      // se passo ad anonimo, pulisco i dati
-      if(isAnon){
-        elSenderName.value = "";
-        elSenderPhone.value = "";
-        elSenderEmail.value = "";
-      }
-    }
-    elAnonimo.addEventListener("change", syncAnonimoUI);
-    syncAnonimoUI();
 
     function formatBytes(bytes){
       if (!bytes && bytes !== 0) return "";
@@ -888,15 +860,19 @@
 
         const meta = document.createElement("div");
         meta.className = "metaRow";
+
         const pill1 = document.createElement("span");
-        pill1.className = "pill";
+        pill1.className = "metaPill";
         pill1.textContent = "🕒 " + (r.when || "");
+
         const pill2 = document.createElement("span");
-        pill2.className = "pill";
+        pill2.className = "metaPill";
         pill2.textContent = "🕶️ " + (r.anonimo ? "Anonimo" : "Non anonimo");
+
         const pill3 = document.createElement("span");
-        pill3.className = "pill";
+        pill3.className = "metaPill";
         pill3.textContent = r.photoDataUrl ? "📷 Foto" : "📷 Nessuna foto";
+
         meta.append(pill1,pill2,pill3);
 
         body.append(h3,p,meta);
@@ -915,9 +891,8 @@
     // =========================
     // Send report
     // =========================
-    async function sendToTelegramWorker(payload){
-      const url = new URL(CONFIG.telegramWorkerUrl);
-      const res = await fetch(url.toString(), {
+    async function sendToWorker(payload){
+      const res = await fetch(CONFIG.telegramWorkerUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -944,41 +919,43 @@
         return;
       }
 
+      const isAnon = !!elAnonimo.checked;
+
+      // ✅ se NON anonimo: almeno telefono o email
+      let sender = null;
+      if(!isAnon){
+        const nome = (elSenderName.value || "").trim();
+        const telefono = (elSenderPhone.value || "").trim();
+        const email = (elSenderEmail.value || "").trim();
+
+        if(!telefono && !email){
+          showBanner("error", "Se NON invii in forma anonima, inserisci almeno Email oppure Telefono.", 5000);
+          elSenderPhone.focus();
+          return;
+        }
+        if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+          showBanner("error", "Email non valida. Controlla e riprova.", 5000);
+          elSenderEmail.focus();
+          return;
+        }
+
+        sender = { nome, telefono, email };
+      }
+
       btnSend.disabled = true;
       showBanner("info", "Invio in corso…");
 
       const now = new Date();
+      const when = now.toLocaleString("it-IT");
 
       const first = photos[0] || null;
-
-      const isAnon = !!elAnonimo.checked;
-      const sender = (!isAnon) ? {
-        nome: (elSenderName.value || "").trim(),
-        telefono: (elSenderPhone.value || "").trim(),
-        email: (elSenderEmail.value || "").trim()
-      } : null;
-
-      // invia "sender" solo se c'è almeno un dato
-      const senderClean = sender && (sender.nome || sender.telefono || sender.email) ? sender : null;
 
       const payload = {
         titolo,
         descrizione,
         anonimo: isAnon,
-        when: now.toLocaleString("it-IT"),
-        source: "SegnalaFacile PWA",
-
-        // ✅ dati segnalante (solo se non anonimo e compilati)
-        sender: senderClean,
-
-        // ✅ per worker attuale (singola foto)
-        photo: first ? {
-          dataUrl: first.dataUrl,
-          name: first.name || "foto.jpg",
-          type: first.type || "image/jpeg"
-        } : null,
-
-        // ✅ pronto per worker multi-foto
+        when,
+        sender,
         photos: photos.map(p => ({
           dataUrl: p.dataUrl,
           name: p.name || "foto.jpg",
@@ -986,26 +963,27 @@
         }))
       };
 
+      // salva in locale
       const arr = loadReports();
       arr.push({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         titolo,
         descrizione,
         anonimo: isAnon,
-        when: payload.when,
+        when,
         photoDataUrl: first ? first.dataUrl : null
       });
       saveReports(arr);
 
       try{
-        await sendToTelegramWorker(payload);
+        await sendToWorker(payload);
         hideBanner();
         location.hash = "#/success";
-        showBanner("success", "Segnalazione salvata e inviata ✅", 4000);
+        showBanner("success", "Segnalazione inviata ✅", 3500);
       }catch(e){
         hideBanner();
         location.hash = "#/success";
-        showBanner("error", "Invio non riuscito (nessun dato perso).", 6000);
+        showBanner("error", "Invio non riuscito, ma nessun dato è stato perso.", 6000);
         console.warn("Worker error:", e);
       }finally{
         btnSend.disabled = false;
