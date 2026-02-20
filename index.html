@@ -122,6 +122,23 @@
       gap:12px;
       flex-wrap:wrap;
     }
+    /* HERO COVER (immagine rettangolare stile copertina) */
+.heroCover{
+  width: 100%;
+  height: 180px;              /* aumenta a 200/220 se la vuoi più protagonista */
+  object-fit: cover;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 18px 45px rgba(0,0,0,.38);
+  display: block;
+  margin: 14px 0 16px;
+  filter: saturate(1.05) contrast(1.02);
+}
+
+/* su schermi un po’ più grandi */
+@media (min-width: 520px){
+  .heroCover{ height: 210px; }
+}
     .hero h1{
       margin:0 0 10px;
       font-size: 34px;
@@ -526,7 +543,7 @@
             <h1>Segnala subito.</h1>
             <p>Descrivi cosa succede, aggiungi le foto e invia. Il tuo storico resta sul dispositivo.</p>
           </div>
-          <img class="heroCover" src="images/hero.jpg" alt="Voci di Cassino" loading="lazy">
+          <img class="heroCover" src="icons/hero.jpg" alt="Voci di Cassino" loading="lazy">
         </div>
 
         <div class="btnRow">
