@@ -61,7 +61,7 @@
     .wrap{
       max-width: 920px;
       margin: 0 auto;
-      padding: 18px 16px 132px; /* spazio dock */
+      padding: 18px 16px 132px;
     }
 
     header{
@@ -590,7 +590,7 @@
       overflow:auto;
     }
 
-    /* Leaflet stile (più “premium”) */
+    /* Leaflet stile */
     .leaflet-container{
       background: rgba(0,0,0,.18);
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
@@ -614,7 +614,7 @@
     }
 
     /* =========================
-       DOCK PREMIUM (scenografica)
+       DOCK PREMIUM
        ========================= */
     nav.bottom{
       position: fixed;
@@ -785,7 +785,6 @@
           <a class="btn small ghost" href="#/report">Vai →</a>
         </div>
 
-        <!-- Mini mappa Home (riempie spazio e fa scena) -->
         <div class="mapShell" style="margin-top:14px">
           <div class="mapTopBar">
             <div>
@@ -816,7 +815,6 @@
         <label for="descrizione">Descrizione</label>
         <textarea id="descrizione" maxlength="700" placeholder="Spiega cosa succede, dove e quando…"></textarea>
 
-        <!-- POSIZIONE -->
         <label>Posizione (opzionale)</label>
         <div class="row">
           <button class="ghost" id="btnGeo" type="button">📍 Usa posizione attuale</button>
@@ -871,7 +869,6 @@
           </div>
         </div>
 
-        <!-- PROGRESS -->
         <div id="progressWrap" class="progressWrap">
           <div class="progressTop">
             <div class="progressTitle">🚀 Invio in corso…</div>
@@ -986,7 +983,6 @@
           <a class="btn ghost" href="#/map">🗺️ Apri Mappa</a>
         </div>
 
-        <!-- Riempie spazio vuoto: mini-mappa -->
         <div class="mapShell" style="margin-top:14px">
           <div class="mapTopBar">
             <div>
@@ -1002,7 +998,7 @@
     </section>
   </div>
 
-  <!-- MODAL DETTAGLIO (da PIN) -->
+  <!-- MODAL DETTAGLIO -->
   <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modalHeader">
@@ -1023,7 +1019,7 @@
     </div>
   </div>
 
-  <!-- DOCK PREMIUM -->
+  <!-- DOCK -->
   <nav class="bottom" aria-label="Navigazione">
     <div class="inner">
       <a href="#/" data-nav="home" class="active" aria-label="Home">
@@ -1066,7 +1062,11 @@
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
-      telegramApiKey: "Marco-Admin-2026"
+      telegramApiKey: "Marco-Admin-2026",
+
+      // IMPORTANTISSIMO: per affidabilità inviamo SOLO la prima foto al Worker
+      // (le altre restano salvate in locale sul telefono)
+      sendOnlyFirstPhotoToServer: true
     };
 
     // =========================
@@ -1181,7 +1181,7 @@
     // =========================
     // Storage
     // =========================
-    const STORAGE_KEY = "segnalafacile_reports_v6"; // bump per includere geo
+    const STORAGE_KEY = "segnalafacile_reports_v6";
 
     function loadReports(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -1220,7 +1220,7 @@
     const btnGeo = document.getElementById("btnGeo");
     const btnGeoClear = document.getElementById("btnGeoClear");
     const geoLine = document.getElementById("geoLine");
-    let geo = null; // {lat,lng,acc}
+    let geo = null;
 
     function renderGeo(){
       if(!geo){
@@ -1428,7 +1428,6 @@
         body.append(h3,p,meta);
         item.append(img, body);
 
-        // click per aprire modal
         item.addEventListener("click", () => openReportModal(r));
 
         listEl.append(item);
@@ -1491,26 +1490,47 @@
     });
 
     // =========================
-    // Send
+    // Send (con errori VERI a schermo)
     // =========================
     async function sendToWorker(payload){
       const url = new URL(CONFIG.telegramWorkerUrl);
-      const res = await fetch(url.toString(), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": CONFIG.telegramApiKey || ""
-        },
-        body: JSON.stringify(payload)
-      });
+
+      let res;
+      try{
+        res = await fetch(url.toString(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Api-Key": CONFIG.telegramApiKey || ""
+          },
+          body: JSON.stringify(payload)
+        });
+      }catch(e){
+        throw new Error("NETWORK_ERROR (offline / CORS / blocco rete)");
+      }
+
+      const status = res.status;
+      const ct = (res.headers.get("content-type") || "").toLowerCase();
 
       let data = null;
-      try { data = await res.json(); } catch {}
-      if(!res.ok || !data || data.ok !== true){
-        const msg = data?.error ? `${data.error}` : `HTTP_${res.status}`;
-        throw new Error(msg);
-      }
-      return data;
+      let text = "";
+      try{
+        if(ct.includes("application/json")){
+          data = await res.json();
+        }else{
+          text = await res.text();
+        }
+      }catch{}
+
+      // worker ok atteso: { ok: true }
+      if(res.ok && data && data.ok === true) return data;
+
+      const serverMsg =
+        (data && (data.error || data.message)) ? String(data.error || data.message) :
+        (text ? text.slice(0, 160) : "");
+
+      const msg = serverMsg ? `${serverMsg}` : `HTTP_${status}`;
+      throw new Error(msg);
     }
 
     function isValidEmail(v){
@@ -1567,6 +1587,19 @@
       const now = new Date();
       const first = photos[0] || null;
 
+      // >>> QUI: per Telegram inviamo SOLO la prima foto (riduce errori 413)
+      const photosToSend = (CONFIG.sendOnlyFirstPhotoToServer && first)
+        ? [{
+            dataUrl: first.dataUrl,
+            name: first.name || "foto.jpg",
+            type: first.type || "image/jpeg"
+          }]
+        : photos.map(p => ({
+            dataUrl: p.dataUrl,
+            name: p.name || "foto.jpg",
+            type: p.type || "image/jpeg"
+          }));
+
       const payload = {
         titolo,
         descrizione,
@@ -1580,17 +1613,15 @@
 
         geo: geo ? { lat: geo.lat, lng: geo.lng, acc: geo.acc } : null,
 
+        // mantenuto per compatibilità
         photo: first ? {
           dataUrl: first.dataUrl,
           name: first.name || "foto.jpg",
           type: first.type || "image/jpeg"
         } : null,
 
-        photos: photos.map(p => ({
-          dataUrl: p.dataUrl,
-          name: p.name || "foto.jpg",
-          type: p.type || "image/jpeg"
-        }))
+        // invio “leggero”
+        photos: photosToSend
       };
 
       // salva in locale subito
@@ -1607,7 +1638,6 @@
       arr.push(localItem);
       saveReports(arr);
 
-      // aggiorna mappe subito
       refreshAllMaps();
 
       try{
@@ -1641,17 +1671,20 @@
 
       }catch(e){
         hideProgress();
-        hideBanner();
-        location.hash = "#/success";
-        showBanner("error", "Invio non riuscito (nessun dato perso).", 6000);
+
+        // IMPORTANTISSIMO: ora mostriamo l’errore reale
+        showBanner("error", `Invio non riuscito: ${e.message} (nessun dato perso).`, 8000);
         console.warn("Worker error:", e);
+
+        // NON mandiamo alla success: resti nel form
+        location.hash = "#/report";
       }finally{
         btnSend.disabled = false;
       }
     });
 
     // =========================
-    // MAPS (Leaflet)
+    // Mappe (Leaflet)
     // =========================
     let mapHome = null;
     let mapContacts = null;
@@ -1665,7 +1698,6 @@
       const el = document.getElementById(elId);
       if(!el) return null;
 
-      // centro predefinito Cassino
       const center = opts.center || [41.492, 13.831];
       const zoom = opts.zoom || 12;
 
@@ -1674,7 +1706,6 @@
         attributionControl: true
       }).setView(center, zoom);
 
-      // OSM tiles
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap'
@@ -1684,17 +1715,14 @@
     }
 
     function ensureMaps(){
-      // Home map
       if(!mapHome && document.getElementById("mapHome")){
         mapHome = createBaseMap("mapHome", { zoom: 12 });
         layerHome = L.layerGroup().addTo(mapHome);
       }
-      // Contacts map
       if(!mapContacts && document.getElementById("mapContacts")){
         mapContacts = createBaseMap("mapContacts", { zoom: 12 });
         layerContacts = L.layerGroup().addTo(mapContacts);
       }
-      // Main map
       if(!mapMain && document.getElementById("mapMain")){
         mapMain = createBaseMap("mapMain", { zoom: 12 });
         layerMain = L.layerGroup().addTo(mapMain);
@@ -1728,7 +1756,6 @@
     }
 
     function attachPopupButtonHandler(){
-      // gestisce click sui bottoni dentro popup leaflet
       document.querySelectorAll('button[data-openid]').forEach(btn => {
         if(btn._wired) return;
         btn._wired = true;
@@ -1757,22 +1784,18 @@
         mk.bindPopup(markerPopupHtml(r), { closeButton:true });
 
         mk.on("popupopen", () => {
-          // serve perché Leaflet crea HTML dopo
           setTimeout(attachPopupButtonHandler, 0);
         });
 
         mk.on("click", () => {
-          // click diretto: apri modal subito
           openReportModal(r);
         });
       });
 
-      // se esiste almeno un punto, centra in modo “scenografico”
       if(items.length){
         const bounds = L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng]));
         mapObj.fitBounds(bounds.pad(0.25));
       }else{
-        // fallback Cassino
         mapObj.setView([41.492, 13.831], 12);
       }
     }
@@ -1799,9 +1822,7 @@
       mapMain.fitBounds(bounds.pad(0.25));
     });
 
-    // =========================
     // init
-    // =========================
     route();
     renderPhotoPreview();
     renderList();
