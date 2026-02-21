@@ -24,14 +24,8 @@
       --stroke:rgba(255,255,255,.10);
       --stroke2:rgba(255,255,255,.16);
 
-      --r:22px;
-      --r2:28px;
-
       --shadow: 0 18px 45px rgba(0,0,0,.40);
       --shadow2: 0 10px 25px rgba(0,0,0,.35);
-
-      --glass1: rgba(255,255,255,.08);
-      --glass2: rgba(255,255,255,.04);
     }
 
     *{box-sizing:border-box}
@@ -102,12 +96,12 @@
     }
     .card > *{position:relative}
 
-    /* HERO più impattante */
+    /* HERO */
     .hero{
       display:flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 60vh; /* solo la home "riempie" */
+      min-height: 60vh;
     }
     .heroTop{
       display:flex;
@@ -116,8 +110,6 @@
       gap:12px;
       flex-wrap:wrap;
     }
-
-    /* HERO COVER (immagine rettangolare stile copertina) */
     .heroCover{
       width: 100%;
       height: 180px;
@@ -132,7 +124,6 @@
     @media (min-width: 520px){
       .heroCover{ height: 210px; }
     }
-
     .hero h1{
       margin:0 0 10px;
       font-size: 34px;
@@ -188,7 +179,6 @@
     .danger:hover{border-color: rgba(255,77,79,.55)}
     .small{padding:10px 12px; border-radius:16px; font-size:13px; min-height:42px}
 
-    /* pulsante hero gigante */
     .ctaBig{
       width:100%;
       padding: 16px 16px;
@@ -390,7 +380,6 @@
     .banner.success{border-color: rgba(25,195,125,.35); background: rgba(25,195,125,.12)}
     .banner.error{border-color: rgba(255,77,79,.35); background: rgba(255,77,79,.12)}
 
-    /* PROGRESS INVIO (1/3,2/3,3/3) */
     .progressWrap{
       margin-top: 12px;
       padding: 12px;
@@ -444,7 +433,7 @@
       line-height: 1.45;
     }
 
-    /* bottom nav: versione più premium */
+    /* bottom nav premium */
     nav.bottom{
       position: fixed;
       left: 0; right: 0; bottom: 0;
@@ -513,7 +502,7 @@
       }
     }
 
-    /* EMPTY STATE (esattamente come richiesto) */
+    /* CSS richiesto */
     .emptyState{
       text-align:center;
       opacity:.85;
@@ -855,7 +844,7 @@
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts (Email + Mappa)
+    // Contacts
     // =========================
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
@@ -912,7 +901,7 @@
     const progressBar = document.getElementById("progressBar");
     const progressHint = document.getElementById("progressHint");
 
-    let photos = []; // [{dataUrl, name, type, blobSize}]
+    let photos = [];
 
     function toggleContactBox(){
       const isAnon = !!elAnonimo.checked;
@@ -1096,7 +1085,6 @@
           body: JSON.stringify(payload)
         });
       }catch(err){
-        // rete / CORS / preflight
         throw new Error("FETCH_FAILED (probabile CORS o rete).");
       }
 
@@ -1136,6 +1124,17 @@
       progressHint.textContent = "";
     }
 
+    function buildSenderContactString(name, phone, email){
+      const parts = [];
+      const n = (name || "").trim();
+      const p = (phone || "").trim();
+      const e = (email || "").trim();
+      if(n) parts.push(n);
+      if(p) parts.push(`Tel: ${p}`);
+      if(e) parts.push(`Email: ${e}`);
+      return parts.join(" • ");
+    }
+
     btnSend.addEventListener("click", async () => {
       const titolo = (elTitolo.value || "").trim();
       const descrizione = (elDescrizione.value || "").trim();
@@ -1158,7 +1157,7 @@
         const okEmail = contactEmail ? isValidEmail(contactEmail) : false;
         const okPhone = contactPhone.length >= 6;
         if(!okEmail && !okPhone){
-          showBanner("error", "Se NON anonimo, inserisci almeno Email o Telefono.", 4500);
+          showBanner("error", "Se disattivi l'anonimato, inserisci almeno Email o Telefono.", 4500);
           return;
         }
       }
@@ -1170,8 +1169,10 @@
       const now = new Date();
       const first = photos[0] || null;
 
-      // ✅ IMPORTANTISSIMO:
-      // inviamo SOLO photos (niente campo "photo") così evitiamo duplicati sul canale
+      const senderContact = isAnon ? "" : buildSenderContactString(contactName, contactPhone, contactEmail);
+
+      // ✅ FIX per il Worker: aggiungo campi "senderContact/sender_contact/sender"
+      // (così qualunque controllo lato worker trova il contatto)
       const payload = {
         titolo,
         descrizione,
@@ -1183,6 +1184,14 @@
         contactEmail: isAnon ? "" : contactEmail,
         contactPhone: isAnon ? "" : contactPhone,
 
+        senderContact,
+        sender_contact: senderContact,
+        sender: isAnon ? null : {
+          name: contactName,
+          phone: contactPhone,
+          email: contactEmail
+        },
+
         photos: photos.map(p => ({
           dataUrl: p.dataUrl,
           name: p.name || "foto.jpg",
@@ -1190,7 +1199,7 @@
         }))
       };
 
-      // salva in locale subito (nessun dato perso)
+      // salva in locale subito
       const arr = loadReports();
       arr.push({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
@@ -1231,11 +1240,8 @@
       }catch(e){
         hideProgress();
         hideBanner();
-
-        // ✅ FIX: se fallisce NON andare in "success"
         location.hash = "#/report";
-
-        showBanner("error", "Invio non riuscito: " + (e?.message || "errore sconosciuto") + " (nessun dato perso).", 8000);
+        showBanner("error", "Invio non riuscito: " + (e?.message || "errore sconosciuto") + " (nessun dato perso).", 9000);
         console.warn("Worker error:", e);
       }finally{
         btnSend.disabled = false;
