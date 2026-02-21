@@ -1699,23 +1699,24 @@
     }
 
     function buildSenderContactText({isAnon, name, phone, email}){
-      const n = (name || "").trim();
-      const p = (phone || "").trim();
-      const e = (email || "").trim();
+  const n = (name || "").trim();
+  const p = (phone || "").trim();
+  const e = (email || "").trim();
 
-      if(isAnon){
-        // Il Worker pretende un contatto: mandiamo "Anonimo" come valore valido.
-        return "Anonimo";
-      }
+  if(isAnon) return "Anonimo";
 
-      // non anonimo: componiamo un contatto leggibile
-      const parts = [];
-      if(n) parts.push(n);
-      if(p) parts.push(`Tel: ${p}`);
-      if(e) parts.push(`Email: ${e}`);
+  const parts = [];
+  // Nome: se manca, mettiamo un placeholder coerente
+  parts.push(n ? `👤 ${n}` : "👤 (nome non indicato)");
 
-      // Se manca tutto, mettiamo fallback (così il Worker non blocca)
-      return parts.length ? parts.join(" • ") : "Contatto non specificato";
+  // Telefono: se presente lo mettiamo sempre
+  if(p) parts.push(`📞 ${p}`);
+
+  // Email: se presente la mettiamo sempre
+  if(e) parts.push(`✉️ ${e}`);
+
+  // Se per qualche motivo manca tutto, fallback
+  return parts.length ? parts.join(" • ") : "Contatto non specificato";
     }
 
     function showProgress(step, hint){
