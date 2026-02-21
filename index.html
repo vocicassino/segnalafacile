@@ -590,6 +590,17 @@
       overflow:auto;
     }
 
+    /* MODAL MAP PICKER */
+    .mapPickerBox{
+      width:100%;
+      height: 380px;
+      border-radius: 22px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.16);
+      margin-top: 10px;
+    }
+
     /* Leaflet stile */
     .leaflet-container{
       background: rgba(0,0,0,.18);
@@ -762,7 +773,7 @@
             <h1>Segnala subito.</h1>
             <p>Descrivi cosa succede, aggiungi le foto e invia. Il tuo storico resta sul dispositivo.</p>
           </div>
-          <img class="heroCover" src="icons/hero.jpg" alt="Voci di Cassino" loading="lazy">
+          <img class="heroCover" src="icons/hero.jpg" alt="SegnalaFacile" loading="lazy">
         </div>
 
         <div class="btnRow">
@@ -817,7 +828,9 @@
 
         <label>Posizione (opzionale)</label>
         <div class="row">
-          <button class="ghost" id="btnGeo" type="button">📍 Usa posizione attuale</button>
+          <button class="ghost" id="btnGeoOnce" type="button">📍 Usa posizione attuale</button>
+          <button class="ghost" id="btnGeoLive" type="button">🛰️ Posizione in tempo reale: OFF</button>
+          <button class="ghost" id="btnGeoPick" type="button">🗺️ Inserisci a mano sulla mappa</button>
           <button class="ghost" id="btnGeoClear" type="button">🧹 Rimuovi posizione</button>
         </div>
         <div id="geoLine" class="hint" style="margin-top:10px; display:none;"></div>
@@ -1019,6 +1032,29 @@
     </div>
   </div>
 
+  <!-- MODAL MAP PICKER (inserimento manuale) -->
+  <div class="modalOverlay" id="mapPickerOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mapPickerTitle">
+      <div class="modalHeader">
+        <h3 id="mapPickerTitle">Inserisci la posizione a mano</h3>
+        <button class="modalClose" id="mapPickerClose" type="button">✕</button>
+      </div>
+
+      <div class="hint" style="margin:0">
+        Tocca sulla mappa per piazzare il PIN. Poi premi “Usa questa posizione”.
+      </div>
+
+      <div id="mapPicker" class="mapPickerBox"></div>
+
+      <div class="btnRow" style="margin-top:12px">
+        <button class="btn primary" id="btnUsePicked" type="button">✅ Usa questa posizione</button>
+        <button class="btn ghost" id="btnCenterCassino" type="button">🎯 Centro Cassino</button>
+      </div>
+
+      <div class="hint" id="pickedLine" style="margin-top:10px">Nessun punto selezionato.</div>
+    </div>
+  </div>
+
   <!-- DOCK -->
   <nav class="bottom" aria-label="Navigazione">
     <div class="inner">
@@ -1064,8 +1100,7 @@
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026",
 
-      // IMPORTANTISSIMO: per affidabilità inviamo SOLO la prima foto al Worker
-      // (le altre restano salvate in locale sul telefono)
+      // affidabilità: inviamo SOLO la prima foto al Worker (le altre restano in locale)
       sendOnlyFirstPhotoToServer: true
     };
 
@@ -1181,7 +1216,7 @@
     // =========================
     // Storage
     // =========================
-    const STORAGE_KEY = "segnalafacile_reports_v6";
+    const STORAGE_KEY = "segnalafacile_reports_v7";
 
     function loadReports(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -1217,10 +1252,15 @@
     const thumbs = document.getElementById("thumbs");
 
     // GEO UI
-    const btnGeo = document.getElementById("btnGeo");
+    const btnGeoOnce = document.getElementById("btnGeoOnce");
+    const btnGeoLive = document.getElementById("btnGeoLive");
+    const btnGeoPick = document.getElementById("btnGeoPick");
     const btnGeoClear = document.getElementById("btnGeoClear");
     const geoLine = document.getElementById("geoLine");
-    let geo = null;
+
+    let geo = null;             // {lat,lng,acc,mode}
+    let geoWatchId = null;      // watchPosition id
+    let geoLiveOn = false;
 
     function renderGeo(){
       if(!geo){
@@ -1228,11 +1268,35 @@
         geoLine.textContent = "";
         return;
       }
+      const modeLabel =
+        geo.mode === "live" ? "LIVE" :
+        geo.mode === "pick" ? "MAPPA" :
+        "GPS";
       geoLine.style.display = "block";
-      geoLine.textContent = `📍 Posizione salvata: ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)} (±${Math.round(geo.acc)}m)`;
+      geoLine.textContent = `📍 Posizione (${modeLabel}): ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)} (±${Math.round(geo.acc || 0)}m)`;
     }
 
-    btnGeo?.addEventListener("click", async () => {
+    function setGeoFromPosition(pos, mode){
+      geo = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        acc: pos.coords.accuracy || 0,
+        mode: mode || "gps"
+      };
+      renderGeo();
+      refreshAllMaps();
+    }
+
+    function stopLive(){
+      if(geoWatchId !== null){
+        try{ navigator.geolocation.clearWatch(geoWatchId); }catch{}
+      }
+      geoWatchId = null;
+      geoLiveOn = false;
+      btnGeoLive.textContent = "🛰️ Posizione in tempo reale: OFF";
+    }
+
+    btnGeoOnce?.addEventListener("click", async () => {
       if(!navigator.geolocation){
         showBanner("error", "Geolocalizzazione non supportata su questo dispositivo.", 4500);
         return;
@@ -1240,11 +1304,9 @@
       showBanner("info", "Recupero posizione…");
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          geo = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy || 0 };
-          renderGeo();
+          setGeoFromPosition(pos, "gps");
           hideBanner();
           showBanner("success", "Posizione acquisita ✅", 2200);
-          refreshAllMaps();
         },
         (err) => {
           console.warn(err);
@@ -1254,11 +1316,109 @@
       );
     });
 
+    btnGeoLive?.addEventListener("click", async () => {
+      if(!navigator.geolocation){
+        showBanner("error", "Geolocalizzazione non supportata su questo dispositivo.", 4500);
+        return;
+      }
+
+      if(!geoLiveOn){
+        // avvia LIVE
+        showBanner("info", "Attivo posizione in tempo reale…");
+        geoLiveOn = true;
+        btnGeoLive.textContent = "🛰️ Posizione in tempo reale: ON";
+
+        geoWatchId = navigator.geolocation.watchPosition(
+          (pos) => {
+            setGeoFromPosition(pos, "live");
+            hideBanner();
+          },
+          (err) => {
+            console.warn(err);
+            showBanner("error", "LIVE non disponibile (permesso negato o GPS spento).", 5500);
+            stopLive();
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+
+      }else{
+        // spegni LIVE
+        stopLive();
+        showBanner("info", "Posizione in tempo reale disattivata.", 2200);
+      }
+    });
+
     btnGeoClear?.addEventListener("click", () => {
+      stopLive();
       geo = null;
       renderGeo();
       showBanner("info", "Posizione rimossa.", 2000);
       refreshAllMaps();
+    });
+
+    // MAP PICKER modal
+    const mapPickerOverlay = document.getElementById("mapPickerOverlay");
+    const mapPickerClose = document.getElementById("mapPickerClose");
+    const btnUsePicked = document.getElementById("btnUsePicked");
+    const btnCenterCassino = document.getElementById("btnCenterCassino");
+    const pickedLine = document.getElementById("pickedLine");
+
+    let mapPicker = null;
+    let picked = null;     // {lat,lng}
+    let pickedMarker = null;
+
+    function openMapPicker(){
+      mapPickerOverlay.style.display = "flex";
+      mapPickerOverlay.setAttribute("aria-hidden","false");
+
+      // init map solo la prima volta
+      if(!mapPicker){
+        mapPicker = L.map("mapPicker", { zoomControl:true, attributionControl:true }).setView([41.492, 13.831], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(mapPicker);
+
+        mapPicker.on("click", (e) => {
+          picked = { lat: e.latlng.lat, lng: e.latlng.lng };
+          pickedLine.textContent = `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
+          if(pickedMarker) pickedMarker.remove();
+          pickedMarker = L.marker([picked.lat, picked.lng], { riseOnHover:true }).addTo(mapPicker);
+          pickedMarker.bindPopup("Posizione selezionata").openPopup();
+        });
+      }
+
+      setTimeout(() => { try{ mapPicker.invalidateSize(); }catch{} }, 80);
+      pickedLine.textContent = picked ? `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}` : "Nessun punto selezionato.";
+    }
+
+    function closeMapPicker(){
+      mapPickerOverlay.style.display = "none";
+      mapPickerOverlay.setAttribute("aria-hidden","true");
+    }
+
+    btnGeoPick?.addEventListener("click", () => openMapPicker());
+    mapPickerClose?.addEventListener("click", closeMapPicker);
+    mapPickerOverlay.addEventListener("click", (e) => {
+      if(e.target === mapPickerOverlay) closeMapPicker();
+    });
+
+    btnCenterCassino?.addEventListener("click", () => {
+      if(!mapPicker) return;
+      mapPicker.setView([41.492, 13.831], 13);
+    });
+
+    btnUsePicked?.addEventListener("click", () => {
+      if(!picked){
+        showBanner("error", "Prima seleziona un punto sulla mappa.", 3500);
+        return;
+      }
+      stopLive();
+      geo = { lat: picked.lat, lng: picked.lng, acc: 0, mode: "pick" };
+      renderGeo();
+      refreshAllMaps();
+      showBanner("success", "Posizione inserita dalla mappa ✅", 2500);
+      closeMapPicker();
     });
 
     // progress UI
@@ -1350,13 +1510,13 @@
 
       const MAX = 6;
       const space = MAX - photos.length;
-      const picked = files.slice(0, Math.max(0, space));
+      const pickedFiles = files.slice(0, Math.max(0, space));
 
-      if(files.length > picked.length){
-        showBanner("info", `Massimo ${MAX} foto. Selezionate le prime ${picked.length}.`, 4500);
+      if(files.length > pickedFiles.length){
+        showBanner("info", `Massimo ${MAX} foto. Selezionate le prime ${pickedFiles.length}.`, 4500);
       }
 
-      for(const f of picked){
+      for(const f of pickedFiles){
         const name = f.name || "foto.jpg";
         const type = f.type || "image/jpeg";
         const { dataUrl, blob } = await fileToCompressedJpegDataUrl(f);
@@ -1490,7 +1650,7 @@
     });
 
     // =========================
-    // Send (con errori VERI a schermo)
+    // Send (compatibilità TELEGRAM WORKER)
     // =========================
     async function sendToWorker(payload){
       const url = new URL(CONFIG.telegramWorkerUrl);
@@ -1522,7 +1682,6 @@
         }
       }catch{}
 
-      // worker ok atteso: { ok: true }
       if(res.ok && data && data.ok === true) return data;
 
       const serverMsg =
@@ -1537,6 +1696,26 @@
       const s = String(v || "").trim();
       if(!s) return false;
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    }
+
+    function buildSenderContactText({isAnon, name, phone, email}){
+      const n = (name || "").trim();
+      const p = (phone || "").trim();
+      const e = (email || "").trim();
+
+      if(isAnon){
+        // Il Worker pretende un contatto: mandiamo "Anonimo" come valore valido.
+        return "Anonimo";
+      }
+
+      // non anonimo: componiamo un contatto leggibile
+      const parts = [];
+      if(n) parts.push(n);
+      if(p) parts.push(`Tel: ${p}`);
+      if(e) parts.push(`Email: ${e}`);
+
+      // Se manca tutto, mettiamo fallback (così il Worker non blocca)
+      return parts.length ? parts.join(" • ") : "Contatto non specificato";
     }
 
     function showProgress(step, hint){
@@ -1571,6 +1750,7 @@
       const contactPhone = (elContactPhone?.value || "").trim();
       const contactEmail = (elContactEmail?.value || "").trim();
 
+      // Se NON anonimo, richiediamo almeno email o telefono (come già indicato nel box)
       if(!isAnon){
         const okEmail = contactEmail ? isValidEmail(contactEmail) : false;
         const okPhone = contactPhone.length >= 6;
@@ -1587,7 +1767,7 @@
       const now = new Date();
       const first = photos[0] || null;
 
-      // >>> QUI: per Telegram inviamo SOLO la prima foto (riduce errori 413)
+      // per Telegram inviamo SOLO la prima foto
       const photosToSend = (CONFIG.sendOnlyFirstPhotoToServer && first)
         ? [{
             dataUrl: first.dataUrl,
@@ -1600,6 +1780,14 @@
             type: p.type || "image/jpeg"
           }));
 
+      // ✅ CAMPO CRITICO: quello che il Worker vuole
+      const sender_contact = buildSenderContactText({
+        isAnon,
+        name: contactName,
+        phone: contactPhone,
+        email: contactEmail
+      });
+
       const payload = {
         titolo,
         descrizione,
@@ -1607,21 +1795,35 @@
         when: now.toLocaleString("it-IT"),
         source: "SegnalaFacile PWA",
 
+        // Nomi originali (li teniamo)
         contactName: isAnon ? "" : contactName,
         contactEmail: isAnon ? "" : contactEmail,
         contactPhone: isAnon ? "" : contactPhone,
 
-        geo: geo ? { lat: geo.lat, lng: geo.lng, acc: geo.acc } : null,
+        geo: geo ? { lat: geo.lat, lng: geo.lng, acc: geo.acc, mode: geo.mode || "gps" } : null,
 
-        // mantenuto per compatibilità
+        // mantenuto per compatibilità vecchia
         photo: first ? {
           dataUrl: first.dataUrl,
           name: first.name || "foto.jpg",
           type: first.type || "image/jpeg"
         } : null,
 
-        // invio “leggero”
-        photos: photosToSend
+        photos: photosToSend,
+
+        // ✅ COMPATIBILITÀ WORKER TELEGRAM (campi “attesi”)
+        sender_contact,                              // <— fondamentale
+        sender_name: isAnon ? "Anonimo" : (contactName || ""),
+        sender_phone: isAnon ? "" : (contactPhone || ""),
+        sender_email: isAnon ? "" : (contactEmail || ""),
+
+        // extra (se il Worker legge oggetto)
+        sender: {
+          contact: sender_contact,
+          name: isAnon ? "Anonimo" : (contactName || ""),
+          phone: isAnon ? "" : (contactPhone || ""),
+          email: isAnon ? "" : (contactEmail || "")
+        }
       };
 
       // salva in locale subito
@@ -1641,7 +1843,7 @@
       refreshAllMaps();
 
       try{
-        showProgress(2, "Invio al server…");
+        showProgress(2, "Invio a Telegram…");
         await sendToWorker(payload);
 
         showProgress(3, "Conferma invio…");
@@ -1666,17 +1868,14 @@
         photos = [];
         renderPhotoPreview();
 
+        stopLive();
         geo = null;
         renderGeo();
 
       }catch(e){
         hideProgress();
-
-        // IMPORTANTISSIMO: ora mostriamo l’errore reale
-        showBanner("error", `Invio non riuscito: ${e.message} (nessun dato perso).`, 8000);
+        showBanner("error", `Invio non riuscito: ${e.message} (nessun dato perso).`, 9000);
         console.warn("Worker error:", e);
-
-        // NON mandiamo alla success: resti nel form
         location.hash = "#/report";
       }finally{
         btnSend.disabled = false;
@@ -1822,7 +2021,9 @@
       mapMain.fitBounds(bounds.pad(0.25));
     });
 
+    // =========================
     // init
+    // =========================
     route();
     renderPhotoPreview();
     renderList();
