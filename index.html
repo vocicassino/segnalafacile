@@ -32,9 +32,6 @@
 
       --glass1: rgba(255,255,255,.08);
       --glass2: rgba(255,255,255,.04);
-
-      --tabbar-h: 74px;
-      --tabbar-radius: 22px;
     }
 
     *{box-sizing:border-box}
@@ -50,15 +47,10 @@
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
 
-    /* spazio sicuro per la tabbar premium */
-    body{
-      padding-bottom: calc(var(--tabbar-h) + 34px);
-    }
-
     .wrap{
       max-width: 920px;
       margin: 0 auto;
-      padding: 18px 16px 40px;
+      padding: 18px 16px 106px;
     }
 
     header{
@@ -97,10 +89,6 @@
       padding: 24px;
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
       margin-bottom: 28px;
-      min-height: 60vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
     .card::before{
       content:"";
@@ -115,6 +103,12 @@
     .card > *{position:relative}
 
     /* HERO più impattante */
+    .hero{
+      display:flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 60vh; /* solo la home "riempie" */
+    }
     .heroTop{
       display:flex;
       align-items:flex-start;
@@ -123,7 +117,7 @@
       flex-wrap:wrap;
     }
 
-    /* HERO COVER */
+    /* HERO COVER (immagine rettangolare stile copertina) */
     .heroCover{
       width: 100%;
       height: 180px;
@@ -396,7 +390,7 @@
     .banner.success{border-color: rgba(25,195,125,.35); background: rgba(25,195,125,.12)}
     .banner.error{border-color: rgba(255,77,79,.35); background: rgba(255,77,79,.12)}
 
-    /* PROGRESS INVIO */
+    /* PROGRESS INVIO (1/3,2/3,3/3) */
     .progressWrap{
       margin-top: 12px;
       padding: 12px;
@@ -450,7 +444,76 @@
       line-height: 1.45;
     }
 
-    /* Empty state EXACT */
+    /* bottom nav: versione più premium */
+    nav.bottom{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: rgba(9,14,28,.78);
+      border-top: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(14px);
+      z-index: 9999;
+    }
+    nav .inner{
+      max-width: 920px;
+      margin: 0 auto;
+      display:flex;
+      justify-content:space-around;
+      gap: 10px;
+      padding: 10px 12px;
+    }
+    nav a{
+      position: relative;
+      flex: 1;
+      text-align:center;
+      text-decoration:none;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 10px 8px;
+      border-radius: 18px;
+      border: 1px solid transparent;
+      transition: background .14s ease, border-color .14s ease, transform .12s ease, color .14s ease;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      font-weight: 900;
+      overflow: hidden;
+    }
+    nav a:active{transform: translateY(1px)}
+    nav a::before{
+      content:"";
+      position:absolute;
+      inset: -40%;
+      background: radial-gradient(circle at 30% 30%, rgba(45,125,255,.22), transparent 55%),
+                  radial-gradient(circle at 70% 70%, rgba(25,195,125,.18), transparent 60%);
+      opacity: 0;
+      transition: opacity .18s ease;
+      pointer-events:none;
+    }
+    nav a.active{
+      color: var(--text);
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.14);
+    }
+    nav a.active::before{opacity: 1}
+    .navIco{
+      width: 28px;
+      height: 28px;
+      display:block;
+      fill: currentColor;
+      opacity: .95;
+    }
+    @media (prefers-reduced-motion: no-preference){
+      nav a.active .navIco{
+        animation: navPulse 1.4s ease-in-out infinite;
+      }
+      @keyframes navPulse{
+        0%,100%{transform: translateY(0) scale(1)}
+        50%{transform: translateY(-1px) scale(1.06)}
+      }
+    }
+
+    /* EMPTY STATE (esattamente come richiesto) */
     .emptyState{
       text-align:center;
       opacity:.85;
@@ -459,108 +522,6 @@
     .emptyIcon{
       font-size:48px;
       margin-bottom:10px;
-    }
-
-    /* ===== Premium Bottom Tab Bar (Glass) ===== */
-    .tabbar{
-      position: fixed;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
-      height: var(--tabbar-h);
-      padding: 10px 12px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      align-items: center;
-      z-index: 9999;
-
-      background: rgba(18, 28, 40, .55);
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: var(--tabbar-radius);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    }
-
-    .tab{
-      position: relative;
-      height: 100%;
-      border: 0;
-      background: transparent;
-      color: rgba(255,255,255,.78);
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      gap: 3px;
-      cursor: pointer;
-      transition: transform .12s ease, color .2s ease, background .2s ease, border-color .2s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .tab:active{ transform: scale(.985); }
-
-    .tab .ico{
-      font-size: 26px;
-      line-height: 1;
-      display: inline-block;
-      transform-origin: 50% 60%;
-      filter: drop-shadow(0 8px 16px rgba(0,0,0,.25));
-    }
-    .tab .lbl{
-      font-size: 12px;
-      letter-spacing: .2px;
-      opacity: .85;
-      font-weight: 900;
-    }
-
-    .tab.is-active{
-      color: #fff;
-      background: linear-gradient(180deg, rgba(52,132,255,.28), rgba(52,132,255,.10));
-      border: 1px solid rgba(90,160,255,.22);
-    }
-    .tab.is-active .lbl{ opacity: 1; }
-
-    .tab-indicator{
-      position: absolute;
-      bottom: 8px;
-      left: 12px; /* allineamento interno */
-      width: calc((100% - 24px - 24px) / 4);
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(120,190,255,.95);
-      box-shadow: 0 6px 16px rgba(80,170,255,.35);
-      transform: translateX(0);
-      transition: transform .25s cubic-bezier(.2,.9,.2,1);
-      pointer-events: none;
-    }
-
-    @keyframes popWiggle {
-      0%   { transform: scale(1) rotate(0deg); }
-      35%  { transform: scale(1.18) rotate(-6deg); }
-      70%  { transform: scale(1.10) rotate(5deg); }
-      100% { transform: scale(1) rotate(0deg); }
-    }
-    .tab.is-active .ico{
-      animation: popWiggle .38s ease;
-    }
-
-    /* micro-testo sopra la tabbar (non dentro la barra) */
-    .tabbarNoteWrap{
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: calc(var(--tabbar-h) + 18px);
-      z-index: 9998;
-      pointer-events: none;
-    }
-    .tabbarNote{
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 0 16px;
-      color: rgba(234,240,255,.70);
-      font-size: 13px;
-      letter-spacing: .2px;
-      text-shadow: 0 8px 18px rgba(0,0,0,.35);
     }
 
     @media (prefers-reduced-motion: no-preference){
@@ -723,6 +684,10 @@
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
           <a class="btn ghost" href="#/report">➕ Nuova segnalazione</a>
         </div>
+
+        <div class="hint" style="margin-top:14px">
+          Risposta garantita nel minor tempo possibile.
+        </div>
       </div>
     </section>
 
@@ -740,11 +705,11 @@
           </div>
         </div>
 
-        <div id="emptyState" class="hint" style="margin-top:12px">
+        <div id="emptyState" style="margin-top:12px">
           <div class="emptyState">
             <div class="emptyIcon">📂</div>
-            <h3 style="margin:0 0 6px;font-weight:980;">Nessuna segnalazione</h3>
-            <p style="margin:0;color:var(--muted);line-height:1.45;">Quando invii una segnalazione, la troverai qui.</p>
+            <h3 style="margin:0 0 6px;font-weight:980">Nessuna segnalazione</h3>
+            <p style="margin:0;color:var(--muted);font-size:13px;line-height:1.5">Quando invii una segnalazione, la troverai qui.</p>
           </div>
         </div>
 
@@ -767,38 +732,33 @@
           <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
         </div>
+
+        <div class="hint" style="margin-top:14px">
+          Risposta garantita nel minor tempo possibile.
+        </div>
       </div>
     </section>
   </div>
 
-  <!-- nota sopra la tabbar (non dentro la barra) -->
-  <div class="tabbarNoteWrap" aria-hidden="true">
-    <div class="tabbarNote">Risposta garantita nel minor tempo possibile.</div>
-  </div>
-
-  <!-- PREMIUM TAB BAR -->
-  <nav class="tabbar" role="navigation" aria-label="Navigazione">
-    <button class="tab is-active" data-tab="home" type="button" aria-label="Home">
-      <span class="ico">🏠</span>
-      <span class="lbl">Home</span>
-    </button>
-
-    <button class="tab" data-tab="report" type="button" aria-label="Segnala">
-      <span class="ico">📝</span>
-      <span class="lbl">Segnala</span>
-    </button>
-
-    <button class="tab" data-tab="my" type="button" aria-label="Storico">
-      <span class="ico">🗂️</span>
-      <span class="lbl">Storico</span>
-    </button>
-
-    <button class="tab" data-tab="contacts" type="button" aria-label="Contatti">
-      <span class="ico">👤</span>
-      <span class="lbl">Contatti</span>
-    </button>
-
-    <span class="tab-indicator" aria-hidden="true"></span>
+  <nav class="bottom" aria-label="Navigazione">
+    <div class="inner">
+      <a href="#/" data-nav="home" class="active" aria-label="Home">
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 8h-2v10a1 1 0 0 1-1 1h-5v-6H11v6H6a1 1 0 0 1-1-1V11H3l9-8z"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="#/report" data-nav="report" aria-label="Segnala">
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V4zm4 4h8v2H8V8zm0 4h8v2H8v-2zm0 4h6v2H8v-2z"/><path d="M20 8h2v14a2 2 0 0 1-2 2H8v-2h12V8z"/></svg>
+        <span>Segnala</span>
+      </a>
+      <a href="#/my" data-nav="my" aria-label="Storico">
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 4h6v2H9V8zm0 4h6v2H9v-2zm0 4h4v2H9v-2z"/></svg>
+        <span>Storico</span>
+      </a>
+      <a href="#/contacts" data-nav="contacts" aria-label="Contatti">
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4.4 0-8 2-8 4.5V21h16v-2.5C20 16 16.4 14 12 14z"/></svg>
+        <span>Contatti</span>
+      </a>
+    </div>
   </nav>
 
   <script>
@@ -869,10 +829,15 @@
       contacts: document.getElementById("view-contacts"),
     };
 
+    const navLinks = Array.from(document.querySelectorAll("nav a[data-nav]"));
+    function setActiveNav(key){
+      navLinks.forEach(a => a.classList.toggle("active", a.dataset.nav === key));
+    }
+
     function showView(key){
       Object.values(views).forEach(v => v.classList.add("hidden"));
       views[key].classList.remove("hidden");
-      setActiveTab(key);
+      setActiveNav(key);
       if(key === "my") renderList();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -906,7 +871,7 @@
     // =========================
     // Storage
     // =========================
-    const STORAGE_KEY = "segnalafacile_reports_v5";
+    const STORAGE_KEY = "segnalafacile_reports_v6";
 
     function loadReports(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -1115,25 +1080,39 @@
     });
 
     // =========================
-    // Send
+    // Send (Worker)
     // =========================
     async function sendToWorker(payload){
       const url = new URL(CONFIG.telegramWorkerUrl);
-      const res = await fetch(url.toString(), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": CONFIG.telegramApiKey || ""
-        },
-        body: JSON.stringify(payload)
-      });
+
+      let res;
+      try{
+        res = await fetch(url.toString(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Api-Key": CONFIG.telegramApiKey || ""
+          },
+          body: JSON.stringify(payload)
+        });
+      }catch(err){
+        // rete / CORS / preflight
+        throw new Error("FETCH_FAILED (probabile CORS o rete).");
+      }
 
       let data = null;
       try { data = await res.json(); } catch {}
-      if(!res.ok || !data || data.ok !== true){
-        const msg = data?.error ? `${data.error}` : `HTTP_${res.status}`;
+
+      if(!res.ok){
+        const msg = data?.error ? data.error : `HTTP_${res.status}`;
         throw new Error(msg);
       }
+
+      if(!data || data.ok !== true){
+        const msg = data?.error ? data.error : "WORKER_REPLY_INVALID";
+        throw new Error(msg);
+      }
+
       return data;
     }
 
@@ -1191,6 +1170,8 @@
       const now = new Date();
       const first = photos[0] || null;
 
+      // ✅ IMPORTANTISSIMO:
+      // inviamo SOLO photos (niente campo "photo") così evitiamo duplicati sul canale
       const payload = {
         titolo,
         descrizione,
@@ -1202,12 +1183,6 @@
         contactEmail: isAnon ? "" : contactEmail,
         contactPhone: isAnon ? "" : contactPhone,
 
-        photo: first ? {
-          dataUrl: first.dataUrl,
-          name: first.name || "foto.jpg",
-          type: first.type || "image/jpeg"
-        } : null,
-
         photos: photos.map(p => ({
           dataUrl: p.dataUrl,
           name: p.name || "foto.jpg",
@@ -1215,10 +1190,10 @@
         }))
       };
 
-      // salva in locale subito
+      // salva in locale subito (nessun dato perso)
       const arr = loadReports();
       arr.push({
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
         titolo,
         descrizione,
         anonimo: isAnon,
@@ -1228,7 +1203,7 @@
       saveReports(arr);
 
       try{
-        showProgress(2, "Invio al server…");
+        showProgress(2, "Invio…");
         await sendToWorker(payload);
 
         showProgress(3, "Conferma invio…");
@@ -1256,48 +1231,21 @@
       }catch(e){
         hideProgress();
         hideBanner();
-        location.hash = "#/success";
-        showBanner("error", "Invio non riuscito (nessun dato perso).", 6000);
+
+        // ✅ FIX: se fallisce NON andare in "success"
+        location.hash = "#/report";
+
+        showBanner("error", "Invio non riuscito: " + (e?.message || "errore sconosciuto") + " (nessun dato perso).", 8000);
         console.warn("Worker error:", e);
       }finally{
         btnSend.disabled = false;
       }
     });
 
-    // =========================
-    // Premium tabbar logic
-    // =========================
-    const tabs = Array.from(document.querySelectorAll(".tabbar .tab"));
-    const indicator = document.querySelector(".tabbar .tab-indicator");
-
-    function setActiveTab(key){
-      // se sei in success, evidenzia HOME (così non impazzisce)
-      const normalized = (key === "success") ? "home" : key;
-
-      tabs.forEach(t => t.classList.toggle("is-active", t.dataset.tab === normalized));
-      const active = tabs.find(t => t.dataset.tab === normalized) || tabs[0];
-
-      // sposta indicatore
-      const idx = tabs.indexOf(active);
-      const gap = 8;
-      // larghezza calcolata in CSS: (container - padding - padding)/4
-      // qui ci basta traslare di "slot"
-      indicator.style.transform = `translateX(${idx * (indicator.offsetWidth + gap)}px)`;
-    }
-
-    tabs.forEach(tab=>{
-      tab.addEventListener("click", () => {
-        const key = tab.dataset.tab;
-        location.hash = key === "home" ? "#/" : `#/${key}`;
-      });
-    });
-
     // init
     route();
     renderPhotoPreview();
     renderList();
-    // allinea indicatore subito
-    requestAnimationFrame(() => setActiveTab("home"));
   </script>
 </body>
 </html>
