@@ -10,6 +10,17 @@
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
+  <!-- Leaflet (mappa) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+  ></script>
+
   <style>
     :root{
       --bg:#0b1220;
@@ -24,8 +35,14 @@
       --stroke:rgba(255,255,255,.10);
       --stroke2:rgba(255,255,255,.16);
 
+      --r:22px;
+      --r2:28px;
+
       --shadow: 0 18px 45px rgba(0,0,0,.40);
       --shadow2: 0 10px 25px rgba(0,0,0,.35);
+
+      --glass1: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.04);
     }
 
     *{box-sizing:border-box}
@@ -44,7 +61,7 @@
     .wrap{
       max-width: 920px;
       margin: 0 auto;
-      padding: 18px 16px 106px;
+      padding: 18px 16px 132px; /* spazio dock */
     }
 
     header{
@@ -72,10 +89,10 @@
       line-height: 1.05;
     }
 
-    .grid{display:grid; gap:14px}
+    .grid{display:grid; gap:14px; position:relative;}
 
     .card{
-      position: relative;
+      position:relative;
       background: linear-gradient(145deg, rgba(38,86,108,.85), rgba(12,25,45,.85));
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255,255,255,.12);
@@ -83,6 +100,10 @@
       padding: 24px;
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
       margin-bottom: 28px;
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .card::before{
       content:"";
@@ -96,13 +117,6 @@
     }
     .card > *{position:relative}
 
-    /* HERO */
-    .hero{
-      display:flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 60vh;
-    }
     .heroTop{
       display:flex;
       align-items:flex-start;
@@ -188,12 +202,26 @@
       min-height: 56px;
       background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.62));
       box-shadow: 0 22px 44px rgba(45,125,255,.20);
+      position:relative;
+      overflow:hidden;
+    }
+    .ctaBig::after{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background: radial-gradient(circle at 20% 40%, rgba(255,255,255,.22), transparent 42%),
+                  radial-gradient(circle at 80% 60%, rgba(25,195,125,.16), transparent 46%);
+      transform: rotate(12deg);
+      opacity:.8;
+      pointer-events:none;
     }
     .ctaBig .dot{
       width: 10px; height: 10px; border-radius: 999px;
       background: rgba(255,255,255,.9);
       box-shadow: 0 0 0 6px rgba(255,255,255,.12);
+      z-index:1;
     }
+    .ctaBig span, .ctaBig .dot{position:relative}
     .ctaBig:hover{filter: brightness(1.06)}
 
     .row{display:flex; gap:12px; flex-wrap:wrap}
@@ -433,76 +461,6 @@
       line-height: 1.45;
     }
 
-    /* bottom nav premium */
-    nav.bottom{
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      background: rgba(9,14,28,.78);
-      border-top: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(14px);
-      z-index: 9999;
-    }
-    nav .inner{
-      max-width: 920px;
-      margin: 0 auto;
-      display:flex;
-      justify-content:space-around;
-      gap: 10px;
-      padding: 10px 12px;
-    }
-    nav a{
-      position: relative;
-      flex: 1;
-      text-align:center;
-      text-decoration:none;
-      color: var(--muted);
-      font-size: 12px;
-      padding: 10px 8px;
-      border-radius: 18px;
-      border: 1px solid transparent;
-      transition: background .14s ease, border-color .14s ease, transform .12s ease, color .14s ease;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:6px;
-      font-weight: 900;
-      overflow: hidden;
-    }
-    nav a:active{transform: translateY(1px)}
-    nav a::before{
-      content:"";
-      position:absolute;
-      inset: -40%;
-      background: radial-gradient(circle at 30% 30%, rgba(45,125,255,.22), transparent 55%),
-                  radial-gradient(circle at 70% 70%, rgba(25,195,125,.18), transparent 60%);
-      opacity: 0;
-      transition: opacity .18s ease;
-      pointer-events:none;
-    }
-    nav a.active{
-      color: var(--text);
-      background: rgba(255,255,255,.08);
-      border-color: rgba(255,255,255,.14);
-    }
-    nav a.active::before{opacity: 1}
-    .navIco{
-      width: 28px;
-      height: 28px;
-      display:block;
-      fill: currentColor;
-      opacity: .95;
-    }
-    @media (prefers-reduced-motion: no-preference){
-      nav a.active .navIco{
-        animation: navPulse 1.4s ease-in-out infinite;
-      }
-      @keyframes navPulse{
-        0%,100%{transform: translateY(0) scale(1)}
-        50%{transform: translateY(-1px) scale(1.06)}
-      }
-    }
-
-    /* CSS richiesto */
     .emptyState{
       text-align:center;
       opacity:.85;
@@ -513,7 +471,263 @@
       margin-bottom:10px;
     }
 
+    .contactInfo{
+      margin: 8px 2px 0;
+      opacity:.75;
+      font-size:14px;
+      text-align:left;
+    }
+
+    /* ============== MAP UI ============== */
+    .mapShell{
+      margin-top: 14px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      background: rgba(0,0,0,.16);
+      box-shadow: 0 18px 45px rgba(0,0,0,.32);
+    }
+    .mapTopBar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .mapTitle{
+      font-weight: 980;
+      letter-spacing: .2px;
+    }
+    .mapHint{
+      font-size:12.5px;
+      color: var(--muted);
+      margin: 6px 0 0;
+      line-height: 1.35;
+    }
+    .mapBox{
+      width:100%;
+      height: 320px;
+    }
+    .mapBox.big{
+      height: 520px;
+    }
+    @media (max-width: 420px){
+      .mapBox.big{ height: 460px; }
+    }
+
+    /* Modal dettagli segnalazione (da PIN) */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index: 99999;
+      padding: 14px;
+    }
+    .modal{
+      width: min(920px, 100%);
+      background: linear-gradient(145deg, rgba(38,86,108,.92), rgba(12,25,45,.92));
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 28px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+      padding: 16px;
+      position:relative;
+      overflow:hidden;
+    }
+    .modalHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .modalHeader h3{
+      margin:0;
+      font-size:16px;
+      font-weight: 980;
+      letter-spacing: -.2px;
+    }
+    .modalClose{
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 8px 10px;
+      font-weight: 950;
+      min-height: 40px;
+    }
+    .modalBody{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .modalThumb{
+      width: 96px;
+      height: 96px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.12);
+      object-fit: cover;
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 12px 28px rgba(0,0,0,.32);
+      flex: 0 0 auto;
+    }
+    .modalText{
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+    .modalText p{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      max-height: 8.8em;
+      overflow:auto;
+    }
+
+    /* Leaflet stile (più “premium”) */
+    .leaflet-container{
+      background: rgba(0,0,0,.18);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    }
+    .leaflet-control-zoom a{
+      background: rgba(10,16,32,.75) !important;
+      color: var(--text) !important;
+      border: 1px solid rgba(255,255,255,.12) !important;
+      backdrop-filter: blur(10px);
+    }
+    .leaflet-popup-content-wrapper{
+      background: rgba(10,16,32,.92);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+    }
+    .leaflet-popup-tip{
+      background: rgba(10,16,32,.92);
+    }
+
+    /* =========================
+       DOCK PREMIUM (scenografica)
+       ========================= */
+    nav.bottom{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 9999;
+      padding: 10px 12px 12px;
+      background: transparent;
+    }
+
+    nav .inner{
+      max-width: 560px;
+      margin: 0 auto;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+
+      padding: 10px 10px;
+      border-radius: 28px;
+
+      background:
+        radial-gradient(240px 120px at 20% 10%, rgba(45,125,255,.22), transparent 60%),
+        radial-gradient(240px 120px at 80% 10%, rgba(25,195,125,.18), transparent 60%),
+        rgba(9,14,28,.72);
+
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position:relative;
+      overflow:hidden;
+    }
+
+    nav .inner::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      border-radius: 28px;
+      pointer-events:none;
+      background: linear-gradient(135deg, rgba(45,125,255,.30), rgba(25,195,125,.22), rgba(255,255,255,.06));
+      opacity:.55;
+      mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+      -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+      padding:1px;
+    }
+
+    nav a{
+      flex: 1;
+      text-align:center;
+      text-decoration:none;
+      color: rgba(169,182,219,.92);
+      font-size: 12px;
+      padding: 10px 6px;
+      border-radius: 22px;
+      border: 1px solid transparent;
+      transition: background .16s ease, border-color .16s ease, transform .16s ease, color .16s ease;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      font-weight: 950;
+      position:relative;
+      overflow:hidden;
+      min-height: 62px;
+    }
+
+    .navIco{
+      width: 28px;
+      height: 28px;
+      display:block;
+      fill: currentColor;
+      opacity: .98;
+      transform: translateZ(0);
+    }
+
+    nav a:active{transform: translateY(1px)}
+
+    nav a.active{
+      color: var(--text);
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.14);
+    }
+    nav a.active::before{
+      content:"";
+      position:absolute;
+      inset:-30%;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(45,125,255,.40), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(25,195,125,.22), transparent 55%);
+      opacity:.65;
+      pointer-events:none;
+      transform: translateY(-6px);
+    }
+    nav a.active::after{
+      content:"";
+      position:absolute;
+      bottom:8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 0 0 6px rgba(45,125,255,.14);
+      opacity:.95;
+    }
+
     @media (prefers-reduced-motion: no-preference){
+      nav a.active .navIco{
+        animation: navPulse 1.9s ease-in-out infinite;
+      }
+      @keyframes navPulse{
+        0%   { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(45,125,255,0)); }
+        45%  { transform: translateY(-1px) scale(1.05); filter: drop-shadow(0 10px 18px rgba(45,125,255,.18)); }
+        100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(45,125,255,0)); }
+      }
       .card{animation: pop .18s ease both}
       @keyframes pop{
         from{transform: translateY(8px); opacity:0}
@@ -557,6 +771,7 @@
 
         <div class="btnRow">
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
+          <a class="btn ghost" href="#/map">🗺️ Mappa</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti</a>
         </div>
       </div>
@@ -568,6 +783,18 @@
             <div class="hint" style="margin:0">Compili • Aggiungi foto • Invi • Ti resta lo storico</div>
           </div>
           <a class="btn small ghost" href="#/report">Vai →</a>
+        </div>
+
+        <!-- Mini mappa Home (riempie spazio e fa scena) -->
+        <div class="mapShell" style="margin-top:14px">
+          <div class="mapTopBar">
+            <div>
+              <div class="mapTitle">Mappa segnalazioni</div>
+              <div class="mapHint">Mostra i punti salvati sul dispositivo (PIN cliccabili).</div>
+            </div>
+            <a class="btn small ghost" href="#/map">Apri</a>
+          </div>
+          <div id="mapHome" class="mapBox"></div>
         </div>
       </div>
     </section>
@@ -588,6 +815,14 @@
 
         <label for="descrizione">Descrizione</label>
         <textarea id="descrizione" maxlength="700" placeholder="Spiega cosa succede, dove e quando…"></textarea>
+
+        <!-- POSIZIONE -->
+        <label>Posizione (opzionale)</label>
+        <div class="row">
+          <button class="ghost" id="btnGeo" type="button">📍 Usa posizione attuale</button>
+          <button class="ghost" id="btnGeoClear" type="button">🧹 Rimuovi posizione</button>
+        </div>
+        <div id="geoLine" class="hint" style="margin-top:10px; display:none;"></div>
 
         <label>Foto (opzionale)</label>
         <div class="row">
@@ -672,11 +907,10 @@
           <a class="btn primary" href="#/">🏠 Torna alla Home</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
           <a class="btn ghost" href="#/report">➕ Nuova segnalazione</a>
+          <a class="btn ghost" href="#/map">🗺️ Mappa</a>
         </div>
 
-        <div class="hint" style="margin-top:14px">
-          Risposta garantita nel minor tempo possibile.
-        </div>
+        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
 
@@ -694,15 +928,44 @@
           </div>
         </div>
 
-        <div id="emptyState" style="margin-top:12px">
+        <div id="emptyState" class="hint" style="margin-top:12px">
           <div class="emptyState">
             <div class="emptyIcon">📂</div>
-            <h3 style="margin:0 0 6px;font-weight:980">Nessuna segnalazione</h3>
-            <p style="margin:0;color:var(--muted);font-size:13px;line-height:1.5">Quando invii una segnalazione, la troverai qui.</p>
+            <h3 style="margin:0 0 6px">Nessuna segnalazione</h3>
+            <p style="margin:0;color:var(--muted)">Quando invii una segnalazione, la troverai qui.</p>
           </div>
         </div>
 
         <div id="list" class="list"></div>
+        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
+      </div>
+    </section>
+
+    <!-- MAP -->
+    <section id="view-map" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:980;font-size:18px">Mappa segnalazioni</div>
+            <div class="hint" style="margin:6px 0 0">PIN cliccabili: apri la scheda della segnalazione.</div>
+          </div>
+          <a class="btn small ghost" href="#/">← Home</a>
+        </div>
+
+        <div class="mapShell" style="margin-top:14px">
+          <div class="mapTopBar">
+            <div>
+              <div class="mapTitle">Tutti i punti</div>
+              <div class="mapHint">Visibili solo le segnalazioni con posizione salvata.</div>
+            </div>
+            <div class="row" style="flex:0 0 auto">
+              <button class="btn small ghost" id="btnMapFit" type="button">🎯 Inquadra</button>
+            </div>
+          </div>
+          <div id="mapMain" class="mapBox big"></div>
+        </div>
+
+        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
 
@@ -720,29 +983,74 @@
         <div class="btnRow" style="margin-top:14px">
           <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
+          <a class="btn ghost" href="#/map">🗺️ Apri Mappa</a>
         </div>
 
-        <div class="hint" style="margin-top:14px">
-          Risposta garantita nel minor tempo possibile.
+        <!-- Riempie spazio vuoto: mini-mappa -->
+        <div class="mapShell" style="margin-top:14px">
+          <div class="mapTopBar">
+            <div>
+              <div class="mapTitle">Ultime segnalazioni sulla mappa</div>
+              <div class="mapHint">Tocca un PIN per vedere il dettaglio.</div>
+            </div>
+          </div>
+          <div id="mapContacts" class="mapBox"></div>
         </div>
+
+        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
   </div>
 
+  <!-- MODAL DETTAGLIO (da PIN) -->
+  <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modalHeader">
+        <h3 id="modalTitle">Dettaglio segnalazione</h3>
+        <button class="modalClose" id="modalClose" type="button">✕</button>
+      </div>
+      <div class="modalBody">
+        <img id="modalThumb" class="modalThumb" alt="Foto segnalazione" style="display:none" />
+        <div class="modalText">
+          <div id="modalMeta" class="hint" style="margin:0"></div>
+          <p id="modalDesc"></p>
+          <div class="btnRow" style="margin-top:12px">
+            <a class="btn primary" id="modalGoMy" href="#/my">🗂️ Apri nello storico</a>
+            <button class="btn ghost" id="modalCopy" type="button">📋 Copia titolo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCK PREMIUM -->
   <nav class="bottom" aria-label="Navigazione">
     <div class="inner">
       <a href="#/" data-nav="home" class="active" aria-label="Home">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 8h-2v10a1 1 0 0 1-1 1h-5v-6H11v6H6a1 1 0 0 1-1-1V11H3l9-8z"/></svg>
         <span>Home</span>
       </a>
+
       <a href="#/report" data-nav="report" aria-label="Segnala">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V4zm4 4h8v2H8V8zm0 4h8v2H8v-2zm0 4h6v2H8v-2z"/><path d="M20 8h2v14a2 2 0 0 1-2 2H8v-2h12V8z"/></svg>
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V4zm4 4h8v2H8V8zm0 4h8v2H8v-2zm0 4h6v2H8v-2z"/>
+          <path d="M20 8h2v14a2 2 0 0 1-2 2H8v-2h12V8z"/>
+        </svg>
         <span>Segnala</span>
       </a>
+
       <a href="#/my" data-nav="my" aria-label="Storico">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 4h6v2H9V8zm0 4h6v2H9v-2zm0 4h4v2H9v-2z"/></svg>
         <span>Storico</span>
       </a>
+
+      <a href="#/map" data-nav="map" aria-label="Mappa">
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 5l-6 2-6-2v15l6 2 6-2 6 2V7l-6-2zm0 2.1l4 1.3v11.4l-4-1.3V7.1zM9 7.1l4-1.3v11.4l-4 1.3V7.1zM3 8.4l4 1.3v11.4l-4-1.3V8.4z"/>
+        </svg>
+        <span>Mappa</span>
+      </a>
+
       <a href="#/contacts" data-nav="contacts" aria-label="Contatti">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4.4 0-8 2-8 4.5V21h16v-2.5C20 16 16.4 14 12 14z"/></svg>
         <span>Contatti</span>
@@ -757,8 +1065,6 @@
     const CONFIG = {
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
-
-      // Worker (invio segnalazioni)
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026"
     };
@@ -816,6 +1122,7 @@
       success: document.getElementById("view-success"),
       my: document.getElementById("view-my"),
       contacts: document.getElementById("view-contacts"),
+      map: document.getElementById("view-map")
     };
 
     const navLinks = Array.from(document.querySelectorAll("nav a[data-nav]"));
@@ -827,7 +1134,20 @@
       Object.values(views).forEach(v => v.classList.add("hidden"));
       views[key].classList.remove("hidden");
       setActiveNav(key);
+
       if(key === "my") renderList();
+      if(key === "map") {
+        ensureMaps();
+        refreshAllMaps();
+        setTimeout(() => { try{ mapMain?.invalidateSize(); }catch{} }, 60);
+      }
+      if(key === "home" || key === "contacts"){
+        ensureMaps();
+        refreshAllMaps();
+        setTimeout(() => { try{ mapHome?.invalidateSize(); }catch{} }, 60);
+        setTimeout(() => { try{ mapContacts?.invalidateSize(); }catch{} }, 60);
+      }
+
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -839,12 +1159,13 @@
       if(key === "success") return showView("success");
       if(key === "my") return showView("my");
       if(key === "contacts") return showView("contacts");
+      if(key === "map") return showView("map");
       showView("home");
     }
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts
+    // Contacts (Email + Mappa)
     // =========================
     const mail = document.getElementById("mailLink");
     const map = document.getElementById("mapLink");
@@ -860,7 +1181,7 @@
     // =========================
     // Storage
     // =========================
-    const STORAGE_KEY = "segnalafacile_reports_v6";
+    const STORAGE_KEY = "segnalafacile_reports_v6"; // bump per includere geo
 
     function loadReports(){
       try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -871,7 +1192,7 @@
     }
 
     // =========================
-    // Form + multi-photo
+    // Form + multi-photo + GEO
     // =========================
     const elTitolo = document.getElementById("titolo");
     const elDescrizione = document.getElementById("descrizione");
@@ -895,13 +1216,58 @@
     const photoMeta = document.getElementById("photoMeta");
     const thumbs = document.getElementById("thumbs");
 
+    // GEO UI
+    const btnGeo = document.getElementById("btnGeo");
+    const btnGeoClear = document.getElementById("btnGeoClear");
+    const geoLine = document.getElementById("geoLine");
+    let geo = null; // {lat,lng,acc}
+
+    function renderGeo(){
+      if(!geo){
+        geoLine.style.display = "none";
+        geoLine.textContent = "";
+        return;
+      }
+      geoLine.style.display = "block";
+      geoLine.textContent = `📍 Posizione salvata: ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)} (±${Math.round(geo.acc)}m)`;
+    }
+
+    btnGeo?.addEventListener("click", async () => {
+      if(!navigator.geolocation){
+        showBanner("error", "Geolocalizzazione non supportata su questo dispositivo.", 4500);
+        return;
+      }
+      showBanner("info", "Recupero posizione…");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          geo = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy || 0 };
+          renderGeo();
+          hideBanner();
+          showBanner("success", "Posizione acquisita ✅", 2200);
+          refreshAllMaps();
+        },
+        (err) => {
+          console.warn(err);
+          showBanner("error", "Posizione non disponibile (permesso negato o GPS spento).", 5500);
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 }
+      );
+    });
+
+    btnGeoClear?.addEventListener("click", () => {
+      geo = null;
+      renderGeo();
+      showBanner("info", "Posizione rimossa.", 2000);
+      refreshAllMaps();
+    });
+
     // progress UI
     const progressWrap = document.getElementById("progressWrap");
     const progressStep = document.getElementById("progressStep");
     const progressBar = document.getElementById("progressBar");
     const progressHint = document.getElementById("progressHint");
 
-    let photos = [];
+    let photos = []; // [{dataUrl, name, type, blobSize}]
 
     function toggleContactBox(){
       const isAnon = !!elAnonimo.checked;
@@ -1054,9 +1420,17 @@
         pill3.className = "pill";
         pill3.textContent = r.photoDataUrl ? "📷 Foto" : "📷 Nessuna foto";
 
-        meta.append(pill1,pill2,pill3);
+        const pill4 = document.createElement("span");
+        pill4.className = "pill";
+        pill4.textContent = (r.geo && typeof r.geo.lat === "number") ? "📍 In mappa" : "📍 Nessuna posizione";
+
+        meta.append(pill1,pill2,pill3,pill4);
         body.append(h3,p,meta);
         item.append(img, body);
+
+        // click per aprire modal
+        item.addEventListener("click", () => openReportModal(r));
+
         listEl.append(item);
       });
     }
@@ -1065,42 +1439,77 @@
       if(!confirm("Vuoi svuotare lo storico locale?")) return;
       saveReports([]);
       renderList();
+      refreshAllMaps();
       showBanner("info", "Storico svuotato.", 2500);
     });
 
     // =========================
-    // Send (Worker)
+    // Modal dettaglio
+    // =========================
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalClose = document.getElementById("modalClose");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMeta = document.getElementById("modalMeta");
+    const modalDesc = document.getElementById("modalDesc");
+    const modalThumb = document.getElementById("modalThumb");
+    const modalCopy = document.getElementById("modalCopy");
+
+    function openReportModal(r){
+      modalTitle.textContent = r.titolo || "Dettaglio segnalazione";
+      modalMeta.textContent = `${r.when || ""} • ${r.anonimo ? "Anonimo" : "Con contatto"}${(r.geo && r.geo.lat) ? ` • ${r.geo.lat.toFixed(5)}, ${r.geo.lng.toFixed(5)}` : ""}`;
+      modalDesc.textContent = r.descrizione || "";
+
+      if(r.photoDataUrl){
+        modalThumb.src = r.photoDataUrl;
+        modalThumb.style.display = "block";
+      }else{
+        modalThumb.style.display = "none";
+        modalThumb.removeAttribute("src");
+      }
+
+      modalCopy.onclick = async () => {
+        try{
+          await navigator.clipboard.writeText(r.titolo || "");
+          showBanner("success", "Titolo copiato ✅", 1800);
+        }catch{
+          showBanner("error", "Impossibile copiare (permessi browser).", 2500);
+        }
+      };
+
+      modalOverlay.style.display = "flex";
+      modalOverlay.setAttribute("aria-hidden","false");
+    }
+
+    function closeReportModal(){
+      modalOverlay.style.display = "none";
+      modalOverlay.setAttribute("aria-hidden","true");
+    }
+
+    modalClose.addEventListener("click", closeReportModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if(e.target === modalOverlay) closeReportModal();
+    });
+
+    // =========================
+    // Send
     // =========================
     async function sendToWorker(payload){
       const url = new URL(CONFIG.telegramWorkerUrl);
-
-      let res;
-      try{
-        res = await fetch(url.toString(), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Api-Key": CONFIG.telegramApiKey || ""
-          },
-          body: JSON.stringify(payload)
-        });
-      }catch(err){
-        throw new Error("FETCH_FAILED (probabile CORS o rete).");
-      }
+      const res = await fetch(url.toString(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": CONFIG.telegramApiKey || ""
+        },
+        body: JSON.stringify(payload)
+      });
 
       let data = null;
       try { data = await res.json(); } catch {}
-
-      if(!res.ok){
-        const msg = data?.error ? data.error : `HTTP_${res.status}`;
+      if(!res.ok || !data || data.ok !== true){
+        const msg = data?.error ? `${data.error}` : `HTTP_${res.status}`;
         throw new Error(msg);
       }
-
-      if(!data || data.ok !== true){
-        const msg = data?.error ? data.error : "WORKER_REPLY_INVALID";
-        throw new Error(msg);
-      }
-
       return data;
     }
 
@@ -1122,17 +1531,6 @@
       progressBar.style.width = "0%";
       progressStep.textContent = "1/3";
       progressHint.textContent = "";
-    }
-
-    function buildSenderContactString(name, phone, email){
-      const parts = [];
-      const n = (name || "").trim();
-      const p = (phone || "").trim();
-      const e = (email || "").trim();
-      if(n) parts.push(n);
-      if(p) parts.push(`Tel: ${p}`);
-      if(e) parts.push(`Email: ${e}`);
-      return parts.join(" • ");
     }
 
     btnSend.addEventListener("click", async () => {
@@ -1157,7 +1555,7 @@
         const okEmail = contactEmail ? isValidEmail(contactEmail) : false;
         const okPhone = contactPhone.length >= 6;
         if(!okEmail && !okPhone){
-          showBanner("error", "Se disattivi l'anonimato, inserisci almeno Email o Telefono.", 4500);
+          showBanner("error", "Se NON anonimo, inserisci almeno Email o Telefono.", 4500);
           return;
         }
       }
@@ -1169,10 +1567,6 @@
       const now = new Date();
       const first = photos[0] || null;
 
-      const senderContact = isAnon ? "" : buildSenderContactString(contactName, contactPhone, contactEmail);
-
-      // ✅ FIX per il Worker: aggiungo campi "senderContact/sender_contact/sender"
-      // (così qualunque controllo lato worker trova il contatto)
       const payload = {
         titolo,
         descrizione,
@@ -1184,13 +1578,13 @@
         contactEmail: isAnon ? "" : contactEmail,
         contactPhone: isAnon ? "" : contactPhone,
 
-        senderContact,
-        sender_contact: senderContact,
-        sender: isAnon ? null : {
-          name: contactName,
-          phone: contactPhone,
-          email: contactEmail
-        },
+        geo: geo ? { lat: geo.lat, lng: geo.lng, acc: geo.acc } : null,
+
+        photo: first ? {
+          dataUrl: first.dataUrl,
+          name: first.name || "foto.jpg",
+          type: first.type || "image/jpeg"
+        } : null,
 
         photos: photos.map(p => ({
           dataUrl: p.dataUrl,
@@ -1201,18 +1595,23 @@
 
       // salva in locale subito
       const arr = loadReports();
-      arr.push({
-        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+      const localItem = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         titolo,
         descrizione,
         anonimo: isAnon,
         when: payload.when,
-        photoDataUrl: first ? first.dataUrl : null
-      });
+        photoDataUrl: first ? first.dataUrl : null,
+        geo: payload.geo
+      };
+      arr.push(localItem);
       saveReports(arr);
 
+      // aggiorna mappe subito
+      refreshAllMaps();
+
       try{
-        showProgress(2, "Invio…");
+        showProgress(2, "Invio al server…");
         await sendToWorker(payload);
 
         showProgress(3, "Conferma invio…");
@@ -1237,21 +1636,178 @@
         photos = [];
         renderPhotoPreview();
 
+        geo = null;
+        renderGeo();
+
       }catch(e){
         hideProgress();
         hideBanner();
-        location.hash = "#/report";
-        showBanner("error", "Invio non riuscito: " + (e?.message || "errore sconosciuto") + " (nessun dato perso).", 9000);
+        location.hash = "#/success";
+        showBanner("error", "Invio non riuscito (nessun dato perso).", 6000);
         console.warn("Worker error:", e);
       }finally{
         btnSend.disabled = false;
       }
     });
 
+    // =========================
+    // MAPS (Leaflet)
+    // =========================
+    let mapHome = null;
+    let mapContacts = null;
+    let mapMain = null;
+
+    let layerHome = null;
+    let layerContacts = null;
+    let layerMain = null;
+
+    function createBaseMap(elId, opts = {}){
+      const el = document.getElementById(elId);
+      if(!el) return null;
+
+      // centro predefinito Cassino
+      const center = opts.center || [41.492, 13.831];
+      const zoom = opts.zoom || 12;
+
+      const m = L.map(el, {
+        zoomControl: true,
+        attributionControl: true
+      }).setView(center, zoom);
+
+      // OSM tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(m);
+
+      return m;
+    }
+
+    function ensureMaps(){
+      // Home map
+      if(!mapHome && document.getElementById("mapHome")){
+        mapHome = createBaseMap("mapHome", { zoom: 12 });
+        layerHome = L.layerGroup().addTo(mapHome);
+      }
+      // Contacts map
+      if(!mapContacts && document.getElementById("mapContacts")){
+        mapContacts = createBaseMap("mapContacts", { zoom: 12 });
+        layerContacts = L.layerGroup().addTo(mapContacts);
+      }
+      // Main map
+      if(!mapMain && document.getElementById("mapMain")){
+        mapMain = createBaseMap("mapMain", { zoom: 12 });
+        layerMain = L.layerGroup().addTo(mapMain);
+      }
+    }
+
+    function getGeoReports(){
+      const arr = loadReports();
+      return arr.filter(r => r && r.geo && typeof r.geo.lat === "number" && typeof r.geo.lng === "number");
+    }
+
+    function markerPopupHtml(r){
+      const safeTitle = (r.titolo || "Segnalazione").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const when = (r.when || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return `
+        <div style="min-width:220px">
+          <div style="font-weight:950;margin-bottom:6px">${safeTitle}</div>
+          <div style="opacity:.85;font-size:12px;margin-bottom:8px">${when}</div>
+          <button data-openid="${r.id}" style="
+            width:100%;
+            border:1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.08);
+            color:#eaf0ff;
+            border-radius: 14px;
+            padding:10px 12px;
+            font-weight:900;
+            cursor:pointer;
+          ">Apri segnalazione</button>
+        </div>
+      `;
+    }
+
+    function attachPopupButtonHandler(){
+      // gestisce click sui bottoni dentro popup leaflet
+      document.querySelectorAll('button[data-openid]').forEach(btn => {
+        if(btn._wired) return;
+        btn._wired = true;
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-openid");
+          const r = loadReports().find(x => x.id === id);
+          if(r) openReportModal(r);
+        });
+      });
+    }
+
+    function fillLayer(layer, mapObj, limit = Infinity){
+      if(!layer || !mapObj) return;
+
+      layer.clearLayers();
+      const reps = getGeoReports();
+      const items = reps.slice().reverse().slice(0, limit);
+
+      items.forEach(r => {
+        const lat = r.geo.lat;
+        const lng = r.geo.lng;
+
+        const mk = L.marker([lat, lng], { riseOnHover: true });
+        mk.addTo(layer);
+
+        mk.bindPopup(markerPopupHtml(r), { closeButton:true });
+
+        mk.on("popupopen", () => {
+          // serve perché Leaflet crea HTML dopo
+          setTimeout(attachPopupButtonHandler, 0);
+        });
+
+        mk.on("click", () => {
+          // click diretto: apri modal subito
+          openReportModal(r);
+        });
+      });
+
+      // se esiste almeno un punto, centra in modo “scenografico”
+      if(items.length){
+        const bounds = L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng]));
+        mapObj.fitBounds(bounds.pad(0.25));
+      }else{
+        // fallback Cassino
+        mapObj.setView([41.492, 13.831], 12);
+      }
+    }
+
+    function refreshAllMaps(){
+      try{
+        ensureMaps();
+        if(mapHome) fillLayer(layerHome, mapHome, 25);
+        if(mapContacts) fillLayer(layerContacts, mapContacts, 25);
+        if(mapMain) fillLayer(layerMain, mapMain, Infinity);
+      }catch(e){
+        console.warn("Map refresh error:", e);
+      }
+    }
+
+    document.getElementById("btnMapFit")?.addEventListener("click", () => {
+      if(!mapMain) return;
+      const items = getGeoReports();
+      if(!items.length){
+        showBanner("info", "Nessuna segnalazione con posizione.", 2500);
+        return;
+      }
+      const bounds = L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng]));
+      mapMain.fitBounds(bounds.pad(0.25));
+    });
+
+    // =========================
     // init
+    // =========================
     route();
     renderPhotoPreview();
     renderList();
+    renderGeo();
+    ensureMaps();
+    refreshAllMaps();
   </script>
 </body>
 </html>
