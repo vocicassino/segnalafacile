@@ -745,53 +745,6 @@
         to{transform: translateY(0); opacity:1}
       }
     }
-  
-/* docs preview */
-.docsList{
-  display:grid;
-  gap:8px;
-  margin-top:10px;
-}
-.docItem{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding: 10px 12px;
-  border-radius: 18px;
-  border:1px solid var(--stroke);
-  background: rgba(0,0,0,.14);
-}
-.docItem .left{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:0;
-}
-.docBadge{
-  width: 42px; height: 42px;
-  border-radius: 16px;
-  display:grid;
-  place-items:center;
-  font-weight: 980;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  flex:0 0 auto;
-}
-.docMeta{min-width:0}
-.docName{
-  font-weight: 950;
-  font-size: 13px;
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  max-width: 54vw;
-}
-.docSize{
-  font-size: 12px;
-  color: var(--muted);
-  margin-top:2px;
-}
   </style>
 </head>
 
@@ -899,25 +852,7 @@
             <div id="photoMeta" class="hint" style="margin:0"></div>
           </div>
           <div class="thumbs" id="thumbs"></div>
-        
-<label>Documenti (PDF/Word - opzionale)</label>
-<div class="row">
-  <button class="ghost" id="btnPickDocs" type="button">📎 Aggiungi documenti</button>
-  <input id="docsInput" type="file"
-         accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-         multiple class="hidden" />
-  <button class="danger" id="btnClearDocs" type="button">🧹 Rimuovi documenti</button>
-</div>
-
-<div id="docsPreview" class="preview">
-  <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
-    <div style="font-weight:980;color:var(--text)">Allegati</div>
-    <div id="docsMeta" class="hint" style="margin:0"></div>
-  </div>
-  <div class="docsList" id="docsList"></div>
-</div>
-
-</div>
+        </div>
 
         <div class="toggle">
           <div>
@@ -1166,7 +1101,7 @@
       telegramApiKey: "Marco-Admin-2026",
 
       // affidabilità: inviamo SOLO la prima foto al Worker (le altre restano in locale)
-      sendOnlyFirstPhotoToServer: false
+      sendOnlyFirstPhotoToServer: true
     };
 
     // =========================
@@ -1305,16 +1240,6 @@
 
     const elFotoCamera = document.getElementById("fotoCamera");
     const elFotoGallery = document.getElementById("fotoGallery");
-
-// documents (PDF/Word)
-const elDocsInput = document.getElementById("docsInput");
-const btnPickDocs = document.getElementById("btnPickDocs");
-const btnClearDocs = document.getElementById("btnClearDocs");
-const docsPreview = document.getElementById("docsPreview");
-const docsMeta = document.getElementById("docsMeta");
-const docsList = document.getElementById("docsList");
-
-let documents = []; // [{dataUrl,name,type,blobSize}]
 
     const btnPickCamera = document.getElementById("btnPickCamera");
     const btnPickGallery = document.getElementById("btnPickGallery");
@@ -1514,23 +1439,11 @@ let documents = []; // [{dataUrl,name,type,blobSize}]
     btnPickCamera.addEventListener("click", () => elFotoCamera.click());
     btnPickGallery.addEventListener("click", () => elFotoGallery.click());
 
-// documents handlers
-btnPickDocs.addEventListener("click", () => elDocsInput.click());
-
-btnClearDocs.addEventListener("click", () => {
-  elDocsInput.value = "";
-  documents = [];
-  renderDocsPreview();
-  showBanner("info", "Documenti rimossi.", 1800);
-});
-
-
     btnClearPhoto.addEventListener("click", () => {
       elFotoCamera.value = "";
       elFotoGallery.value = "";
       photos = [];
       renderPhotoPreview();
-    renderDocsPreview();
       showBanner("info", "Foto rimosse.", 1800);
     });
 
@@ -1620,104 +1533,6 @@ btnClearDocs.addEventListener("click", () => {
     elFotoGallery.addEventListener("change", async (e) => {
       await addFiles(e.target.files, false);
     });
-
-
-function docKindBadge(type, name){
-  const n = (name || "").toLowerCase();
-  const t = (type || "").toLowerCase();
-  if (t.includes("pdf") || n.endsWith(".pdf")) return "PDF";
-  if (t.includes("word") || n.endsWith(".doc") || n.endsWith(".docx")) return "DOC";
-  return "FILE";
-}
-
-function renderDocsPreview(){
-  docsList.innerHTML = "";
-
-  if(!documents.length){
-    docsPreview.style.display = "none";
-    docsMeta.textContent = "";
-    return;
-  }
-
-  docsPreview.style.display = "flex";
-  const totalBytes = documents.reduce((s,d) => s + (d.blobSize || 0), 0);
-  docsMeta.textContent = `${documents.length} documento/i • ${formatBytes(totalBytes)}`;
-
-  documents.forEach(d => {
-    const item = document.createElement("div");
-    item.className = "docItem";
-
-    const left = document.createElement("div");
-    left.className = "left";
-
-    const b = document.createElement("div");
-    b.className = "docBadge";
-    b.textContent = docKindBadge(d.type, d.name);
-
-    const meta = document.createElement("div");
-    meta.className = "docMeta";
-
-    const name = document.createElement("div");
-    name.className = "docName";
-    name.textContent = d.name || "documento";
-
-    const size = document.createElement("div");
-    size.className = "docSize";
-    size.textContent = formatBytes(d.blobSize || 0);
-
-    meta.append(name, size);
-    left.append(b, meta);
-
-    item.append(left);
-    docsList.append(item);
-  });
-}
-
-function fileToDataUrl(file){
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result || ""));
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
-}
-
-async function addDocs(fileList, replace=false){
-  const files = Array.from(fileList || []).filter(Boolean);
-  if(!files.length) return;
-
-  if(replace) documents = [];
-
-  const MAX_DOCS = 3;
-  const space = MAX_DOCS - documents.length;
-  const picked = files.slice(0, Math.max(0, space));
-
-  if(files.length > picked.length){
-    showBanner("info", `Massimo ${MAX_DOCS} documenti. Selezionati i primi ${picked.length}.`, 4500);
-  }
-
-  const MAX_MB = 6; // per file
-  for(const f of picked){
-    const sizeMb = (f.size || 0) / (1024*1024);
-    if(sizeMb > MAX_MB){
-      showBanner("error", `Documento troppo grande: ${f.name}. Max ${MAX_MB} MB.`, 5500);
-      continue;
-    }
-    const dataUrl = await fileToDataUrl(f);
-    documents.push({
-      dataUrl,
-      name: f.name || "documento",
-      type: f.type || "application/octet-stream",
-      blobSize: f.size || 0,
-    });
-  }
-
-  renderDocsPreview();
-}
-
-elDocsInput.addEventListener("change", async (e) => {
-  await addDocs(e.target.files, false);
-});
 
     // =========================
     // Reports list UI
@@ -1974,14 +1789,6 @@ elDocsInput.addEventListener("change", async (e) => {
         email: contactEmail
       });
 
-// documenti (PDF/Word) max 3
-const documentsToSend = documents.map(d => ({
-  dataUrl: d.dataUrl,
-  name: d.name || "documento",
-  type: d.type || "application/octet-stream"
-})).slice(0, 3);
-
-
       const payload = {
         titolo,
         descrizione,
@@ -2004,7 +1811,6 @@ const documentsToSend = documents.map(d => ({
         } : null,
 
         photos: photosToSend,
-      documents: documentsToSend,
 
         // ✅ COMPATIBILITÀ WORKER TELEGRAM (campi “attesi”)
         sender_contact,                              // <— fondamentale
@@ -2062,10 +1868,6 @@ const documentsToSend = documents.map(d => ({
         elFotoGallery.value = "";
         photos = [];
         renderPhotoPreview();
-
-        elDocsInput.value = "";
-        documents = [];
-        renderDocsPreview();
 
         stopLive();
         geo = null;
