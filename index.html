@@ -1101,7 +1101,7 @@
       telegramApiKey: "Marco-Admin-2026",
 
       // affidabilità: inviamo SOLO la prima foto al Worker (le altre restano in locale)
-      sendOnlyFirstPhotoToServer: false
+      sendOnlyFirstPhotoToServer: true
     };
 
     // =========================
@@ -1773,12 +1773,12 @@
         ? [{
             dataUrl: first.dataUrl,
             name: first.name || "foto.jpg",
-            type: first.type || "image/jpeg",
+            type: first.type || "image/jpeg"
           }]
         : photos.map(p => ({
             dataUrl: p.dataUrl,
             name: p.name || "foto.jpg",
-            type: p.type || "image/jpeg",
+            type: p.type || "image/jpeg"
           }));
 
       // ✅ CAMPO CRITICO: quello che il Worker vuole
