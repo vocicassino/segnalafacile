@@ -1,6 +1,6 @@
 {
-  "name": "SegnalaFacile",
-  "short_name": "SegnalaFacile",
+  "name": "Segnala Facile",
+  "short_name": "Segnala Facile",
   "start_url": "./index.html#/",
   "display": "standalone",
   "background_color": "#0b1220",
