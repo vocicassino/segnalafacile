@@ -1103,27 +1103,66 @@
       if(!mapMain && document.getElementById("mapMain")){ mapMain = createBaseMap("mapMain", { zoom: 12 }); layerMain = L.layerGroup().addTo(mapMain); }
     }
 
-    const colorMap = { verde: '#19c37d', strade: '#95a5a6', rifiuti: '#f39c12', luce: '#f1c40f', altro: '#2d7dff' };
+// Nuova mappatura: associamo ad ogni categoria sia il colore che l'emoji
+    const catInfo = { 
+      verde:   { color: '#19c37d', emoji: '🌳' }, 
+      strade:  { color: '#95a5a6', emoji: '🛣️' }, 
+      rifiuti: { color: '#f39c12', emoji: '🗑️' }, 
+      luce:    { color: '#f1c40f', emoji: '💡' }, 
+      altro:   { color: '#2d7dff', emoji: '❓' } 
+    };
 
     function fillLayer(layer, mapObj, limit = Infinity){
-      if(!layer || !mapObj) return; layer.clearLayers();
+      if(!layer || !mapObj) return; 
+      layer.clearLayers();
       const items = loadReports().filter(r => r.geo).slice().reverse().slice(0, limit);
 
       items.forEach(r => {
-        const color = colorMap[r.categoria] || '#2d7dff';
-        const mk = L.circleMarker([r.geo.lat, r.geo.lng], { radius: 10, color: color, fillColor: color, fillOpacity: 0.85, riseOnHover: true });
+        // Recuperiamo i dati della categoria (se non c'è, usiamo "altro")
+        const info = catInfo[r.categoria] || catInfo.altro;
+
+        // Creiamo l'icona HTML personalizzata (cerchio scuro con bordo colorato ed emoji al centro)
+        const customIcon = L.divIcon({
+          html: `<div style="
+            background: rgba(10, 16, 32, 0.95);
+            border: 2px solid ${info.color};
+            border-radius: 50%;
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+          ">${info.emoji}</div>`,
+          className: '', // Importante: rimuove lo sfondo bianco di default di Leaflet
+          iconSize: [36, 36],
+          iconAnchor: [18, 18], // Centra esattamente l'icona sulle coordinate
+          popupAnchor: [0, -18] // Fa comparire il fumetto appena sopra l'icona
+        });
+
+        // Usiamo L.marker invece di L.circleMarker e gli passiamo la customIcon
+        const mk = L.marker([r.geo.lat, r.geo.lng], { icon: customIcon, riseOnHover: true });
         mk.addTo(layer);
+        
+        // Aggiungiamo il popup con l'emoji anche nel titolo per coerenza
         mk.bindPopup(`
           <div style="min-width:200px">
-            <div style="font-weight:950;margin-bottom:6px">${r.titolo}</div>
-            <div style="opacity:.85;font-size:12px;margin-bottom:8px">${r.when}</div>
-            <button onclick="goToHistory('${r.id}')" style="width:100%; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.08); color:#eaf0ff; border-radius: 14px; padding:10px; font-weight:900; cursor:pointer;">Apri segnalazione</button>
+            <div style="font-weight:950; margin-bottom:6px; font-size:15px; display:flex; gap:6px; align-items:center;">
+              <span>${info.emoji}</span> <span>${r.titolo}</span>
+            </div>
+            <div style="opacity:.85; font-size:12px; margin-bottom:10px">${r.when}</div>
+            <button onclick="goToHistory('${r.id}')" style="width:100%; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.08); color:#eaf0ff; border-radius: 14px; padding:10px; font-weight:900; cursor:pointer;">
+              Apri segnalazione
+            </button>
           </div>
         `, { closeButton:true });
       });
 
-      if(items.length){ mapObj.fitBounds(L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng])).pad(0.25)); }
-      else{ mapObj.setView([41.492, 13.831], 12); }
+      // Inquadra tutti i marker
+      if(items.length){ 
+        mapObj.fitBounds(L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng])).pad(0.25)); 
+      } else { 
+        mapObj.setView([41.492, 13.831], 12); 
+      }
     }
 
     function refreshAllMaps(){
