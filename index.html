@@ -2,9 +2,9 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
-  <title>SegnalaFacile</title>
+  <title>SegnalaFacile Pro</title>
 
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
@@ -34,6 +34,7 @@
         radial-gradient(1100px 700px at 85% 5%, rgba(25,195,125,.20), transparent 60%),
         radial-gradient(900px 650px at 50% 120%, rgba(45,125,255,.12), transparent 60%),
         linear-gradient(180deg, var(--bg), var(--bg2));
+      background-attachment: fixed;
     }
 
     .wrap{
@@ -55,7 +56,7 @@
     .card{
       position:relative;
       background: linear-gradient(145deg, rgba(38,86,108,.85), rgba(12,25,45,.85));
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255,255,255,.12);
       border-radius: 28px; padding: 24px;
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
@@ -95,7 +96,7 @@
     .primary:hover{filter: brightness(1.06)}
     .ghost{ background: rgba(255,255,255,.055); border:1px solid var(--stroke); }
     .ghost:hover{border-color: var(--stroke2)}
-    .danger{ background: rgba(255,77,79,.14); border:1px solid rgba(255,77,79,.35); }
+    .danger{ background: rgba(255,77,79,.14); border:1px solid rgba(255,77,79,.35); color: var(--danger); }
     .danger:hover{border-color: rgba(255,77,79,.55)}
     .small{padding:10px 12px; border-radius:16px; font-size:13px; min-height:42px}
 
@@ -170,17 +171,20 @@
     .item.highlight { border-color: var(--accent); box-shadow: 0 0 15px rgba(45,125,255,0.3); }
     .item-top { display:flex; gap:12px; align-items:flex-start; }
     .item:hover{border-color: var(--stroke2)}
-    .thumb{
-      width: 78px; height: 78px; border-radius: 22px; border: 1px solid var(--stroke);
-      object-fit: cover; background: rgba(255,255,255,.05); box-shadow: 0 10px 18px rgba(0,0,0,.28);
-    }
+    
+    .cat-verde { border-left: 5px solid #19c37d; }
+    .cat-strade { border-left: 5px solid #95a5a6; }
+    .cat-rifiuti { border-left: 5px solid #f39c12; }
+    .cat-luce { border-left: 5px solid #f1c40f; }
+    .cat-altro, .cat-ristorante, .cat-negozio, .cat-cultura, .cat-natura { border-left: 5px solid #2d7dff; }
+
     .item h3{margin:0; font-size:16px; font-weight:950}
     .item p{margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.45}
     .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
 
-    /* NUOVO: Griglia foto interna allo storico */
     .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 10px; }
     .gallery-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--stroke); cursor: pointer; }
+    .place-img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 12px; margin-top: 10px; border: 1px solid var(--stroke); }
 
     .hidden{display:none !important}
     section{display:none} section:not(.hidden){display:block}
@@ -227,7 +231,7 @@
     /* Modals */
     .modalOverlay{
       position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(8px);
-      display:none; align-items:flex-end; justify-content:center; z-index: 99999; padding: 14px;
+      display:none; align-items:center; justify-content:center; z-index: 99999; padding: 14px;
     }
     .modal{
       width: min(920px, 100%); background: linear-gradient(145deg, rgba(38,86,108,.92), rgba(12,25,45,.92));
@@ -238,7 +242,7 @@
     .modalHeader h3{ margin:0; font-size:16px; font-weight: 980; letter-spacing: -.2px; }
     .modalClose{
       border:1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.20); color: var(--text);
-      border-radius: 16px; padding: 8px 10px; font-weight: 950; min-height: 40px;
+      border-radius: 16px; padding: 8px 10px; font-weight: 950; min-height: 40px; cursor:pointer;
     }
     .mapPickerBox{ width:100%; height: 380px; border-radius: 22px; overflow:hidden; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.16); margin-top: 10px; }
 
@@ -251,9 +255,9 @@
     /* DOCK PREMIUM */
     nav.bottom{ position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; padding: 10px 12px 12px; background: transparent; }
     nav .inner{
-      max-width: 560px; margin: 0 auto; display:flex; justify-content:space-between; gap: 10px;
-      padding: 10px 10px; border-radius: 28px;
-      background: radial-gradient(240px 120px at 20% 10%, rgba(45,125,255,.22), transparent 60%), radial-gradient(240px 120px at 80% 10%, rgba(25,195,125,.18), transparent 60%), rgba(9,14,28,.72);
+      max-width: 560px; margin: 0 auto; display:flex; justify-content:space-between; gap: 5px;
+      padding: 10px; border-radius: 28px;
+      background: radial-gradient(240px 120px at 20% 10%, rgba(45,125,255,.22), transparent 60%), radial-gradient(240px 120px at 80% 10%, rgba(25,195,125,.18), transparent 60%), rgba(9,14,28,.85);
       border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 50px rgba(0,0,0,.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); position:relative; overflow:hidden;
     }
     nav .inner::before{
@@ -262,11 +266,11 @@
       opacity:.55; mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000); -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000); padding:1px;
     }
     nav a{
-      flex: 1; text-align:center; text-decoration:none; color: rgba(169,182,219,.92); font-size: 12px;
-      padding: 10px 6px; border-radius: 22px; border: 1px solid transparent; transition: background .16s ease, border-color .16s ease, transform .16s ease, color .16s ease;
+      flex: 1; text-align:center; text-decoration:none; color: rgba(169,182,219,.92); font-size: 11px;
+      padding: 10px 2px; border-radius: 22px; border: 1px solid transparent; transition: background .16s ease, border-color .16s ease, transform .16s ease, color .16s ease;
       display:flex; flex-direction:column; align-items:center; gap:6px; font-weight: 950; position:relative; overflow:hidden; min-height: 62px;
     }
-    .navIco{ width: 28px; height: 28px; display:block; fill: currentColor; opacity: .98; transform: translateZ(0); }
+    .navIco{ width: 26px; height: 26px; display:block; fill: currentColor; opacity: .98; transform: translateZ(0); }
     nav a:active{transform: translateY(1px)}
     nav a.active{ color: var(--text); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); }
     nav a.active::before{
@@ -275,7 +279,7 @@
       opacity:.65; pointer-events:none; transform: translateY(-6px);
     }
     nav a.active::after{
-      content:""; position:absolute; bottom:8px; width: 8px; height: 8px; border-radius: 999px;
+      content:""; position:absolute; bottom:8px; width: 6px; height: 6px; border-radius: 999px;
       background: rgba(255,255,255,.92); box-shadow: 0 0 0 6px rgba(45,125,255,.14); opacity:.95;
     }
 
@@ -330,8 +334,8 @@
       <div class="card hero">
         <div class="heroTop">
           <div>
-            <h1>Segnala subito.</h1>
-            <p>Descrivi cosa succede, aggiungi le foto e invia. Il tuo storico resta sul dispositivo.</p>
+            <h1>La tua Città.</h1>
+            <p>Segnala problemi, scopri luoghi e leggi le recensioni della community.</p>
           </div>
           <img class="heroCover" src="icons/hero.jpg" alt="SegnalaFacile" loading="lazy">
         </div>
@@ -341,29 +345,22 @@
         </div>
 
         <div class="btnRow">
+          <a class="btn ghost" href="#/places">⭐ Scopri Luoghi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
-          <a class="btn ghost" href="#/map">🗺️ Mappa</a>
-          <a class="btn ghost" href="#/contacts">☎️ Contatti</a>
+          <a class="btn ghost" href="#/contacts">☎️ Contatti Comune</a>
         </div>
       </div>
 
       <div class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
           <div>
-            <div style="font-weight:980;margin-bottom:4px">Come funziona</div>
-            <div class="hint" style="margin:0">Compili • Aggiungi foto • Invi • Ti resta lo storico</div>
+            <div style="font-weight:980;margin-bottom:4px">Mappa in tempo reale</div>
+            <div class="hint" style="margin:0">Punti = Segnalazioni | Stelle = Luoghi</div>
           </div>
-          <a class="btn small ghost" href="#/report">Vai →</a>
+          <a class="btn small ghost" href="#/map">Mappa →</a>
         </div>
 
         <div class="mapShell" style="margin-top:14px">
-          <div class="mapTopBar">
-            <div>
-              <div class="mapTitle">Mappa segnalazioni</div>
-              <div class="mapHint">Mostra i punti salvati sul dispositivo (PIN cliccabili).</div>
-            </div>
-            <a class="btn small ghost" href="#/map">Apri</a>
-          </div>
           <div id="mapHome" class="mapBox"></div>
         </div>
       </div>
@@ -440,7 +437,7 @@
             <strong>Invia anche in forma anonima</strong><br>
             <span>Se disattivi, puoi lasciare un contatto per essere richiamato</span>
           </div>
-          <input id="anonimo" type="checkbox" />
+          <input id="anonimo" type="checkbox" checked />
         </div>
 
         <div id="contactBox" class="contactBox hidden">
@@ -472,10 +469,10 @@
         </div>
 
         <div class="btnRow">
-          <button class="primary" id="btnSend" type="button">✅ Invia</button>
+          <button class="primary" id="btnSend" type="button">✅ Invia Segnalazione</button>
           <a class="btn ghost" href="#/my">🗂️ Vedi storico</a>
         </div>
-        <div class="hint">La segnalazione viene salvata sul dispositivo.</div>
+        <div class="hint">La segnalazione viene inviata al server e salvata sul dispositivo.</div>
       </div>
     </section>
 
@@ -485,16 +482,62 @@
           <div style="font-size:22px">✅</div>
           <div>
             <div style="font-weight:980;font-size:18px">Segnalazione inviata correttamente</div>
-            <div class="hint" style="margin:6px 0 0">Salvata in locale. Grazie.</div>
+            <div class="hint" style="margin:6px 0 0">Grazie per il tuo contributo.</div>
           </div>
         </div>
         <div class="btnRow" style="margin-top:14px">
           <a class="btn primary" href="#/">🏠 Torna alla Home</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
-          <a class="btn ghost" href="#/report">➕ Nuova segnalazione</a>
-          <a class="btn ghost" href="#/map">🗺️ Mappa</a>
         </div>
-        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
+      </div>
+    </section>
+
+    <section id="view-places" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+          <div>
+            <div style="font-weight:980;font-size:18px">Luoghi e Recensioni</div>
+            <div class="hint" style="margin:0">Scopri i posti suggeriti.</div>
+          </div>
+          <button class="btn primary small" onclick="location.hash='#/add-place'">➕ Recensisci</button>
+        </div>
+        <div id="public-places-list" class="list">
+           <div class="hint" style="text-align:center;">Caricamento dati dal cloud...</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-add-place" class="grid hidden">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="margin:0">Nuova Recensione</h2>
+          <a class="btn small ghost" href="#/places">← Indietro</a>
+        </div>
+        
+        <label>Nome del Locale o Posto</label>
+        <input id="placeName" type="text" placeholder="Es. Pizzeria Da Mario, Parco Naturale...">
+
+        <label>Categoria</label>
+        <select id="placeCategory">
+          <option value="ristorante">🍕 Ristorante / Bar</option>
+          <option value="negozio">🛍️ Negozio</option>
+          <option value="cultura">🏛️ Monumento / Cultura</option>
+          <option value="natura">🌲 Natura / Parco</option>
+        </select>
+
+        <label>La tua recensione</label>
+        <textarea id="placeReview" placeholder="Come ti sei trovato? Cosa consigli?"></textarea>
+
+        <label>Posizione e Foto</label>
+        <div class="row">
+          <button class="ghost" id="btnPlaceGeoPick" type="button">📍 Posizione sulla mappa (Obbligatoria)</button>
+          <button class="ghost" onclick="document.getElementById('placePhotoInput').click()" type="button">📷 Aggiungi Foto</button>
+          <input type="file" id="placePhotoInput" accept="image/*" class="hidden" />
+        </div>
+        <div id="placeGeoLine" class="hint" style="margin-top:10px; color:var(--accent2); font-weight:bold;"></div>
+        <div id="placePhotoPreview" style="margin-top:10px;"></div>
+
+        <button class="btn primary" id="btnSendPlace" type="button" style="width:100%; margin-top:20px;">⭐ Pubblica Recensione</button>
       </div>
     </section>
 
@@ -503,7 +546,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
             <div style="font-weight:980;font-size:18px">Le mie segnalazioni</div>
-            <div class="hint" style="margin:6px 0 0">Salvate nel database locale del dispositivo.</div>
+            <div class="hint" style="margin:6px 0 0">Il tuo archivio locale.</div>
           </div>
           <div class="row" style="flex:0 0 auto">
             <a class="btn small ghost" href="#/report">➕ Nuova</a>
@@ -520,7 +563,6 @@
         </div>
 
         <div id="list" class="list"></div>
-        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
 
@@ -528,24 +570,20 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:980;font-size:18px">Mappa segnalazioni</div>
-            <div class="hint" style="margin:6px 0 0">PIN colorati per categoria. Clicca per i dettagli.</div>
+            <div style="font-weight:980;font-size:18px">Mappa segnalazioni e luoghi</div>
+            <div class="hint" style="margin:6px 0 0">Dati condivisi dalla community.</div>
           </div>
-          <a class="btn small ghost" href="#/">← Home</a>
+          <button class="btn small ghost" onclick="fetchPublicData()" type="button">🔄 Sincronizza</button>
         </div>
         <div class="mapShell" style="margin-top:14px">
           <div class="mapTopBar">
             <div>
               <div class="mapTitle">Tutti i punti</div>
-              <div class="mapHint">Visibili solo le segnalazioni con posizione salvata.</div>
             </div>
-            <div class="row" style="flex:0 0 auto">
-              <button class="btn small ghost" id="btnMapFit" type="button">🎯 Inquadra Tutto</button>
-            </div>
+            <button class="btn small ghost" id="btnMapFit" type="button">🎯 Inquadra Tutto</button>
           </div>
           <div id="mapMain" class="mapBox big"></div>
         </div>
-        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
 
@@ -554,25 +592,14 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
             <div style="font-weight:980;font-size:18px">Contatti</div>
-            <div class="hint" style="margin:6px 0 0">Per comunicazioni generali.</div>
+            <div class="hint" style="margin:6px 0 0">Per comunicazioni generali al Comune.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
         <div class="btnRow" style="margin-top:14px">
           <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
           <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione Comune</a>
-          <a class="btn ghost" href="#/map">🗺️ Apri Mappa Interattiva</a>
         </div>
-        <div class="mapShell" style="margin-top:14px">
-          <div class="mapTopBar">
-            <div>
-              <div class="mapTitle">Ultime segnalazioni sulla mappa</div>
-              <div class="mapHint">Tocca un PIN per vedere il dettaglio.</div>
-            </div>
-          </div>
-          <div id="mapContacts" class="mapBox"></div>
-        </div>
-        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
   </div>
@@ -606,6 +633,12 @@
         </svg>
         <span>Segnala</span>
       </a>
+      <a href="#/places" data-nav="places" aria-label="Luoghi">
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+        <span>Luoghi</span>
+      </a>
       <a href="#/my" data-nav="my" aria-label="Storico">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 4h6v2H9V8zm0 4h6v2H9v-2zm0 4h4v2H9v-2z"/></svg>
         <span>Storico</span>
@@ -616,27 +649,36 @@
         </svg>
         <span>Mappa</span>
       </a>
-      <a href="#/contacts" data-nav="contacts" aria-label="Contatti">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4.4 0-8 2-8 4.5V21h16v-2.5C20 16 16.4 14 12 14z"/></svg>
-        <span>Contatti</span>
-      </a>
     </div>
   </nav>
 
   <script>
     // =========================
-    // CONFIG
+    // CONFIG E VARIABILI GLOBALI
     // =========================
     const CONFIG = {
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
+      // Assicurati che questo sia l'url del tuo Worker Cloudflare aggiornato
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
-      telegramApiKey: "Marco-Admin-2026",
-      sendOnlyFirstPhotoToServer: false
+      telegramApiKey: "Marco-Admin-2026"
+    };
+
+    // Database Pubblico (Cloud D1)
+    window.publicSegnalazioni = [];
+    window.publicLuoghi = [];
+
+    // Mappatura EMOJI per la Mappa
+    const catInfo = { 
+      verde:   { color: '#19c37d', emoji: '🌳' }, 
+      strade:  { color: '#95a5a6', emoji: '🛣️' }, 
+      rifiuti: { color: '#f39c12', emoji: '🗑️' }, 
+      luce:    { color: '#f1c40f', emoji: '💡' }, 
+      altro:   { color: '#2d7dff', emoji: '❓' } 
     };
 
     // =========================
-    // INDEXEDDB - Gestione Memoria Infinità
+    // INDEXEDDB - Gestione Memoria Locale
     // =========================
     let db;
     let localReportsCache = [];
@@ -650,16 +692,11 @@
         req.onsuccess = (e) => {
           db = e.target.result;
           const tx = db.transaction("reports", "readonly");
-          const store = tx.objectStore("reports");
-          const getReq = store.getAll();
-          getReq.onsuccess = () => {
-            localReportsCache = getReq.result || [];
-            resolve();
-          };
+          const getReq = tx.objectStore("reports").getAll();
+          getReq.onsuccess = () => { localReportsCache = getReq.result || []; resolve(); };
           getReq.onerror = () => { localReportsCache = []; resolve(); };
         };
         req.onerror = () => {
-          // Fallback a localStorage se IndexedDB fallisce
           try { localReportsCache = JSON.parse(localStorage.getItem("segnalafacile_reports_v7") || "[]"); } 
           catch { localReportsCache = []; }
           resolve();
@@ -668,7 +705,6 @@
     }
 
     function loadReports() { return localReportsCache; }
-
     function saveReports(arr) {
       localReportsCache = arr;
       if (db) {
@@ -682,508 +718,335 @@
     }
 
     // =========================
-    // Banner helper
+    // UI Helpers
     // =========================
     const banner = document.getElementById("banner");
     const bannerText = document.getElementById("bannerText");
-    const bannerClose = document.getElementById("bannerClose");
     let bannerTimer = null;
-
-    function showBanner(type, text, autoHideMs = 0){
-      if (bannerTimer) { clearTimeout(bannerTimer); bannerTimer = null; }
+    function showBanner(type, text, autoHideMs = 4000){
+      if (bannerTimer) clearTimeout(bannerTimer);
       banner.classList.remove("hidden","info","success","error");
       banner.classList.add(type || "info");
       bannerText.textContent = text || "";
-      if (autoHideMs && autoHideMs > 0){
-        bannerTimer = setTimeout(() => hideBanner(), autoHideMs);
-      }
+      if (autoHideMs) bannerTimer = setTimeout(() => banner.classList.add("hidden"), autoHideMs);
     }
-    function hideBanner(){
-      if (bannerTimer) { clearTimeout(bannerTimer); bannerTimer = null; }
-      banner.classList.add("hidden");
-      banner.classList.remove("info","success","error");
-      bannerText.textContent = "";
-    }
-    bannerClose.addEventListener("click", hideBanner);
+    document.getElementById("bannerClose").addEventListener("click", () => banner.classList.add("hidden"));
 
     // =========================
-    // PWA install prompt
+    // ROUTER
     // =========================
-    let deferredPrompt = null;
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      const pill = document.getElementById("installPill");
-      pill.style.display = "inline-flex";
-      pill.addEventListener("click", async () => {
-        try{ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; pill.style.display = "none"; }catch{}
-      }, { once:true });
-    });
-
-    // =========================
-    // Router
-    // =========================
-    const views = {
-      home: document.getElementById("view-home"), report: document.getElementById("view-report"),
-      success: document.getElementById("view-success"), my: document.getElementById("view-my"),
-      contacts: document.getElementById("view-contacts"), map: document.getElementById("view-map")
-    };
-
-    const navLinks = Array.from(document.querySelectorAll("nav a[data-nav]"));
-    function setActiveNav(key){ navLinks.forEach(a => a.classList.toggle("active", a.dataset.nav === key)); }
-
-    function showView(key){
-      Object.values(views).forEach(v => v.classList.add("hidden"));
-      views[key].classList.remove("hidden");
-      setActiveNav(key);
-
-      if(key === "my") renderList();
-      if(key === "map") { ensureMaps(); refreshAllMaps(); setTimeout(() => { try{ mapMain?.invalidateSize(); }catch{} }, 60); }
-      if(key === "home" || key === "contacts"){
-        ensureMaps(); refreshAllMaps();
-        setTimeout(() => { try{ mapHome?.invalidateSize(); }catch{} }, 60);
-        setTimeout(() => { try{ mapContacts?.invalidateSize(); }catch{} }, 60);
-      }
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
+    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place'];
     function route(){
       const hash = (location.hash || "#/").replace("#/", "");
-      const key = hash || "home";
-      if (views[key]) showView(key); else showView("home");
+      const target = views.includes(hash) ? hash : 'home';
+      
+      views.forEach(v => {
+        const el = document.getElementById("view-" + v);
+        if(el) { if(v === target) el.classList.remove("hidden"); else el.classList.add("hidden"); }
+      });
+      
+      document.querySelectorAll("nav a[data-nav]").forEach(a => {
+        a.classList.toggle("active", a.dataset.nav === target || (target==='add-place' && a.dataset.nav==='places'));
+      });
+
+      if(target === "my") renderList();
+      if(target === "places") renderPublicPlaces();
+      if(target === "map" || target === "home") { 
+        ensureMaps(); refreshPublicMaps(); 
+        setTimeout(() => { mapMain?.invalidateSize(); mapHome?.invalidateSize(); }, 60); 
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
     window.addEventListener("hashchange", route);
 
     // =========================
-    // Contacts (Email + Mappa)
+    // CLOUD SYNC: RECUPERO DATI (D1)
     // =========================
-    function applyContacts(){
-      const subject = "Messaggio da SegnalaFacile";
-      const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
-      document.getElementById("mailLink").href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(subject)}&body=${body}`;
-      document.getElementById("mapLink").href = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(CONFIG.mapsQuery)}`;
+    async function fetchPublicData() {
+      try {
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/public-data");
+        const data = await res.json();
+        if(data.ok) {
+          window.publicSegnalazioni = data.segnalazioni || [];
+          window.publicLuoghi = data.luoghi || [];
+          refreshPublicMaps();
+          if(location.hash === '#/places') renderPublicPlaces();
+        }
+      } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
-    applyContacts();
+
+    function renderPublicPlaces() {
+      const container = document.getElementById("public-places-list");
+      if(!window.publicLuoghi.length) { 
+        container.innerHTML = "<p class='hint' style='text-align:center;'>Nessun luogo recensito ancora.</p>"; 
+        return; 
+      }
+      container.innerHTML = window.publicLuoghi.map(l => `
+        <div class="item cat-altro">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <h3 style="margin:0">⭐ ${l.nome}</h3>
+            <span class="pill">${l.categoria}</span>
+          </div>
+          <p style="margin:10px 0">${l.recensione}</p>
+          ${l.foto ? `<img src="${l.foto}" class="place-img-preview" onclick="window.open('${l.foto}')">` : ''}
+          <div style="margin-top:10px;">
+            <button class="btn ghost small" onclick="focusOnMap(${l.lat}, ${l.lng})">📍 Vedi in mappa</button>
+          </div>
+        </div>
+      `).join('');
+    }
 
     // =========================
-    // Form + multi-photo + GEO
+    // MAPPE E MARKER
     // =========================
-    const elTitolo = document.getElementById("titolo");
-    const elCategoria = document.getElementById("categoria");
-    const elDescrizione = document.getElementById("descrizione");
-    const elAnonimo = document.getElementById("anonimo");
+    let mapHome = null, mapMain = null;
+    let layerHome = null, layerMain = null;
 
-    const elContactBox = document.getElementById("contactBox");
-    const elContactName = document.getElementById("contactName");
-    const elContactPhone = document.getElementById("contactPhone");
-    const elContactEmail = document.getElementById("contactEmail");
+    function ensureMaps(){
+      if(!mapHome && document.getElementById("mapHome")){ 
+        mapHome = L.map("mapHome", { zoomControl: false, dragging: false }).setView([41.492, 13.831], 13); 
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapHome); 
+        layerHome = L.layerGroup().addTo(mapHome); 
+      }
+      if(!mapMain && document.getElementById("mapMain")){ 
+        mapMain = L.map("mapMain").setView([41.492, 13.831], 13); 
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(mapMain); 
+        layerMain = L.layerGroup().addTo(mapMain); 
+      }
+    }
 
-    const elFotoCamera = document.getElementById("fotoCamera");
-    const elFotoGallery = document.getElementById("fotoGallery");
-    const elDocsInput = document.getElementById("docsInput");
+    function refreshPublicMaps() {
+      if(layerMain) layerMain.clearLayers();
+      if(layerHome) layerHome.clearLayers();
+      const bounds = [];
 
-    const btnPickCamera = document.getElementById("btnPickCamera");
-    const btnPickGallery = document.getElementById("btnPickGallery");
-    const btnPickDocs = document.getElementById("btnPickDocs");
+      // 1. Aggiungi Segnalazioni (Emoji)
+      const mixSegnalazioni = [...window.publicSegnalazioni];
+      // Aggiungiamo anche le locali non ancora sincronizzate per completezza
+      loadReports().filter(r => r.geo).forEach(lr => {
+        if(!mixSegnalazioni.find(ps => ps.lat === lr.geo.lat)) {
+           mixSegnalazioni.push({titolo: lr.titolo, categoria: lr.categoria, lat: lr.geo.lat, lng: lr.geo.lng, dataStr: lr.when});
+        }
+      });
 
-    const btnClearPhoto = document.getElementById("btnClearPhoto");
-    const btnClearDocs = document.getElementById("btnClearDocs");
-    const btnSend = document.getElementById("btnSend");
+      mixSegnalazioni.forEach(r => {
+        if(!r.lat) return;
+        const info = catInfo[r.categoria] || catInfo.altro;
+        const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
+        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
+        const popupHtml = `<div style="min-width:180px"><b>${info.emoji} ${r.titolo}</b><br><small>${r.dataStr || ''}</small></div>`;
+        
+        if(layerMain) L.marker([r.lat, r.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
+        if(layerHome) L.marker([r.lat, r.lng], {icon}).addTo(layerHome);
+        bounds.push([r.lat, r.lng]);
+      });
 
-    const preview = document.getElementById("photoPreview");
-    const photoMeta = document.getElementById("photoMeta");
-    const thumbs = document.getElementById("thumbs");
-    
-    const docsPreview = document.getElementById("docsPreview");
-    const docsMeta = document.getElementById("docsMeta");
-    const docsList = document.getElementById("docsList");
+      // 2. Aggiungi Luoghi (Stelle)
+      window.publicLuoghi.forEach(l => {
+        if(!l.lat) return;
+        const iconHtml = `<div style="background:#ff9f43; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">⭐</div>`;
+        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
+        const popupHtml = `<div style="min-width:180px"><b>⭐ ${l.nome}</b><br><i>${l.categoria}</i><p style="margin:5px 0 0;font-size:12px">${l.recensione}</p></div>`;
+        
+        if(layerMain) L.marker([l.lat, l.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
+        if(layerHome) L.marker([l.lat, l.lng], {icon}).addTo(layerHome);
+        bounds.push([l.lat, l.lng]);
+      });
 
-    // GEO UI
-    const btnGeoOnce = document.getElementById("btnGeoOnce");
-    const btnGeoLive = document.getElementById("btnGeoLive");
-    const btnGeoPick = document.getElementById("btnGeoPick");
-    const btnGeoClear = document.getElementById("btnGeoClear");
-    const geoLine = document.getElementById("geoLine");
+      if(bounds.length && mapMain) mapMain.fitBounds(L.latLngBounds(bounds).pad(0.2));
+    }
 
+    function focusOnMap(lat, lng) {
+      location.hash = "#/map";
+      setTimeout(() => mapMain?.setView([lat, lng], 18), 300);
+    }
+
+    document.getElementById("btnMapFit")?.addEventListener("click", () => {
+      refreshPublicMaps(); // Ricalcola i bounds e fa lo zoom out
+    });
+
+    // =========================
+    // FORM SEGNALAZIONE + GPS
+    // =========================
     let geo = null; let geoWatchId = null; let geoLiveOn = false;
     let photos = []; let documents = []; 
 
     function renderGeo(){
+      const geoLine = document.getElementById("geoLine");
       if(!geo){ geoLine.style.display = "none"; geoLine.textContent = ""; return; }
-      const modeLabel = geo.mode === "live" ? "LIVE" : geo.mode === "pick" ? "MAPPA" : "GPS";
       geoLine.style.display = "block";
-      geoLine.textContent = `📍 Posizione (${modeLabel}): ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)}`;
+      geoLine.textContent = `📍 Posizione: ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)}`;
     }
 
-    function setGeoFromPosition(pos, mode){
-      geo = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy || 0, mode: mode || "gps" };
-      renderGeo(); refreshAllMaps();
-    }
-
-    function stopLive(){
-      if(geoWatchId !== null){ try{ navigator.geolocation.clearWatch(geoWatchId); }catch{} }
-      geoWatchId = null; geoLiveOn = false; btnGeoLive.textContent = "🛰️ Posizione in tempo reale: OFF";
-    }
-
-    btnGeoOnce?.addEventListener("click", async () => {
-      if(!navigator.geolocation){ showBanner("error", "GPS non supportato.", 4500); return; }
+    document.getElementById("btnGeoOnce")?.addEventListener("click", () => {
+      if(!navigator.geolocation) return showBanner("error", "GPS non supportato.");
       showBanner("info", "Recupero posizione…");
       navigator.geolocation.getCurrentPosition(
-        (pos) => { setGeoFromPosition(pos, "gps"); hideBanner(); showBanner("success", "Posizione acquisita ✅", 2200); },
-        (err) => { showBanner("error", "Posizione non disponibile (GPS spento).", 5500); },
-        { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 }
+        (pos) => { geo = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy, mode: "gps" }; renderGeo(); showBanner("success", "Posizione acquisita."); },
+        (err) => { showBanner("error", "Errore GPS."); }, { enableHighAccuracy: true, timeout: 10000 }
       );
     });
 
-    btnGeoLive?.addEventListener("click", async () => {
-      if(!navigator.geolocation) return;
-      if(!geoLiveOn){
-        showBanner("info", "Attivo posizione in tempo reale…");
-        geoLiveOn = true; btnGeoLive.textContent = "🛰️ Posizione in tempo reale: ON";
-        geoWatchId = navigator.geolocation.watchPosition(
-          (pos) => { setGeoFromPosition(pos, "live"); hideBanner(); },
-          (err) => { showBanner("error", "LIVE non disponibile.", 5500); stopLive(); },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-        );
-      } else { stopLive(); showBanner("info", "Posizione in tempo reale disattivata.", 2200); }
+    document.getElementById("btnGeoClear")?.addEventListener("click", () => { geo = null; renderGeo(); showBanner("info", "Posizione rimossa."); });
+    document.getElementById("anonimo").addEventListener("change", (e) => document.getElementById("contactBox").classList.toggle("hidden", e.target.checked));
+
+    // Immagini e Compressione
+    async function fileToDataUrl(file){
+      return new Promise((resolve) => {
+        const i = new Image(); i.onload = () => {
+          const cvs = document.createElement("canvas");
+          const r = Math.min(1, 1400 / Math.max(i.width, i.height));
+          cvs.width = i.width*r; cvs.height = i.height*r;
+          cvs.getContext("2d").drawImage(i, 0, 0, cvs.width, cvs.height);
+          resolve(cvs.toDataURL("image/jpeg", 0.8));
+        };
+        i.src = URL.createObjectURL(file);
+      });
+    }
+
+    document.getElementById("fotoGallery").addEventListener("change", async (e) => {
+      for(const f of e.target.files) { const d = await fileToDataUrl(f); photos.push({ dataUrl: d, name: f.name, type: "image/jpeg" }); }
+      document.getElementById("photoPreview").style.display = "flex";
+      document.getElementById("thumbs").innerHTML = photos.map(p => `<img src="${p.dataUrl}">`).join('');
+    });
+    document.getElementById("btnClearPhoto").addEventListener("click", () => { photos=[]; document.getElementById("photoPreview").style.display="none"; });
+
+    // INVIO SEGNALAZIONE (POST a /api/segnalazioni)
+    document.getElementById("btnSend").addEventListener("click", async () => {
+      const titolo = document.getElementById("titolo").value.trim(); 
+      const descrizione = document.getElementById("descrizione").value.trim();
+      if(titolo.length < 4 || descrizione.length < 10) return showBanner("error", "Compila bene Titolo e Descrizione.");
+      
+      const isAnon = document.getElementById("anonimo").checked;
+      const payload = {
+        titolo, descrizione, anonimo: isAnon, categoria: document.getElementById("categoria").value,
+        when: new Date().toLocaleString("it-IT"), geo: geo,
+        photos: photos, documents: documents, // Inviati in base64
+        sender_contact: isAnon ? "Anonimo" : `👤 ${document.getElementById("contactName").value} 📞 ${document.getElementById("contactPhone").value} ✉️ ${document.getElementById("contactEmail").value}`
+      };
+
+      document.getElementById("btnSend").disabled = true;
+      showBanner("info", "Invio in corso...");
+      
+      // Salva in locale
+      const arr = loadReports(); arr.push({ id: String(Date.now()), ...payload, photoDataUrl: photos[0]?.dataUrl }); saveReports(arr);
+
+      try{
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
+        if(!res.ok) throw new Error();
+        document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null;
+        location.hash = "#/success"; fetchPublicData(); // Aggiorna i dati cloud
+      }catch(e){
+        showBanner("error", "Offline: Segnalazione salvata sul dispositivo."); location.hash = "#/my";
+      }finally{ document.getElementById("btnSend").disabled = false; }
     });
 
-    btnGeoClear?.addEventListener("click", () => { stopLive(); geo = null; renderGeo(); showBanner("info", "Posizione rimossa.", 2000); refreshAllMaps(); });
+    // =========================
+    // FORM NUOVO LUOGO
+    // =========================
+    let placeGeo = null; let placePhotos = [];
+    document.getElementById("placePhotoInput").addEventListener("change", async (e) => {
+      if(e.target.files.length) { 
+        const d = await fileToDataUrl(e.target.files[0]); 
+        placePhotos.push({dataUrl: d}); 
+        document.getElementById("placePhotoPreview").innerHTML = `<img src="${d}" class="place-img-preview">`; 
+      }
+    });
 
-    // MAP PICKER modal
-    const mapPickerOverlay = document.getElementById("mapPickerOverlay");
-    const mapPickerClose = document.getElementById("mapPickerClose");
-    const btnUsePicked = document.getElementById("btnUsePicked");
-    const btnCenterCassino = document.getElementById("btnCenterCassino");
-    const pickedLine = document.getElementById("pickedLine");
+    // INVIO LUOGO (POST a /api/luoghi)
+    document.getElementById("btnSendPlace").addEventListener("click", async () => {
+      const nome = document.getElementById("placeName").value.trim();
+      if(!nome || !placeGeo) return showBanner("error", "Nome e Posizione sono obbligatori!");
 
-    let mapPicker = null; let picked = null; let pickedMarker = null;
+      const payload = {
+        nome, categoria: document.getElementById("placeCategory").value, 
+        recensione: document.getElementById("placeReview").value,
+        geo: placeGeo, photos: placePhotos, when: new Date().toLocaleString("it-IT")
+      };
 
-    function openMapPicker(){
-      mapPickerOverlay.style.display = "flex"; mapPickerOverlay.setAttribute("aria-hidden","false");
+      document.getElementById("btnSendPlace").disabled = true;
+      try{
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/luoghi", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
+        if(res.ok) { 
+          showBanner("success", "Recensione pubblicata!"); 
+          document.getElementById("placeName").value = ""; document.getElementById("placeReview").value = ""; placeGeo = null; placePhotos = []; document.getElementById("placePhotoPreview").innerHTML = ""; document.getElementById("placeGeoLine").textContent="";
+          setTimeout(() => { fetchPublicData(); location.hash = "#/places"; }, 1000);
+        } else throw new Error();
+      }catch(e){ showBanner("error", "Errore di connessione."); }
+      finally{ document.getElementById("btnSendPlace").disabled = false; }
+    });
+
+    // =========================
+    // MAP PICKER MODAL (Condiviso)
+    // =========================
+    let mapPicker = null, picked = null, pickedMarker = null, activePickerTarget = null;
+
+    function openMapPicker(target){
+      activePickerTarget = target;
+      document.getElementById("mapPickerOverlay").style.display = "flex";
       if(!mapPicker){
-        mapPicker = L.map("mapPicker", { zoomControl:true }).setView([41.492, 13.831], 13);
+        mapPicker = L.map("mapPicker").setView([41.492, 13.831], 13);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(mapPicker);
         mapPicker.on("click", (e) => {
           picked = { lat: e.latlng.lat, lng: e.latlng.lng };
-          pickedLine.textContent = `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
+          document.getElementById("pickedLine").textContent = `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
           if(pickedMarker) pickedMarker.remove();
-          pickedMarker = L.marker([picked.lat, picked.lng], { riseOnHover:true }).addTo(mapPicker);
-          pickedMarker.bindPopup("Posizione selezionata").openPopup();
+          pickedMarker = L.marker([picked.lat, picked.lng]).addTo(mapPicker);
         });
       }
-      setTimeout(() => { try{ mapPicker.invalidateSize(); }catch{} }, 80);
-    }
-    function closeMapPicker(){ mapPickerOverlay.style.display = "none"; mapPickerOverlay.setAttribute("aria-hidden","true"); }
-
-    btnGeoPick?.addEventListener("click", openMapPicker);
-    mapPickerClose?.addEventListener("click", closeMapPicker);
-    btnCenterCassino?.addEventListener("click", () => { if(mapPicker) mapPicker.setView([41.492, 13.831], 13); });
-    btnUsePicked?.addEventListener("click", () => {
-      if(!picked){ showBanner("error", "Prima seleziona un punto sulla mappa.", 3500); return; }
-      stopLive(); geo = { lat: picked.lat, lng: picked.lng, acc: 0, mode: "pick" };
-      renderGeo(); refreshAllMaps(); showBanner("success", "Posizione inserita ✅", 2500); closeMapPicker();
-    });
-
-    function toggleContactBox(){ elContactBox.classList.toggle("hidden", !!elAnonimo.checked); }
-    elAnonimo.addEventListener("change", toggleContactBox); toggleContactBox();
-
-    btnPickCamera.addEventListener("click", () => elFotoCamera.click());
-    btnPickGallery.addEventListener("click", () => elFotoGallery.click());
-    btnPickDocs.addEventListener("click", () => elDocsInput.click());
-
-    btnClearPhoto.addEventListener("click", () => { elFotoCamera.value = ""; elFotoGallery.value = ""; photos = []; renderPhotoPreview(); showBanner("info", "Foto rimosse.", 1800); });
-    btnClearDocs.addEventListener("click", () => { elDocsInput.value = ""; documents = []; renderDocsPreview(); showBanner("info", "Documenti rimossi.", 1800); });
-
-    function formatBytes(bytes){
-      if (!bytes && bytes !== 0) return "";
-      const units = ["B","KB","MB","GB"]; let i = 0, n = bytes;
-      while(n >= 1024 && i < units.length-1){ n /= 1024; i++; }
-      return `${n.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+      setTimeout(() => mapPicker.invalidateSize(), 100);
     }
 
-    async function fileToCompressedJpegDataUrl(file){
-      const img = await new Promise((resolve, reject) => {
-        const i = new Image(); i.onload = () => resolve(i); i.onerror = reject; i.src = URL.createObjectURL(file);
-      });
-      const maxSide = 1400; let w = img.naturalWidth, h = img.naturalHeight;
-      const ratio = Math.min(1, maxSide / Math.max(w,h)); w = Math.round(w * ratio); h = Math.round(h * ratio);
-      const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h;
-      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-      const blob = await (await fetch(dataUrl)).blob();
-      return { dataUrl, blob };
-    }
+    document.getElementById("btnGeoPick")?.addEventListener("click", () => openMapPicker("report"));
+    document.getElementById("btnPlaceGeoPick")?.addEventListener("click", () => openMapPicker("place"));
+    document.getElementById("mapPickerClose")?.addEventListener("click", () => document.getElementById("mapPickerOverlay").style.display="none");
+    document.getElementById("btnCenterCassino")?.addEventListener("click", () => mapPicker?.setView([41.492, 13.831], 13));
 
-    function renderPhotoPreview(){
-      thumbs.innerHTML = "";
-      if(!photos.length){ preview.style.display = "none"; photoMeta.textContent = ""; return; }
-      preview.style.display = "flex";
-      photoMeta.textContent = `${photos.length} foto selezionate • ${formatBytes(photos.reduce((s,p) => s + (p.blobSize || 0), 0))}`;
-      photos.forEach(p => { const im = document.createElement("img"); im.src = p.dataUrl; thumbs.appendChild(im); });
-    }
-
-    async function addFiles(fileList, replace = false){
-      const files = Array.from(fileList || []).filter(Boolean);
-      if(!files.length) return;
-      if(replace) photos = [];
-      const MAX = 6; const pickedFiles = files.slice(0, Math.max(0, MAX - photos.length));
-      for(const f of pickedFiles){
-        const { dataUrl, blob } = await fileToCompressedJpegDataUrl(f);
-        photos.push({ dataUrl, name: f.name || "foto.jpg", type: f.type || "image/jpeg", blobSize: blob.size });
-      }
-      renderPhotoPreview();
-    }
-    elFotoCamera.addEventListener("change", async (e) => await addFiles(e.target.files, true));
-    elFotoGallery.addEventListener("change", async (e) => await addFiles(e.target.files, false));
-
-    function docKindBadge(type, name){
-      const n = (name || "").toLowerCase(), t = (type || "").toLowerCase();
-      if (t.includes("pdf") || n.endsWith(".pdf")) return "PDF";
-      if (t.includes("word") || n.endsWith(".doc") || n.endsWith(".docx")) return "DOC";
-      return "FILE";
-    }
-
-    function renderDocsPreview(){
-      docsList.innerHTML = "";
-      if(!documents.length){ docsPreview.style.display = "none"; docsMeta.textContent = ""; return; }
-      docsPreview.style.display = "flex";
-      docsMeta.textContent = `${documents.length} documento/i • ${formatBytes(documents.reduce((s,d) => s + (d.blobSize || 0), 0))}`;
-      documents.forEach(d => {
-        const item = document.createElement("div"); item.className = "docItem";
-        item.innerHTML = `<div class="left"><div class="docBadge">${docKindBadge(d.type, d.name)}</div><div class="docMeta"><div class="docName">${d.name}</div><div class="docSize">${formatBytes(d.blobSize)}</div></div></div>`;
-        docsList.append(item);
-      });
-    }
-
-    async function addDocs(fileList){
-      const files = Array.from(fileList || []).filter(Boolean);
-      for(const f of files.slice(0, 3 - documents.length)){
-        if((f.size || 0)/(1024*1024) > 6){ showBanner("error", `Documento troppo grande: ${f.name}`); continue; }
-        const r = new FileReader();
-        r.onload = () => { documents.push({ dataUrl: String(r.result), name: f.name, type: f.type, blobSize: f.size }); renderDocsPreview(); };
-        r.readAsDataURL(f);
-      }
-    }
-    elDocsInput.addEventListener("change", async (e) => await addDocs(e.target.files));
-
-    // Progress UI
-    const progressWrap = document.getElementById("progressWrap");
-    const progressStep = document.getElementById("progressStep");
-    const progressBar = document.getElementById("progressBar");
-    const progressHint = document.getElementById("progressHint");
-    function showProgress(step, hint){ progressWrap.style.display = "block"; progressStep.textContent = `${step}/3`; progressHint.textContent = hint || ""; progressBar.style.width = (step === 1 ? 33 : step === 2 ? 66 : 100) + "%"; }
-    function hideProgress(){ progressWrap.style.display = "none"; progressBar.style.width = "0%"; }
-
-    btnSend.addEventListener("click", async () => {
-      const titolo = (elTitolo.value || "").trim(); const descrizione = (elDescrizione.value || "").trim();
-      if(titolo.length < 4 || descrizione.length < 10){ showBanner("error", "Compila correttamente Titolo e Descrizione."); return; }
-      
-      const isAnon = !!elAnonimo.checked;
-      if(!isAnon && !(elContactEmail.value || elContactPhone.value.length >= 6)){ showBanner("error", "Se NON anonimo, inserisci Email o Telefono."); return; }
-
-      btnSend.disabled = true; showProgress(1, "Preparazione dati…");
-      
-      const payload = {
-        titolo, descrizione, anonimo: isAnon, categoria: elCategoria.value,
-        when: new Date().toLocaleString("it-IT"),
-        geo: geo ? { lat: geo.lat, lng: geo.lng, acc: geo.acc, mode: geo.mode } : null,
-        photos: photos.map(p => ({ dataUrl: p.dataUrl, name: p.name, type: p.type })),
-        documents: documents.map(d => ({ dataUrl: d.dataUrl, name: d.name, type: d.type })),
-        sender_contact: isAnon ? "Anonimo" : `👤 ${elContactName.value} • 📞 ${elContactPhone.value} • ✉️ ${elContactEmail.value}`
-      };
-
-      // Salvataggio Database Locale (IndexedDB)
-      const arr = loadReports();
-      arr.push({ id: String(Date.now()), ...payload, photoDataUrl: photos[0]?.dataUrl }); 
-      saveReports(arr); refreshAllMaps();
-
-      try{
-        showProgress(2, "Invio a Telegram…");
-        const res = await fetch(CONFIG.telegramWorkerUrl, { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
-        if(!res.ok) throw new Error("Errore Server");
-        showProgress(3, "Completato!");
-        setTimeout(() => {
-          hideProgress(); location.hash = "#/success";
-          elTitolo.value = ""; elDescrizione.value = ""; elFotoCamera.value = ""; photos = []; renderPhotoPreview();
-        }, 500);
-      }catch(e){
-        hideProgress(); showBanner("error", "Offline: Segnalazione salvata ma non inviata al server.", 4000);
-        location.hash = "#/my";
-      }finally{ btnSend.disabled = false; }
+    document.getElementById("btnUsePicked")?.addEventListener("click", () => {
+      if(!picked) return showBanner("error", "Seleziona un punto sulla mappa.");
+      if(activePickerTarget === "report") { geo = { ...picked, mode: "pick" }; renderGeo(); }
+      if(activePickerTarget === "place") { placeGeo = { ...picked }; document.getElementById("placeGeoLine").textContent = `📍 Posizione: ${placeGeo.lat.toFixed(5)}, ${placeGeo.lng.toFixed(5)}`; }
+      document.getElementById("mapPickerOverlay").style.display="none";
     });
 
     // =========================
-    // Reports list UI (Nuova vista espandibile)
+    // STORICO LOCALE (My Reports)
     // =========================
-    const listEl = document.getElementById("list");
-    const emptyState = document.getElementById("emptyState");
-
-    window.goToHistory = function(id) {
-      location.hash = "#/my";
-      setTimeout(() => {
-        const el = document.getElementById("storico-" + id);
-        if(el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add("highlight"); }
-      }, 350);
-    };
-
     function renderList(){
       const arr = loadReports();
-      listEl.innerHTML = "";
-      emptyState.style.display = arr.length ? "none" : "block";
-
-      arr.slice().reverse().forEach((r) => {
-        const item = document.createElement("div");
-        item.className = "item cat-" + (r.categoria || "altro");
-        item.id = "storico-" + r.id;
-
-        const top = document.createElement("div"); top.className = "item-top";
-        
-        const body = document.createElement("div"); body.style.flex = "1";
-        const h3 = document.createElement("h3"); h3.textContent = r.titolo || "(senza titolo)";
-        const p = document.createElement("p"); p.textContent = r.descrizione || "";
-        
-        const meta = document.createElement("div"); meta.className = "metaRow";
-        const p1 = document.createElement("span"); p1.className = "pill"; p1.textContent = "🕒 " + r.when;
-        const p2 = document.createElement("span"); p2.className = "pill"; p2.textContent = r.anonimo ? "🕶️ Anonimo" : "📌 Contatto";
-        meta.append(p1, p2);
-
-        // Bottone Foto Espandibile
-        const arrPhotos = r.photos || [];
-        if(!arrPhotos.length && r.photoDataUrl) arrPhotos.push({dataUrl: r.photoDataUrl});
-        
-        let galDiv = null;
-        if(arrPhotos.length > 0) {
-          const btnFoto = document.createElement("button"); btnFoto.className = "btn ghost small"; btnFoto.textContent = `📷 Vedi Foto (${arrPhotos.length})`;
-          meta.append(btnFoto);
-          galDiv = document.createElement("div"); galDiv.className = "gallery-grid hidden";
-          arrPhotos.forEach(ph => {
-            const im = document.createElement("img"); im.src = ph.dataUrl; im.className = "gallery-img";
-            im.onclick = (e) => { e.stopPropagation(); window.open(ph.dataUrl); };
-            galDiv.appendChild(im);
-          });
-          btnFoto.onclick = (e) => { e.stopPropagation(); galDiv.classList.toggle("hidden"); };
-        }
-
-        // Bottone Mappa
-        if(r.geo && typeof r.geo.lat === "number"){
-          const btnMappa = document.createElement("button"); btnMappa.className = "btn ghost small"; btnMappa.textContent = "🗺️ Vedi in mappa";
-          btnMappa.onclick = (e) => { e.stopPropagation(); location.hash="#/map"; setTimeout(()=>mapMain?.setView([r.geo.lat, r.geo.lng], 18), 300); };
-          meta.append(btnMappa);
-        }
-
-        body.append(h3,p,meta);
-        if(arrPhotos.length > 0 && galDiv) body.append(galDiv);
-        top.append(body); item.append(top);
-        listEl.append(item);
-      });
-    }
-
-    document.getElementById("btnClearAll").addEventListener("click", () => {
-      if(!confirm("Vuoi svuotare tutto l'archivio sul tuo dispositivo?")) return;
-      saveReports([]); renderList(); refreshAllMaps(); showBanner("info", "Archivio svuotato.", 2500);
-    });
-
-    // =========================
-    // Mappe (Leaflet)
-    // =========================
-    let mapHome = null, mapContacts = null, mapMain = null;
-    let layerHome = null, layerContacts = null, layerMain = null;
-
-    function createBaseMap(elId, opts = {}){
-      const el = document.getElementById(elId); if(!el) return null;
-      const m = L.map(el, { zoomControl: true }).setView(opts.center || [41.492, 13.831], opts.zoom || 12);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(m);
-      return m;
-    }
-
-    function ensureMaps(){
-      if(!mapHome && document.getElementById("mapHome")){ mapHome = createBaseMap("mapHome", { zoom: 12 }); layerHome = L.layerGroup().addTo(mapHome); }
-      if(!mapContacts && document.getElementById("mapContacts")){ mapContacts = createBaseMap("mapContacts", { zoom: 12 }); layerContacts = L.layerGroup().addTo(mapContacts); }
-      if(!mapMain && document.getElementById("mapMain")){ mapMain = createBaseMap("mapMain", { zoom: 12 }); layerMain = L.layerGroup().addTo(mapMain); }
-    }
-
-// Nuova mappatura: associamo ad ogni categoria sia il colore che l'emoji
-    const catInfo = { 
-      verde:   { color: '#19c37d', emoji: '🌳' }, 
-      strade:  { color: '#95a5a6', emoji: '🛣️' }, 
-      rifiuti: { color: '#f39c12', emoji: '🗑️' }, 
-      luce:    { color: '#f1c40f', emoji: '💡' }, 
-      altro:   { color: '#2d7dff', emoji: '❓' } 
-    };
-
-    function fillLayer(layer, mapObj, limit = Infinity){
-      if(!layer || !mapObj) return; 
-      layer.clearLayers();
-      const items = loadReports().filter(r => r.geo).slice().reverse().slice(0, limit);
-
-      items.forEach(r => {
-        // Recuperiamo i dati della categoria (se non c'è, usiamo "altro")
-        const info = catInfo[r.categoria] || catInfo.altro;
-
-        // Creiamo l'icona HTML personalizzata (cerchio scuro con bordo colorato ed emoji al centro)
-        const customIcon = L.divIcon({
-          html: `<div style="
-            background: rgba(10, 16, 32, 0.95);
-            border: 2px solid ${info.color};
-            border-radius: 50%;
-            width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-          ">${info.emoji}</div>`,
-          className: '', // Importante: rimuove lo sfondo bianco di default di Leaflet
-          iconSize: [36, 36],
-          iconAnchor: [18, 18], // Centra esattamente l'icona sulle coordinate
-          popupAnchor: [0, -18] // Fa comparire il fumetto appena sopra l'icona
-        });
-
-        // Usiamo L.marker invece di L.circleMarker e gli passiamo la customIcon
-        const mk = L.marker([r.geo.lat, r.geo.lng], { icon: customIcon, riseOnHover: true });
-        mk.addTo(layer);
-        
-        // Aggiungiamo il popup con l'emoji anche nel titolo per coerenza
-        mk.bindPopup(`
-          <div style="min-width:200px">
-            <div style="font-weight:950; margin-bottom:6px; font-size:15px; display:flex; gap:6px; align-items:center;">
-              <span>${info.emoji}</span> <span>${r.titolo}</span>
-            </div>
-            <div style="opacity:.85; font-size:12px; margin-bottom:10px">${r.when}</div>
-            <button onclick="goToHistory('${r.id}')" style="width:100%; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.08); color:#eaf0ff; border-radius: 14px; padding:10px; font-weight:900; cursor:pointer;">
-              Apri segnalazione
-            </button>
+      const listEl = document.getElementById("list");
+      document.getElementById("emptyState").style.display = arr.length ? "none" : "block";
+      listEl.innerHTML = arr.slice().reverse().map(r => `
+        <div class="item cat-${r.categoria || 'altro'}">
+          <div style="display:flex; justify-content:space-between;">
+            <span class="pill">${r.categoria || 'Altro'}</span><span class="hint">${r.when}</span>
           </div>
-        `, { closeButton:true });
-      });
-
-      // Inquadra tutti i marker
-      if(items.length){ 
-        mapObj.fitBounds(L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng])).pad(0.25)); 
-      } else { 
-        mapObj.setView([41.492, 13.831], 12); 
-      }
+          <h3 style="margin:8px 0">${r.titolo}</h3><p style="margin:0 0 10px">${r.descrizione}</p>
+          ${(r.photos && r.photos.length) ? `<div class="gallery-grid">${r.photos.map(p=>`<img src="${p.dataUrl}" class="gallery-img" onclick="window.open('${p.dataUrl}')">`).join('')}</div>` : (r.photoDataUrl ? `<div class="gallery-grid"><img src="${r.photoDataUrl}" class="gallery-img"></div>` : '')}
+          ${r.geo ? `<button class="btn ghost small" style="margin-top:10px" onclick="focusOnMap(${r.geo.lat}, ${r.geo.lng})">🗺️ Vedi in mappa</button>` : ''}
+        </div>
+      `).join('');
     }
 
-    function refreshAllMaps(){
-      try{ ensureMaps(); if(mapHome) fillLayer(layerHome, mapHome, 25); if(mapContacts) fillLayer(layerContacts, mapContacts, 25); if(mapMain) fillLayer(layerMain, mapMain, Infinity); }catch(e){}
-    }
-    document.getElementById("btnMapFit")?.addEventListener("click", () => {
-      const items = loadReports().filter(r=>r.geo);
-      if(!items.length) return showBanner("info", "Nessun punto sulla mappa.");
-      mapMain?.fitBounds(L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng])).pad(0.25));
+    document.getElementById("btnClearAll")?.addEventListener("click", () => {
+      if(!confirm("Cancellare tutto il tuo archivio locale?")) return;
+      saveReports([]); renderList(); refreshPublicMaps();
     });
 
     // =========================
-    // INIT APP
+    // INIZIALIZZAZIONE
     // =========================
+    function applyContacts(){
+      const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
+      document.getElementById("mailLink").href = `mailto:${CONFIG.email}?subject=Messaggio&body=${body}`;
+      document.getElementById("mapLink").href = `https://www.google.com/maps?q=${encodeURIComponent(CONFIG.mapsQuery)}`;
+    }
+
     initStorage().then(() => {
-      route();
-      renderPhotoPreview();
-      renderList();
-      renderGeo();
+      applyContacts();
       ensureMaps();
-      refreshAllMaps();
+      fetchPublicData();
+      route();
     });
   </script>
 </body>
