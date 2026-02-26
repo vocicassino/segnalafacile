@@ -61,7 +61,7 @@
     .wrap{
       max-width: 920px;
       margin: 0 auto;
-      padding: 18px 16px 132px;
+      padding: 18px 16px calc(132px + env(safe-area-inset-bottom));
     }
 
     header{
@@ -793,16 +793,41 @@
   margin-top:2px;
 }
   
-/* --- SegnalaFacile: categorie + galleria --- */
-select#category { width:100%; margin-top:8px; }
-.badgeCat{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); }
-.thumbsGrid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-.thumbsGrid a{ display:inline-block; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.12); }
-.thumbsGrid img{ width:84px; height:84px; object-fit:cover; display:block; }
-.docsList{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }
-.docsList a{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); text-decoration:none; }
-.leafCatDot{ width:14px; height:14px; border-radius:999px; display:inline-block; box-shadow:0 8px 22px rgba(0,0,0,.35); border:2px solid rgba(255,255,255,.85); }
-.leafCatPin{ width:18px; height:18px; border-radius:999px; display:inline-block; box-shadow:0 10px 28px rgba(0,0,0,.45); border:2px solid rgba(255,255,255,.9); }
+
+    /* Colonna metadati (foto/documenti) */
+    .metaCol{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-width:170px;
+    }
+
+    @media (max-width: 520px){
+      .metaCol{
+        min-width:0;
+        width:100%;
+      }
+      .preview{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      .thumbs{
+        justify-content:flex-start;
+        overflow-x:auto;
+        flex-wrap:nowrap;
+        -webkit-overflow-scrolling:touch;
+        padding-bottom:6px;
+      }
+      .thumb{
+        flex:0 0 auto;
+      }
+      .row{
+        flex-wrap:wrap;
+      }
+      .row > .btn{
+        flex:1 1 100%;
+      }
+    }
 
 </style>
 </head>
@@ -882,18 +907,6 @@ select#category { width:100%; margin-top:8px; }
         <label for="titolo">Titolo</label>
         <input id="titolo" type="text" maxlength="80" placeholder="Es. Lampione spento in via…" />
 
-<label for="category">Categoria</label>
-<select id="category">
-  <option value="Degrado">Degrado</option>
-  <option value="Viabilità">Viabilità</option>
-  <option value="Sicurezza">Sicurezza</option>
-  <option value="Rifiuti">Rifiuti</option>
-  <option value="Verde">Verde</option>
-  <option value="Altro" selected>Altro</option>
-</select>
-
-
-
         <label for="descrizione">Descrizione</label>
         <textarea id="descrizione" maxlength="700" placeholder="Spiega cosa succede, dove e quando…"></textarea>
 
@@ -918,7 +931,7 @@ select#category { width:100%; margin-top:8px; }
         </div>
 
         <div id="photoPreview" class="preview">
-          <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
+          <div class="metaCol">
             <div style="font-weight:980;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta" class="hint" style="margin:0"></div>
           </div>
@@ -934,7 +947,7 @@ select#category { width:100%; margin-top:8px; }
 </div>
 
 <div id="docsPreview" class="preview">
-  <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
+  <div class="metaCol">
     <div style="font-weight:980;color:var(--text)">Allegati</div>
     <div id="docsMeta" class="hint" style="margin:0"></div>
   </div>
@@ -1109,8 +1122,6 @@ select#category { width:100%; margin-top:8px; }
       </div>
       <div class="modalBody">
         <img id="modalThumb" class="modalThumb" alt="Foto segnalazione" style="display:none" />
-<div id="modalGallery" class="thumbsGrid"></div>
-<div id="modalDocs" class="docsList"></div>
         <div class="modalText">
           <div id="modalMeta" class="hint" style="margin:0"></div>
           <p id="modalDesc"></p>
@@ -1192,7 +1203,7 @@ select#category { width:100%; margin-top:8px; }
       telegramApiKey: "Marco-Admin-2026",
 
       // affidabilità: inviamo SOLO la prima foto al Worker (le altre restano in locale)
-      sendOnlyFirstPhotoToServer: true
+      sendOnlyFirstPhotoToServer: false
     };
 
     // =========================
@@ -1323,7 +1334,6 @@ select#category { width:100%; margin-top:8px; }
     const elTitolo = document.getElementById("titolo");
     const elDescrizione = document.getElementById("descrizione");
     const elAnonimo = document.getElementById("anonimo");
-const elCategory = document.getElementById("category");
 
     const elContactBox = document.getElementById("contactBox");
     const elContactName = document.getElementById("contactName");
@@ -1823,8 +1833,6 @@ elDocsInput.addEventListener("change", async (e) => {
     const modalMeta = document.getElementById("modalMeta");
     const modalDesc = document.getElementById("modalDesc");
     const modalThumb = document.getElementById("modalThumb");
-  const modalGallery = document.getElementById("modalGallery");
-  const modalDocs = document.getElementById("modalDocs");
     const modalCopy = document.getElementById("modalCopy");
 
     function openReportModal(r){
@@ -1950,7 +1958,6 @@ elDocsInput.addEventListener("change", async (e) => {
     btnSend.addEventListener("click", async () => {
       const titolo = (elTitolo.value || "").trim();
       const descrizione = (elDescrizione.value || "").trim();
-      const category = (elCategory && elCategory.value ? elCategory.value : "Altro");
 
       if(titolo.length < 4){
         showBanner("error", "Inserisci un titolo (minimo 4 caratteri).", 3500);
@@ -2015,7 +2022,6 @@ const documentsToSend = documents.map(d => ({
       const payload = {
         titolo,
         descrizione,
-        category,
         anonimo: isAnon,
         when: now.toLocaleString("it-IT"),
         source: "SegnalaFacile PWA",
@@ -2058,12 +2064,9 @@ const documentsToSend = documents.map(d => ({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         titolo,
         descrizione,
-        category,
         anonimo: isAnon,
         when: payload.when,
         photoDataUrl: first ? first.dataUrl : null,
-        photos: Array.isArray(photos) ? photos : [],
-        documents: Array.isArray(docs) ? docs : [],
         geo: payload.geo
       };
       arr.push(localItem);
@@ -2199,31 +2202,7 @@ const documentsToSend = documents.map(d => ({
       });
     }
 
-    
-function catInfo(cat){
-  const c = String(cat||"Altro");
-  const map = {
-    "Degrado": { color:"#ff7a18", emoji:"🛑" },
-    "Viabilità": { color:"#40c4ff", emoji:"🚧" },
-    "Sicurezza": { color:"#ff4d6d", emoji:"🚨" },
-    "Rifiuti": { color:"#4cd964", emoji:"🗑️" },
-    "Verde": { color:"#7ed957", emoji:"🌿" },
-    "Altro": { color:"#c8c8c8", emoji:"📌" }
-  };
-  return map[c] || map["Altro"];
-}
-
-function makeCatIcon(cat){
-  const info = catInfo(cat);
-  return L.divIcon({
-    className: "catMarker",
-    html: `<span class="leafCatPin" style="background:${info.color}"></span>`,
-    iconSize: [22,22],
-    iconAnchor: [11,11]
-  });
-}
-
-function fillLayer(layer, mapObj, limit = Infinity){
+    function fillLayer(layer, mapObj, limit = Infinity){
       if(!layer || !mapObj) return;
 
       layer.clearLayers();
