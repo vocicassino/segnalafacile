@@ -890,7 +890,16 @@
     document.getElementById("btnGeoClear")?.addEventListener("click", () => { geo = null; renderGeo(); showBanner("info", "Posizione rimossa."); });
     document.getElementById("anonimo").addEventListener("change", (e) => document.getElementById("contactBox").classList.toggle("hidden", e.target.checked));
 
-    // Immagini e Compressione
+ // =========================
+    // GESTIONE FOTO E DOCUMENTI
+    // =========================
+    
+    // 1. Collega i bottoni estetici agli input nascosti
+    document.getElementById("btnPickCamera").addEventListener("click", () => document.getElementById("fotoCamera").click());
+    document.getElementById("btnPickGallery").addEventListener("click", () => document.getElementById("fotoGallery").click());
+    document.getElementById("btnPickDocs").addEventListener("click", () => document.getElementById("docsInput").click());
+
+    // 2. Funzione per comprimere le immagini prima dell'invio
     async function fileToDataUrl(file){
       return new Promise((resolve) => {
         const i = new Image(); i.onload = () => {
@@ -904,12 +913,48 @@
       });
     }
 
-    document.getElementById("fotoGallery").addEventListener("change", async (e) => {
-      for(const f of e.target.files) { const d = await fileToDataUrl(f); photos.push({ dataUrl: d, name: f.name, type: "image/jpeg" }); }
+    // 3. Gestione caricamento Foto (sia Fotocamera che Galleria)
+    async function handlePhotoUpload(e) {
+      if(!e.target.files.length) return;
+      for(const f of e.target.files) { 
+        const d = await fileToDataUrl(f); 
+        photos.push({ dataUrl: d, name: f.name, type: "image/jpeg" }); 
+      }
       document.getElementById("photoPreview").style.display = "flex";
       document.getElementById("thumbs").innerHTML = photos.map(p => `<img src="${p.dataUrl}">`).join('');
+    }
+    document.getElementById("fotoGallery").addEventListener("change", handlePhotoUpload);
+    document.getElementById("fotoCamera").addEventListener("change", handlePhotoUpload);
+
+    // 4. Gestione Rimozione Foto
+    document.getElementById("btnClearPhoto").addEventListener("click", () => { 
+      photos = []; 
+      document.getElementById("photoPreview").style.display = "none"; 
+      document.getElementById("fotoGallery").value = "";
+      document.getElementById("fotoCamera").value = "";
     });
-    document.getElementById("btnClearPhoto").addEventListener("click", () => { photos=[]; document.getElementById("photoPreview").style.display="none"; });
+
+    // 5. Gestione caricamento Documenti (PDF/Word)
+    document.getElementById("docsInput").addEventListener("change", (e) => {
+      if(!e.target.files.length) return;
+      for(const f of e.target.files) {
+        if(f.size > 6 * 1024 * 1024) { showBanner("error", "Documento troppo grande: " + f.name); continue; }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          documents.push({ dataUrl: ev.target.result, name: f.name, type: f.type });
+          document.getElementById("docsPreview").style.display = "flex";
+          document.getElementById("docsList").innerHTML = documents.map(d => `<div class="docItem" style="padding:8px; background:rgba(255,255,255,0.1); border-radius:12px; margin-top:5px;">📄 ${d.name}</div>`).join('');
+        };
+        reader.readAsDataURL(f);
+      }
+    });
+
+    // 6. Gestione Rimozione Documenti
+    document.getElementById("btnClearDocs").addEventListener("click", () => {
+      documents = [];
+      document.getElementById("docsPreview").style.display = "none";
+      document.getElementById("docsInput").value = "";
+    });
 
     // INVIO SEGNALAZIONE (POST a /api/segnalazioni)
     document.getElementById("btnSend").addEventListener("click", async () => {
