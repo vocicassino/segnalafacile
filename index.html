@@ -989,6 +989,7 @@
         when: new Date().toLocaleString("it-IT"),
         geo: geo ? { lat: geo.lat, lng: geo.lng, acc: geo.acc, mode: geo.mode } : null,
         photos: photos.map(p => ({ dataUrl: p.dataUrl, name: p.name, type: p.type })),
+        documents: documents.map(d => ({ dataUrl: d.dataUrl, name: d.name, type: d.type })),
         sender_contact: isAnon ? "Anonimo" : `👤 ${elContactName.value} • 📞 ${elContactPhone.value} • ✉️ ${elContactEmail.value}`
       };
 
