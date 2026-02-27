@@ -795,29 +795,53 @@
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
 
-    function renderPublicPlaces() {
+   function renderPublicPlaces() {
       const container = document.getElementById("public-places-list");
       if(!window.publicLuoghi.length) { 
         container.innerHTML = "<p class='hint' style='text-align:center;'>Nessun luogo recensito ancora.</p>"; 
         return; 
       }
-      container.innerHTML = window.publicLuoghi.map(l => {
+      container.innerHTML = window.publicLuoghi.map((l, idx) => {
         const stars = '⭐'.repeat(l.rating || 5);
+        const uniqueId = 'place-' + idx; // ID unico per gestire l'apertura
         return `
-          <div class="item cat-altro">
+          <div class="item cat-altro" style="cursor:pointer; transition:0.2s;" onclick="togglePlace('${uniqueId}')">
+            
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
               <h3 style="margin:0">${stars} ${l.nome}</h3>
-              <span class="pill">${l.categoria}</span>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span class="pill">${l.categoria}</span>
+                <span id="icon-${uniqueId}" style="font-size:14px; opacity:0.7; transition:0.3s;">▼</span>
+              </div>
             </div>
-            <p style="margin:10px 0">${l.recensione}</p>
-            ${l.foto ? `<img src="${l.foto}" class="place-img-preview" onclick="window.open('${l.foto}')">` : ''}
-            <div style="margin-top:10px;">
-              <button class="btn ghost small" onclick="focusOnMap(${l.lat}, ${l.lng})">📍 Vedi in mappa</button>
+            
+            <div id="desc-${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; cursor:default;" onclick="event.stopPropagation()">
+              <p style="margin:0 0 10px">${l.recensione}</p>
+              ${l.foto ? `<img src="${l.foto}" class="place-img-preview" onclick="window.open('${l.foto}')">` : ''}
+              
+              <div class="row" style="margin-top:10px;">
+                <button class="btn ghost small" onclick="focusOnMap(${l.lat}, ${l.lng})">📍 Vedi in mappa</button>
+                <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+              </div>
             </div>
+
           </div>
         `;
       }).join('');
     }
+
+    // Funzione che fa l'animazione di apertura/chiusura
+    window.togglePlace = function(id) {
+      const desc = document.getElementById('desc-' + id);
+      const icon = document.getElementById('icon-' + id);
+      if(desc.classList.contains('hidden')) {
+        desc.classList.remove('hidden');
+        icon.style.transform = "rotate(180deg)";
+      } else {
+        desc.classList.add('hidden');
+        icon.style.transform = "rotate(0deg)";
+      }
+    };
 
     // =========================
     // MAPPE E MARKER
@@ -856,11 +880,14 @@
         const info = catInfo[r.categoria] || catInfo.altro;
         const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
+        
+        // POPUP con Tasto RAGGIUNGI
         const popupHtml = `
-          <div style="min-width:200px; max-width:260px; max-height:220px; overflow-y:auto; padding-right:5px;">
+          <div style="min-width:200px; max-width:260px; max-height:240px; overflow-y:auto; padding-right:5px;">
             <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${r.titolo}</b>
             <small style="color:#a9b6db;">${r.dataStr || ''}</small>
-            <p style="margin:10px 0 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione fornita.'}</p>
+            <p style="margin:10px 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione.'}</p>
+            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([r.lat, r.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -874,11 +901,14 @@
         const iconHtml = `<div style="background:#ff9f43; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">⭐</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
         const stars = '⭐'.repeat(l.rating || 5);
+        
+        // POPUP con Tasto RAGGIUNGI
         const popupHtml = `
-          <div style="min-width:200px; max-width:260px; max-height:220px; overflow-y:auto; padding-right:5px;">
+          <div style="min-width:200px; max-width:260px; max-height:240px; overflow-y:auto; padding-right:5px;">
             <b style="font-size:15px; display:block; margin-bottom:4px;">${stars} ${l.nome}</b>
             <i style="color:#a9b6db; font-size:12px;">${l.categoria}</i>
-            <p style="margin:10px 0 0; font-size:13px; line-height:1.5;">${l.recensione || ''}</p>
+            <p style="margin:10px 0; font-size:13px; line-height:1.5;">${l.recensione || ''}</p>
+            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([l.lat, l.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
