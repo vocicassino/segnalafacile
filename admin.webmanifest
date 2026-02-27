@@ -1,7 +1,9 @@
 {
+  "id": "/app-admin/",
   "name": "Admin Segnala Facile",
   "short_name": "Admin",
   "start_url": "./admin.html",
+  "scope": "./admin.html",
   "display": "standalone",
   "background_color": "#0b1220",
   "theme_color": "#0b1220",
