@@ -1,22 +1,26 @@
 {
-  "id": "/app-admin/",
-  "name": "Admin Segnala Facile",
-  "short_name": "Admin",
+  "id": "segnalafacile-admin-v1",
+  "name": "Admin SegnalaFacile",
+  "short_name": "Admin SF",
   "start_url": "./admin.html",
   "scope": "./admin.html",
   "display": "standalone",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
+  "background_color": "#162440",
+  "theme_color": "#ff4d4f",
+  "description": "Pannello di controllo del database",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "icons/admin-192.png.png",
+      "src": "icons/admin-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icons/admin-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
