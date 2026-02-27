@@ -9,22 +9,30 @@
     .container { max-width: 800px; margin: 0 auto; }
     .card { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
     h1, h2 { margin-top: 0; }
-    input[type="password"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d7dff; background: #070c18; color: white; margin-bottom: 15px; box-sizing: border-box; }
-    button { cursor: pointer; background: #2d7dff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+    input[type="text"], input[type="password"], select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d7dff; background: #070c18; color: white; margin-bottom: 15px; box-sizing: border-box; }
+    textarea { min-height: 100px; resize: vertical; }
+    button { cursor: pointer; background: #2d7dff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-right: 5px; }
     button:hover { filter: brightness(1.2); }
     .btn-danger { background: #ff4d4f; }
-    .list-item { background: #070c18; padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .details { flex-grow: 1; margin-right: 15px; }
+    .btn-success { background: #19c37d; }
+    .list-item { background: #070c18; padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .details { flex-grow: 1; margin-right: 15px; min-width: 250px; }
     .details h3 { margin: 0 0 5px 0; font-size: 16px; color: #19c37d; }
     .details p { margin: 0; font-size: 13px; color: #a9b6db; }
     .badge { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
     #dashboard { display: none; }
+
+    /* MODAL PER LA MODIFICA */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; padding: 20px; z-index: 1000; }
+    .modal { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); width: 100%; max-width: 500px; box-sizing: border-box; }
+    .modal h3 { margin-top: 0; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 12px; color: #a9b6db; margin-bottom: 5px; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  
   <div class="card" id="loginBox">
     <h1>Area Amministratore 🔒</h1>
     <p style="color: #a9b6db;">Inserisci la Password (API Key) per gestire il database.</p>
@@ -33,8 +41,8 @@
   </div>
 
   <div id="dashboard">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h1>Gestione Database</h1>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+      <h1 style="margin:0;">Gestione Database</h1>
       <button onclick="loadData()">🔄 Aggiorna Dati</button>
     </div>
 
@@ -48,13 +56,47 @@
       <div id="segnalazioniList">Caricamento...</div>
     </div>
   </div>
+</div>
 
+<div class="modal-overlay" id="editModalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Modifica</h3>
+    
+    <div class="form-group">
+      <label id="labelTitoloNome">Titolo / Nome</label>
+      <input type="text" id="editTitolo" />
+    </div>
+
+    <div class="form-group">
+      <label>Categoria</label>
+      <input type="text" id="editCategoria" placeholder="es. ristorante, rifiuti..." />
+    </div>
+
+    <div class="form-group" id="ratingGroup" style="display:none;">
+      <label>Stelle (da 1 a 5)</label>
+      <input type="number" id="editRating" min="1" max="5" />
+    </div>
+
+    <div class="form-group">
+      <label id="labelDescrizione">Descrizione / Recensione</label>
+      <textarea id="editDescrizione"></textarea>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; margin-top:20px;">
+      <button onclick="closeModal()" style="background:transparent; border:1px solid white;">Annulla</button>
+      <button class="btn-success" onclick="saveEdit()">💾 Salva Modifiche</button>
+    </div>
+  </div>
 </div>
 
 <script>
-  // URL del tuo Worker (Assicurati che sia quello giusto)
-  const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev";
+  const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev"; // Controlla che sia giusto
   let apiKey = "";
+  
+  // Variabili per salvare i dati correnti
+  let allData = { luoghi: [], segnalazioni: [] };
+  let editingId = null;
+  let editingType = null; // 'luoghi' o 'segnalazioni'
 
   function login() {
     const input = document.getElementById("apiKeyInput").value.trim();
@@ -74,15 +116,19 @@
       const data = await res.json();
       
       if (!data.ok) throw new Error("Errore caricamento dati");
+      
+      // Salviamo i dati per riutilizzarli nel form di modifica
+      allData.luoghi = data.luoghi || [];
+      allData.segnalazioni = data.segnalazioni || [];
 
-      renderList("luoghiList", data.luoghi, "luoghi", l => `
+      renderList("luoghiList", allData.luoghi, "luoghi", l => `
         <div class="details">
-          <h3>⭐ ${l.nome}</h3>
+          <h3>⭐ ${l.nome} (${l.rating} stelle)</h3>
           <p><span class="badge">${l.categoria}</span> ${l.recensione || 'Senza testo'}</p>
         </div>
       `);
 
-      renderList("segnalazioniList", data.segnalazioni, "segnalazioni", s => `
+      renderList("segnalazioniList", allData.segnalazioni, "segnalazioni", s => `
         <div class="details">
           <h3>📍 ${s.titolo}</h3>
           <p><span class="badge">${s.categoria}</span> ${s.dataStr}</p>
@@ -105,34 +151,102 @@
     container.innerHTML = items.map(item => `
       <div class="list-item" id="item-${item.id}">
         ${formatHtml(item)}
-        <button class="btn-danger" onclick="deleteItem('${item.id}', '${type}')">🗑️ Cancella</button>
+        <div style="display:flex; gap:5px;">
+          <button onclick="openEditModal('${item.id}', '${type}')">✏️ Modifica</button>
+          <button class="btn-danger" onclick="deleteItem('${item.id}', '${type}')">🗑️ Cancella</button>
+        </div>
       </div>
     `).join('');
   }
 
+  // --- CANCELLAZIONE ---
   async function deleteItem(id, type) {
-    if (!confirm("Sei sicuro di voler eliminare questo elemento per tutti gli utenti? L'azione è irreversibile.")) return;
-    
+    if (!confirm("Sei sicuro di voler eliminare questo elemento?")) return;
     try {
       const res = await fetch(`${WORKER_URL}/api/${type}/${id}`, {
         method: "DELETE",
         headers: { "X-Api-Key": apiKey }
       });
       const result = await res.json();
-
       if (result.ok) {
         document.getElementById(`item-${id}`).style.display = "none";
       } else {
-        alert("Errore: " + (result.error || "Password Errata o Non Autorizzato"));
-        // Se la password è sbagliata torna al login
-        if(result.error && result.error.includes("UNAUTHORIZED")) {
-           document.getElementById("loginBox").style.display = "block";
-           document.getElementById("dashboard").style.display = "none";
-        }
+        alert("Errore: " + (result.error || "Non Autorizzato"));
       }
-    } catch (e) {
-      alert("Errore di rete durante l'eliminazione.");
+    } catch (e) { alert("Errore di rete."); }
+  }
+
+  // --- MODIFICA ---
+  function openEditModal(id, type) {
+    editingId = id;
+    editingType = type;
+    
+    // Trova l'oggetto nei dati scaricati
+    const item = allData[type].find(x => x.id === id);
+    if(!item) return;
+
+    if(type === 'segnalazioni') {
+      document.getElementById("modalTitle").innerText = "Modifica Segnalazione";
+      document.getElementById("labelTitoloNome").innerText = "Titolo";
+      document.getElementById("labelDescrizione").innerText = "Descrizione";
+      document.getElementById("ratingGroup").style.display = "none";
+
+      document.getElementById("editTitolo").value = item.titolo || "";
+      document.getElementById("editCategoria").value = item.categoria || "";
+      document.getElementById("editDescrizione").value = item.descrizione || "";
+    } else {
+      // luoghi
+      document.getElementById("modalTitle").innerText = "Modifica Luogo";
+      document.getElementById("labelTitoloNome").innerText = "Nome del Luogo";
+      document.getElementById("labelDescrizione").innerText = "Recensione";
+      document.getElementById("ratingGroup").style.display = "block";
+
+      document.getElementById("editTitolo").value = item.nome || "";
+      document.getElementById("editCategoria").value = item.categoria || "";
+      document.getElementById("editRating").value = item.rating || 5;
+      document.getElementById("editDescrizione").value = item.recensione || "";
     }
+
+    document.getElementById("editModalOverlay").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("editModalOverlay").style.display = "none";
+    editingId = null;
+    editingType = null;
+  }
+
+  async function saveEdit() {
+    const payload = {};
+    if(editingType === 'segnalazioni') {
+      payload.titolo = document.getElementById("editTitolo").value.trim();
+      payload.categoria = document.getElementById("editCategoria").value.trim();
+      payload.descrizione = document.getElementById("editDescrizione").value.trim();
+    } else {
+      payload.nome = document.getElementById("editTitolo").value.trim();
+      payload.categoria = document.getElementById("editCategoria").value.trim();
+      payload.recensione = document.getElementById("editDescrizione").value.trim();
+      payload.rating = parseInt(document.getElementById("editRating").value) || 5;
+    }
+
+    try {
+      const res = await fetch(`${WORKER_URL}/api/${editingType}/${editingId}`, {
+        method: "PUT",
+        headers: { 
+          "X-Api-Key": apiKey,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      
+      if (result.ok) {
+        closeModal();
+        loadData(); // Ricarica la lista per mostrare le modifiche
+      } else {
+        alert("Errore: " + (result.error || "Non Autorizzato"));
+      }
+    } catch (e) { alert("Errore di rete durante il salvataggio."); }
   }
 </script>
 </body>
