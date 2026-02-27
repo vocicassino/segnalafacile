@@ -30,11 +30,11 @@
     .badge { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
     #dashboard { display: none; }
 
-    /* SEZIONI ESPANDIBILI (NUOVO) */
+    /* SEZIONI ESPANDIBILI */
     .section-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: 5px; }
     .section-header h2 { margin: 0; font-size: 20px; }
     .section-icon { font-size: 14px; transition: transform 0.3s ease; opacity: 0.8; }
-    .section-content { margin-top: 15px; display: none; } /* Nascoste di default */
+    .section-content { margin-top: 15px; display: none; } 
 
     /* STILI PER I FILTRI DELLE CATEGORIE */
     .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
@@ -42,8 +42,8 @@
     .filter-btn:hover { background: rgba(255,255,255,0.15); }
     .filter-btn.active { background: #2d7dff; color: #ffffff; border-color: #2d7dff; font-weight: bold; box-shadow: 0 4px 10px rgba(45,125,255,0.3); }
 
-    /* BOTTONE INSTALLA */
-    #installAdminPill { display: none; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; }
+    /* BOTTONE INSTALLA SEMPRE VISIBILE */
+    #installAdminPill { display: block; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; border-radius: 12px; }
 
     /* MODAL PER LA MODIFICA */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; padding: 20px; z-index: 1000; }
@@ -128,15 +128,31 @@
 </div>
 
 <script>
-  // Installazione PWA
+  // =========================
+  // LOGICA INSTALLAZIONE INTELLIGENTE
+  // =========================
   let deferredPrompt = null;
+  
+  // Se Chrome/Android ci permette di installarla, salviamo l'evento
   window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault(); deferredPrompt = e;
-    const pill = document.getElementById("installAdminPill");
-    pill.style.display = "block";
-    pill.addEventListener("click", async () => {
-      try { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; pill.style.display = "none"; } catch(err) {}
-    }, { once: true });
+    e.preventDefault(); 
+    deferredPrompt = e;
+  });
+
+  document.getElementById("installAdminPill").addEventListener("click", async () => {
+    if (deferredPrompt) {
+      // Chrome/Android: avvia il popup nativo
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    } else {
+      // iPhone o Già Installata: mostra istruzioni manuali
+      alert(
+        "Istruzioni per l'installazione:\\n\\n" +
+        "🍏 SU iPHONE (Safari): Tocca l'icona 'Condividi' (il quadrato con la freccia in basso) e seleziona 'Aggiungi alla schermata Home'.\\n\\n" +
+        "🤖 SU ANDROID: Se non appare il popup, clicca sui 3 pallini in alto a destra e seleziona 'Aggiungi a schermata Home'. (Potresti averla già installata!)"
+      );
+    }
   });
 
   // Funzione per Aprire/Chiudere le Sezioni
@@ -159,7 +175,6 @@
   let apiKey = "";
   let allData = { luoghi: [], segnalazioni: [] };
   
-  // Variabili per ricordare quale categoria stiamo guardando
   let filterLuoghi = "Tutte";
   let filterSegnalazioni = "Tutte";
 
@@ -193,7 +208,6 @@
       allData.luoghi = data.luoghi || [];
       allData.segnalazioni = data.segnalazioni || [];
 
-      // Genera i pulsanti filtro e mostra le liste
       renderFilters("luoghi");
       renderFilters("segnalazioni");
       updateListView("luoghi");
@@ -204,12 +218,9 @@
     }
   }
 
-  // Crea i pulsanti delle categorie estraendole dai dati
   function renderFilters(type) {
     const items = allData[type];
     const container = document.getElementById(type + "Filters");
-    
-    // Trova tutte le categorie uniche
     const categoriePresenti = items.map(i => i.categoria ? i.categoria.trim() : "Altro");
     const categorieUniche = ["Tutte", ...new Set(categoriePresenti)];
 
@@ -221,16 +232,14 @@
     }).join('');
   }
 
-  // Imposta il filtro cliccato e ricarica la lista
   function setFilter(type, category) {
     if (type === "luoghi") filterLuoghi = category;
     else filterSegnalazioni = category;
     
-    renderFilters(type); // Aggiorna i colori dei bottoni
-    updateListView(type); // Aggiorna la lista mostrata
+    renderFilters(type);
+    updateListView(type);
   }
 
-  // Mostra solo gli elementi della categoria scelta
   function updateListView(type) {
     let items = allData[type];
     const currentFilter = type === "luoghi" ? filterLuoghi : filterSegnalazioni;
@@ -257,7 +266,6 @@
     }
   }
 
-  // Genera l'HTML della singola riga
   function renderListHTML(containerId, items, type, formatHtml) {
     const container = document.getElementById(containerId);
     if (!items || items.length === 0) {
@@ -294,7 +302,6 @@
     } catch (e) { alert("Errore di rete."); }
   }
 
-  // --- LOGICA MODALE MODIFICA ---
   function openEditModal(id, type) {
     editingId = id;
     editingType = type;
@@ -355,7 +362,7 @@
       
       if (result.ok) {
         closeModal();
-        loadData(); // Ricarica tutto dal server per riflettere le modifiche
+        loadData(); 
       } else {
         alert("Errore: " + (result.error || "Non Autorizzato"));
       }
