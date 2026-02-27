@@ -2,8 +2,14 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pannello Amministratore - SegnalaFacile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220" />
+  <title>Pannello Amministratore</title>
+  
+  <link rel="manifest" href="admin.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
   <style>
     body { font-family: system-ui, sans-serif; background: #0b1220; color: #eaf0ff; margin: 0; padding: 20px; }
     .container { max-width: 800px; margin: 0 auto; }
@@ -22,6 +28,9 @@
     .badge { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
     #dashboard { display: none; }
 
+    /* BOTTONE INSTALLA */
+    #installAdminPill { display: none; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; }
+
     /* MODAL PER LA MODIFICA */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; padding: 20px; z-index: 1000; }
     .modal { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); width: 100%; max-width: 500px; box-sizing: border-box; }
@@ -33,6 +42,9 @@
 <body>
 
 <div class="container">
+  
+  <button id="installAdminPill" type="button">⬇️ Installa Pannello Admin sul Telefono</button>
+
   <div class="card" id="loginBox">
     <h1>Area Amministratore 🔒</h1>
     <p style="color: #a9b6db;">Inserisci la Password (API Key) per gestire il database.</p>
@@ -90,13 +102,33 @@
 </div>
 
 <script>
-  const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev"; // Controlla che sia giusto
+  // =========================
+  // LOGICA DI INSTALLAZIONE PWA
+  // =========================
+  let deferredPrompt = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const pill = document.getElementById("installAdminPill");
+    pill.style.display = "block";
+    pill.addEventListener("click", async () => {
+      try {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        pill.style.display = "none";
+      } catch(err) {}
+    }, { once: true });
+  });
+
+  // =========================
+  // LOGICA PANNELLO ADMIN
+  // =========================
+  const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev";
   let apiKey = "";
-  
-  // Variabili per salvare i dati correnti
   let allData = { luoghi: [], segnalazioni: [] };
   let editingId = null;
-  let editingType = null; // 'luoghi' o 'segnalazioni'
+  let editingType = null;
 
   function login() {
     const input = document.getElementById("apiKeyInput").value.trim();
@@ -117,7 +149,6 @@
       
       if (!data.ok) throw new Error("Errore caricamento dati");
       
-      // Salviamo i dati per riutilizzarli nel form di modifica
       allData.luoghi = data.luoghi || [];
       allData.segnalazioni = data.segnalazioni || [];
 
@@ -159,7 +190,6 @@
     `).join('');
   }
 
-  // --- CANCELLAZIONE ---
   async function deleteItem(id, type) {
     if (!confirm("Sei sicuro di voler eliminare questo elemento?")) return;
     try {
@@ -176,12 +206,10 @@
     } catch (e) { alert("Errore di rete."); }
   }
 
-  // --- MODIFICA ---
   function openEditModal(id, type) {
     editingId = id;
     editingType = type;
     
-    // Trova l'oggetto nei dati scaricati
     const item = allData[type].find(x => x.id === id);
     if(!item) return;
 
@@ -195,7 +223,6 @@
       document.getElementById("editCategoria").value = item.categoria || "";
       document.getElementById("editDescrizione").value = item.descrizione || "";
     } else {
-      // luoghi
       document.getElementById("modalTitle").innerText = "Modifica Luogo";
       document.getElementById("labelTitoloNome").innerText = "Nome del Luogo";
       document.getElementById("labelDescrizione").innerText = "Recensione";
@@ -242,7 +269,7 @@
       
       if (result.ok) {
         closeModal();
-        loadData(); // Ricarica la lista per mostrare le modifiche
+        loadData();
       } else {
         alert("Errore: " + (result.error || "Non Autorizzato"));
       }
