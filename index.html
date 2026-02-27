@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
-  <title>Segnala Facile </title>
+  <title>SegnalaFacile Pro</title>
 
   <link rel="manifest" href="manifest.webmanifest?v=2" />
   <link rel="icon" href="icons/icon-192.png" />
@@ -178,10 +178,6 @@
     .cat-luce { border-left: 5px solid #f1c40f; }
     .cat-altro, .cat-ristorante, .cat-negozio, .cat-cultura, .cat-natura { border-left: 5px solid #2d7dff; }
 
-    .item h3{margin:0; font-size:16px; font-weight:950}
-    .item p{margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.45}
-    .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
-
     .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 10px; }
     .gallery-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--stroke); cursor: pointer; }
     .place-img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 12px; margin-top: 10px; border: 1px solid var(--stroke); }
@@ -294,44 +290,9 @@
       background: rgba(255,255,255,.92); box-shadow: 0 0 0 6px rgba(45,125,255,.14); opacity:.95;
     }
 
-    @media (prefers-reduced-motion: no-preference){
-      nav a.active .navIco{ animation: navPulse 1.9s ease-in-out infinite; }
-      @keyframes navPulse{
-        0%   { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(45,125,255,0)); }
-        45%  { transform: translateY(-1px) scale(1.05); filter: drop-shadow(0 10px 18px rgba(45,125,255,.18)); }
-        100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(45,125,255,0)); }
-      }
-      .card{animation: pop .18s ease both}
-      @keyframes pop{ from{transform: translateY(8px); opacity:0} to{transform: translateY(0); opacity:1} }
-    }
-
     /* Docs preview */
     .docsList{ display:grid; gap:8px; margin-top:10px; }
     .docItem{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 10px 12px; border-radius: 18px; border:1px solid var(--stroke); background: rgba(0,0,0,.14); }
-    .docItem .left{ display:flex; align-items:center; gap:10px; min-width:0; }
-    .docBadge{ width: 42px; height: 42px; border-radius: 16px; display:grid; place-items:center; font-weight: 980; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); flex:0 0 auto; }
-    .docMeta{min-width:0}
-    .docName{ font-weight: 950; font-size: 13px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; max-width: 54vw; }
-    .docSize{ font-size: 12px; color: var(--muted); margin-top:2px; }
-
-    .metaCol{ display:flex; flex-direction:column; gap:8px; min-width:170px; }
-    @media (max-width: 520px){
-      .metaCol{ min-width:0; width:100%; }
-      .preview{ flex-direction:column; align-items:stretch; }
-      .thumbs{ justify-content:flex-start; overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; padding-bottom:6px; }
-      .thumb{ flex:0 0 auto; }
-      .row{ flex-wrap:wrap; }
-      .row > .btn{ flex:1 1 100%; }
-    }
-
-    /* FILTRI MAPPA */
-    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    .filter-btn { 
-      background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--stroke); 
-      padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s ease; 
-    }
-    .filter-btn:hover { background: rgba(255,255,255,0.12); }
-    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 10px rgba(45,125,255,0.3); }
   </style>
 </head>
 
@@ -342,7 +303,7 @@
         <div class="logo"></div>
         <div><div class="title">Segnala Facile</div></div>
       </div>
-      <button class="pill" id="installPill" style="display:inline-flex; cursor:pointer; background: #19c37d; color: white; border: none;" type="button">⬇️ Installa App</button>
+      <button class="pill" id="installPill" style="display:none; cursor:pointer;" type="button">⬇️ Installa</button>
     </header>
 
     <div id="banner" class="banner hidden" role="status" aria-live="polite">
@@ -380,8 +341,7 @@
           <a class="btn small ghost" href="#/map">Mappa →</a>
         </div>
 
-        <div id="mapFiltersHome" class="filters" style="margin-top:14px;"></div>
-        <div class="mapShell">
+        <div class="mapShell" style="margin-top:14px">
           <div id="mapHome" class="mapBox"></div>
         </div>
       </div>
@@ -605,8 +565,7 @@
           </div>
           <button class="btn small ghost" onclick="fetchPublicData()" type="button">🔄 Sincronizza</button>
         </div>
-        <div id="mapFiltersMain" class="filters" style="margin-top:14px;"></div>
-        <div class="mapShell">
+        <div class="mapShell" style="margin-top:14px">
           <div class="mapTopBar">
             <div>
               <div class="mapTitle">Tutti i punti</div>
@@ -685,31 +644,6 @@
 
   <script>
     // =========================
-    // LOGICA INSTALLAZIONE INTELLIGENTE (APP PRINCIPALE)
-    // =========================
-    let deferredPrompt = null;
-    
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault(); 
-      deferredPrompt = e;
-    });
-
-    document.getElementById("installPill").addEventListener("click", async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      } else {
-        alert(
-          "Istruzioni per l'installazione:\n\n" +
-          "🍏 SU iPHONE (Safari): Tocca l'icona 'Condividi' in basso (il quadrato con la freccia che punta in alto) e scorri fino a 'Aggiungi alla schermata Home'.\n\n" +
-          "🤖 SU ANDROID: Se non appare il popup, clicca sui 3 pallini in alto a destra del browser e seleziona 'Aggiungi a schermata Home'.\n\n" +
-          "(Nota: se stai già usando l'app dalla tua schermata Home, non c'è bisogno di fare nulla!)"
-        );
-      }
-    });
-    
-    // =========================
     // CONFIG E VARIABILI GLOBALI
     // =========================
     const CONFIG = {
@@ -724,7 +658,7 @@
     window.publicSegnalazioni = [];
     window.publicLuoghi = [];
 
-    // Mappatura EMOJI per la Mappa
+    // Mappatura EMOJI per la Mappa (Segnalazioni)
     const catInfo = { 
       verde:   { color: '#19c37d', emoji: '🌳' }, 
       strade:  { color: '#95a5a6', emoji: '🛣️' }, 
@@ -733,7 +667,7 @@
       altro:   { color: '#2d7dff', emoji: '❓' } 
     };
 
-    // NUOVO: Mappatura EMOJI per i Luoghi recensiti
+    // Mappatura EMOJI per i Luoghi recensiti
     const placeCatInfo = {
       ristorante: { color: '#e74c3c', emoji: '🍕' },
       negozio:    { color: '#9b59b6', emoji: '🛍️' },
@@ -741,6 +675,29 @@
       natura:     { color: '#2ecc71', emoji: '🌲' },
       altro:      { color: '#ff9f43', emoji: '⭐' }
     };
+
+    // =========================
+    // INSTALLAZIONE PWA (App Pubblica)
+    // =========================
+    let deferredPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      const pill = document.getElementById("installPill");
+      if(pill) {
+        pill.style.display = "inline-flex";
+        
+        pill.addEventListener("click", async () => {
+          try {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            pill.style.display = "none";
+          } catch(err) { console.log("Installazione annullata"); }
+        }, { once:true });
+      }
+    });
 
     // =========================
     // INDEXEDDB - Gestione Memoria Locale
@@ -840,7 +797,7 @@
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
 
-   function renderPublicPlaces() {
+    function renderPublicPlaces() {
       const container = document.getElementById("public-places-list");
       if(!window.publicLuoghi.length) { 
         container.innerHTML = "<p class='hint' style='text-align:center;'>Nessun luogo recensito ancora.</p>"; 
@@ -848,14 +805,19 @@
       }
       container.innerHTML = window.publicLuoghi.map((l, idx) => {
         const stars = '⭐'.repeat(l.rating || 5);
+        const info = placeCatInfo[l.categoria] || placeCatInfo.altro; // Recupera l'icona
         const uniqueId = 'place-' + idx;
+        
         return `
           <div class="item cat-altro" style="cursor:pointer; transition:0.2s;" onclick="togglePlace('${uniqueId}')">
             
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <h3 style="margin:0">${stars} ${l.nome}</h3>
+              <div>
+                <h3 style="margin:0">${info.emoji} ${l.nome}</h3>
+                <div style="font-size:12px; color:#a9b6db; margin-top:4px;">${stars}</div>
+              </div>
               <div style="display:flex; gap:8px; align-items:center;">
-                <span class="pill">${l.categoria}</span>
+                <span class="pill" style="border-color:${info.color}; color:${info.color};">${l.categoria}</span>
                 <span id="icon-${uniqueId}" style="font-size:14px; opacity:0.7; transition:0.3s;">▼</span>
               </div>
             </div>
@@ -866,7 +828,7 @@
               
               <div class="row" style="margin-top:10px;">
                 <button class="btn ghost small" onclick="focusOnMap(${l.lat}, ${l.lng})">📍 Vedi in mappa</button>
-                <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${l.lat},${l.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
@@ -875,6 +837,7 @@
       }).join('');
     }
 
+    // Funzione per l'apertura a tendina
     window.togglePlace = function(id) {
       const desc = document.getElementById('desc-' + id);
       const icon = document.getElementById('icon-' + id);
@@ -906,18 +869,12 @@
       }
     }
 
-    let currentMapFilter = 'Tutte';
-
-    window.setMapFilter = function(cat) {
-      currentMapFilter = cat;
-      refreshPublicMaps();
-    };
-
     function refreshPublicMaps() {
       if(layerMain) layerMain.clearLayers();
       if(layerHome) layerHome.clearLayers();
       const bounds = [];
 
+      // 1. Aggiungi Segnalazioni (Emoji Tonde)
       const mixSegnalazioni = [...window.publicSegnalazioni];
       loadReports().filter(r => r.geo).forEach(lr => {
         if(!mixSegnalazioni.find(ps => ps.lat === lr.geo.lat)) {
@@ -925,39 +882,17 @@
         }
       });
 
-      // --- CREAZIONE DINAMICA DEI PULSANTI FILTRO ---
-      const tutteCategorie = new Set();
-      mixSegnalazioni.forEach(r => { if(r.categoria) tutteCategorie.add(r.categoria); });
-      window.publicLuoghi.forEach(l => { if(l.categoria) tutteCategorie.add(l.categoria); });
-      
-      const categorieUniche = ["Tutte", ...Array.from(tutteCategorie)];
-      const bottoniHtml = categorieUniche.map(cat => {
-        const active = (cat === currentMapFilter) ? "active" : "";
-        return `<button class="filter-btn ${active}" onclick="setMapFilter('${cat}')" type="button">${cat}</button>`;
-      }).join('');
-      
-      const fHome = document.getElementById("mapFiltersHome");
-      const fMain = document.getElementById("mapFiltersMain");
-      if(fHome) fHome.innerHTML = bottoniHtml;
-      if(fMain) fMain.innerHTML = bottoniHtml;
-
-      // --- DISEGNA SEGNALAZIONI ---
       mixSegnalazioni.forEach(r => {
         if(!r.lat) return;
-        const cat = r.categoria || 'altro';
-        
-        if(currentMapFilter !== 'Tutte' && cat !== currentMapFilter) return; 
-        
-        const info = catInfo[cat] || catInfo.altro;
+        const info = catInfo[r.categoria] || catInfo.altro;
         const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
-        
         const popupHtml = `
           <div style="min-width:200px; max-width:260px; max-height:240px; overflow-y:auto; padding-right:5px;">
             <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${r.titolo}</b>
             <small style="color:#a9b6db;">${r.dataStr || ''}</small>
             <p style="margin:10px 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${r.lat},${r.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([r.lat, r.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -965,23 +900,21 @@
         bounds.push([r.lat, r.lng]);
       });
 
-      // --- DISEGNA LUOGHI ---
+      // 2. Aggiungi Luoghi (Icone per Categoria)
       window.publicLuoghi.forEach(l => {
         if(!l.lat) return;
-        const cat = l.categoria || 'altro';
+        const info = placeCatInfo[l.categoria] || placeCatInfo.altro; 
         
-        if(currentMapFilter !== 'Tutte' && cat !== currentMapFilter) return;
-
-        const iconHtml = `<div style="background:#ff9f43; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">⭐</div>`;
+        const iconHtml = `<div style="background:${info.color}; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
         const stars = '⭐'.repeat(l.rating || 5);
         
         const popupHtml = `
           <div style="min-width:200px; max-width:260px; max-height:240px; overflow-y:auto; padding-right:5px;">
-            <b style="font-size:15px; display:block; margin-bottom:4px;">${stars} ${l.nome}</b>
-            <i style="color:#a9b6db; font-size:12px;">${l.categoria}</i>
+            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${l.nome}</b>
+            <i style="color:#a9b6db; font-size:12px;">${stars} • ${l.categoria}</i>
             <p style="margin:10px 0; font-size:13px; line-height:1.5;">${l.recensione || ''}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${l.lat},${l.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([l.lat, l.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -1004,6 +937,7 @@
     // =========================
     // GESTIONE FOTO E DOCUMENTI
     // =========================
+    
     document.getElementById("btnPickCamera").addEventListener("click", () => document.getElementById("fotoCamera").click());
     document.getElementById("btnPickGallery").addEventListener("click", () => document.getElementById("fotoGallery").click());
     document.getElementById("btnPickDocs").addEventListener("click", () => document.getElementById("docsInput").click());
@@ -1012,12 +946,10 @@
       return new Promise((resolve) => {
         const i = new Image(); i.onload = () => {
           const cvs = document.createElement("canvas");
-          // Ridotto da 1400 a 800px massimi per non pesare su R2!
-          const r = Math.min(1, 800 / Math.max(i.width, i.height));
+          const r = Math.min(1, 1400 / Math.max(i.width, i.height));
           cvs.width = i.width*r; cvs.height = i.height*r;
           cvs.getContext("2d").drawImage(i, 0, 0, cvs.width, cvs.height);
-          // Qualità JPEG abbassata al 65% (invisibile a occhio nudo ma fa miracoli sul peso)
-          resolve(cvs.toDataURL("image/jpeg", 0.65)); 
+          resolve(cvs.toDataURL("image/jpeg", 0.8));
         };
         i.src = URL.createObjectURL(file);
       });
@@ -1218,8 +1150,7 @@
     function applyContacts(){
       const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
       document.getElementById("mailLink").href = `mailto:${CONFIG.email}?subject=Messaggio&body=${body}`;
-      // Inserito link corretto per le mappe (Ricerca Google Maps per il Comune)
-      document.getElementById("mapLink").href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
+      document.getElementById("mapLink").href = `https://www.google.com/maps?q=$${encodeURIComponent(CONFIG.mapsQuery)}`;
     }
 
     initStorage().then(() => {
