@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pannello Amministratore - SegnalaFacile</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0b1220; color: #eaf0ff; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+    h1, h2 { margin-top: 0; }
+    input[type="password"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d7dff; background: #070c18; color: white; margin-bottom: 15px; box-sizing: border-box; }
+    button { cursor: pointer; background: #2d7dff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; }
+    button:hover { filter: brightness(1.2); }
+    .btn-danger { background: #ff4d4f; }
+    .list-item { background: #070c18; padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .details { flex-grow: 1; margin-right: 15px; }
+    .details h3 { margin: 0 0 5px 0; font-size: 16px; color: #19c37d; }
+    .details p { margin: 0; font-size: 13px; color: #a9b6db; }
+    .badge { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
+    #dashboard { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div class="card" id="loginBox">
+    <h1>Area Amministratore 🔒</h1>
+    <p style="color: #a9b6db;">Inserisci la Password (API Key) per gestire il database.</p>
+    <input type="password" id="apiKeyInput" placeholder="Inserisci Password..." />
+    <button onclick="login()">Accedi al Database</button>
+  </div>
+
+  <div id="dashboard">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h1>Gestione Database</h1>
+      <button onclick="loadData()">🔄 Aggiorna Dati</button>
+    </div>
+
+    <div class="card">
+      <h2>Luoghi e Recensioni ⭐</h2>
+      <div id="luoghiList">Caricamento...</div>
+    </div>
+
+    <div class="card">
+      <h2>Segnalazioni Utenti 📍</h2>
+      <div id="segnalazioniList">Caricamento...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // URL del tuo Worker (Assicurati che sia quello giusto)
+  const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev";
+  let apiKey = "";
+
+  function login() {
+    const input = document.getElementById("apiKeyInput").value.trim();
+    if (!input) return alert("Inserisci la password.");
+    apiKey = input;
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    loadData();
+  }
+
+  async function loadData() {
+    document.getElementById("luoghiList").innerHTML = "Caricamento...";
+    document.getElementById("segnalazioniList").innerHTML = "Caricamento...";
+    
+    try {
+      const res = await fetch(WORKER_URL + "/api/public-data");
+      const data = await res.json();
+      
+      if (!data.ok) throw new Error("Errore caricamento dati");
+
+      renderList("luoghiList", data.luoghi, "luoghi", l => `
+        <div class="details">
+          <h3>⭐ ${l.nome}</h3>
+          <p><span class="badge">${l.categoria}</span> ${l.recensione || 'Senza testo'}</p>
+        </div>
+      `);
+
+      renderList("segnalazioniList", data.segnalazioni, "segnalazioni", s => `
+        <div class="details">
+          <h3>📍 ${s.titolo}</h3>
+          <p><span class="badge">${s.categoria}</span> ${s.dataStr}</p>
+          <p style="margin-top:4px;">${s.descrizione || 'Senza descrizione'}</p>
+        </div>
+      `);
+
+    } catch (e) {
+      alert("Errore di connessione al database.");
+    }
+  }
+
+  function renderList(containerId, items, type, formatHtml) {
+    const container = document.getElementById(containerId);
+    if (!items || items.length === 0) {
+      container.innerHTML = "<p style='color:#a9b6db;'>Nessun dato presente in questa tabella.</p>";
+      return;
+    }
+
+    container.innerHTML = items.map(item => `
+      <div class="list-item" id="item-${item.id}">
+        ${formatHtml(item)}
+        <button class="btn-danger" onclick="deleteItem('${item.id}', '${type}')">🗑️ Cancella</button>
+      </div>
+    `).join('');
+  }
+
+  async function deleteItem(id, type) {
+    if (!confirm("Sei sicuro di voler eliminare questo elemento per tutti gli utenti? L'azione è irreversibile.")) return;
+    
+    try {
+      const res = await fetch(`${WORKER_URL}/api/${type}/${id}`, {
+        method: "DELETE",
+        headers: { "X-Api-Key": apiKey }
+      });
+      const result = await res.json();
+
+      if (result.ok) {
+        document.getElementById(`item-${id}`).style.display = "none";
+      } else {
+        alert("Errore: " + (result.error || "Password Errata o Non Autorizzato"));
+        // Se la password è sbagliata torna al login
+        if(result.error && result.error.includes("UNAUTHORIZED")) {
+           document.getElementById("loginBox").style.display = "block";
+           document.getElementById("dashboard").style.display = "none";
+        }
+      }
+    } catch (e) {
+      alert("Errore di rete durante l'eliminazione.");
+    }
+  }
+</script>
+</body>
+</html>
