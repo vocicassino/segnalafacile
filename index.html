@@ -323,15 +323,6 @@
       .row{ flex-wrap:wrap; }
       .row > .btn{ flex:1 1 100%; }
     }
-
-    /* FILTRI MAPPA */
-    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    .filter-btn { 
-      background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--stroke); 
-      padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s ease; 
-    }
-    .filter-btn:hover { background: rgba(255,255,255,0.12); }
-    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 10px rgba(45,125,255,0.3); }
   </style>
 </head>
 
@@ -342,7 +333,7 @@
         <div class="logo"></div>
         <div><div class="title">Segnala Facile</div></div>
       </div>
-      <button class="pill" id="installPill" style="display:inline-flex; cursor:pointer; background: #19c37d; color: white; border: none;" type="button">⬇️ Installa App</button>
+      <button class="pill" id="installPill" style="display:none; cursor:pointer;" type="button">⬇️ Installa</button>
     </header>
 
     <div id="banner" class="banner hidden" role="status" aria-live="polite">
@@ -380,8 +371,7 @@
           <a class="btn small ghost" href="#/map">Mappa →</a>
         </div>
 
-        <div id="mapFiltersHome" class="filters" style="margin-top:14px;"></div>
-        <div class="mapShell">
+        <div class="mapShell" style="margin-top:14px">
           <div id="mapHome" class="mapBox"></div>
         </div>
       </div>
@@ -605,9 +595,8 @@
           </div>
           <button class="btn small ghost" onclick="fetchPublicData()" type="button">🔄 Sincronizza</button>
         </div>
-        <div id="mapFiltersMain" class="filters" style="margin-top:14px;"></div>
-        <div class="mapShell">
-          <div class="mapTopBar">>
+        <div class="mapShell" style="margin-top:14px">
+          <div class="mapTopBar">
             <div>
               <div class="mapTitle">Tutti i punti</div>
             </div>
@@ -687,35 +676,6 @@
     // =========================
     // CONFIG E VARIABILI GLOBALI
     // =========================
-
-    // =========================
-    // LOGICA INSTALLAZIONE INTELLIGENTE (APP PRINCIPALE)
-    // =========================
-    let deferredPrompt = null;
-    
-    // Intercetta l'evento di installazione se il browser lo permette (Android/Chrome)
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault(); 
-      deferredPrompt = e;
-    });
-
-    document.getElementById("installPill").addEventListener("click", async () => {
-      if (deferredPrompt) {
-        // Se possibile, mostra il popup nativo e bellissimo di Android
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      } else {
-        // Se siamo su iPhone, o se l'app è già installata, mostra le istruzioni manuali
-        alert(
-          "Istruzioni per l'installazione:\n\n" +
-          "🍏 SU iPHONE (Safari): Tocca l'icona 'Condividi' in basso (il quadrato con la freccia che punta in alto) e scorri fino a 'Aggiungi alla schermata Home'.\n\n" +
-          "🤖 SU ANDROID: Se non appare il popup, clicca sui 3 pallini in alto a destra del browser e seleziona 'Aggiungi a schermata Home'.\n\n" +
-          "(Nota: se stai già usando l'app dalla tua schermata Home, non c'è bisogno di fare nulla!)"
-        );
-      }
-    });
-    
     const CONFIG = {
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
@@ -835,53 +795,29 @@
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
 
-   function renderPublicPlaces() {
+    function renderPublicPlaces() {
       const container = document.getElementById("public-places-list");
       if(!window.publicLuoghi.length) { 
         container.innerHTML = "<p class='hint' style='text-align:center;'>Nessun luogo recensito ancora.</p>"; 
         return; 
       }
-      container.innerHTML = window.publicLuoghi.map((l, idx) => {
+      container.innerHTML = window.publicLuoghi.map(l => {
         const stars = '⭐'.repeat(l.rating || 5);
-        const uniqueId = 'place-' + idx; // ID unico per gestire l'apertura
         return `
-          <div class="item cat-altro" style="cursor:pointer; transition:0.2s;" onclick="togglePlace('${uniqueId}')">
-            
+          <div class="item cat-altro">
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
               <h3 style="margin:0">${stars} ${l.nome}</h3>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <span class="pill">${l.categoria}</span>
-                <span id="icon-${uniqueId}" style="font-size:14px; opacity:0.7; transition:0.3s;">▼</span>
-              </div>
+              <span class="pill">${l.categoria}</span>
             </div>
-            
-            <div id="desc-${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; cursor:default;" onclick="event.stopPropagation()">
-              <p style="margin:0 0 10px">${l.recensione}</p>
-              ${l.foto ? `<img src="${l.foto}" class="place-img-preview" onclick="window.open('${l.foto}')">` : ''}
-              
-              <div class="row" style="margin-top:10px;">
-                <button class="btn ghost small" onclick="focusOnMap(${l.lat}, ${l.lng})">📍 Vedi in mappa</button>
-                <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
-              </div>
+            <p style="margin:10px 0">${l.recensione}</p>
+            ${l.foto ? `<img src="${l.foto}" class="place-img-preview" onclick="window.open('${l.foto}')">` : ''}
+            <div style="margin-top:10px;">
+              <button class="btn ghost small" onclick="focusOnMap(${l.lat}, ${l.lng})">📍 Vedi in mappa</button>
             </div>
-
           </div>
         `;
       }).join('');
     }
-
-    // Funzione che fa l'animazione di apertura/chiusura
-    window.togglePlace = function(id) {
-      const desc = document.getElementById('desc-' + id);
-      const icon = document.getElementById('icon-' + id);
-      if(desc.classList.contains('hidden')) {
-        desc.classList.remove('hidden');
-        icon.style.transform = "rotate(180deg)";
-      } else {
-        desc.classList.add('hidden');
-        icon.style.transform = "rotate(0deg)";
-      }
-    };
 
     // =========================
     // MAPPE E MARKER
@@ -902,21 +838,12 @@
       }
     }
 
-    // Variabile che ricorda quale filtro è attivo
-    let currentMapFilter = 'Tutte';
-
-    // Funzione che scatta quando clicchi un bottone filtro
-    window.setMapFilter = function(cat) {
-      currentMapFilter = cat;
-      refreshPublicMaps(); // Ridisegna la mappa
-    };
-
     function refreshPublicMaps() {
       if(layerMain) layerMain.clearLayers();
       if(layerHome) layerHome.clearLayers();
       const bounds = [];
 
-      // 1. Uniamo segnalazioni cloud e locali
+      // 1. Aggiungi Segnalazioni (Emoji)
       const mixSegnalazioni = [...window.publicSegnalazioni];
       loadReports().filter(r => r.geo).forEach(lr => {
         if(!mixSegnalazioni.find(ps => ps.lat === lr.geo.lat)) {
@@ -924,90 +851,16 @@
         }
       });
 
-      // --- CREAZIONE DINAMICA DEI PULSANTI FILTRO ---
-      // Legge tutte le categorie esistenti e crea i bottoni
-      const tutteCategorie = new Set();
-      mixSegnalazioni.forEach(r => { if(r.categoria) tutteCategorie.add(r.categoria); });
-      window.publicLuoghi.forEach(l => { if(l.categoria) tutteCategorie.add(l.categoria); });
-      
-      const categorieUniche = ["Tutte", ...Array.from(tutteCategorie)];
-      const bottoniHtml = categorieUniche.map(cat => {
-        const active = (cat === currentMapFilter) ? "active" : "";
-        return `<button class="filter-btn ${active}" onclick="setMapFilter('${cat}')" type="button">${cat}</button>`;
-      }).join('');
-      
-      const fHome = document.getElementById("mapFiltersHome");
-      const fMain = document.getElementById("mapFiltersMain");
-      if(fHome) fHome.innerHTML = bottoniHtml;
-      if(fMain) fMain.innerHTML = bottoniHtml;
-      // ---------------------------------------------
-
-      // 2. Disegna le Segnalazioni (Applicando il Filtro)
-      mixSegnalazioni.forEach(r => {
-        if(!r.lat) return;
-        const cat = r.categoria || 'altro';
-        
-        // Se il filtro non è "Tutte" e la categoria non corrisponde, salta il disegno!
-        if(currentMapFilter !== 'Tutte' && cat !== currentMapFilter) return; 
-        
-        const info = catInfo[cat] || catInfo.altro;
-        const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
-        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
-        
-        const popupHtml = `
-          <div style="min-width:200px; max-width:260px; max-height:240px; overflow-y:auto; padding-right:5px;">
-            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${r.titolo}</b>
-            <small style="color:#a9b6db;">${r.dataStr || ''}</small>
-            <p style="margin:10px 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${r.lat},${r.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
-          </div>`;
-        
-        if(layerMain) L.marker([r.lat, r.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
-        if(layerHome) L.marker([r.lat, r.lng], {icon}).addTo(layerHome);
-        bounds.push([r.lat, r.lng]);
-      });
-
-      // 3. Disegna i Luoghi (Applicando il Filtro)
-      window.publicLuoghi.forEach(l => {
-        if(!l.lat) return;
-        const cat = l.categoria || 'altro';
-        
-        // Filtro per i Luoghi
-        if(currentMapFilter !== 'Tutte' && cat !== currentMapFilter) return;
-
-        const iconHtml = `<div style="background:#ff9f43; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">⭐</div>`;
-        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
-        const stars = '⭐'.repeat(l.rating || 5);
-        
-        const popupHtml = `
-          <div style="min-width:200px; max-width:260px; max-height:240px; overflow-y:auto; padding-right:5px;">
-            <b style="font-size:15px; display:block; margin-bottom:4px;">${stars} ${l.nome}</b>
-            <i style="color:#a9b6db; font-size:12px;">${l.categoria}</i>
-            <p style="margin:10px 0; font-size:13px; line-height:1.5;">${l.recensione || ''}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${l.lat},${l.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
-          </div>`;
-        
-        if(layerMain) L.marker([l.lat, l.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
-        if(layerHome) L.marker([l.lat, l.lng], {icon}).addTo(layerHome);
-        bounds.push([l.lat, l.lng]);
-      });
-
-      if(bounds.length && mapMain) mapMain.fitBounds(L.latLngBounds(bounds).pad(0.2));
-    }
-
       mixSegnalazioni.forEach(r => {
         if(!r.lat) return;
         const info = catInfo[r.categoria] || catInfo.altro;
         const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
-        
-        // POPUP con Tasto RAGGIUNGI
         const popupHtml = `
-          <div style="min-width:200px; max-width:260px; max-height:240px; overflow-y:auto; padding-right:5px;">
+          <div style="min-width:200px; max-width:260px; max-height:220px; overflow-y:auto; padding-right:5px;">
             <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${r.titolo}</b>
             <small style="color:#a9b6db;">${r.dataStr || ''}</small>
-            <p style="margin:10px 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <p style="margin:10px 0 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione fornita.'}</p>
           </div>`;
         
         if(layerMain) L.marker([r.lat, r.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -1021,14 +874,11 @@
         const iconHtml = `<div style="background:#ff9f43; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">⭐</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
         const stars = '⭐'.repeat(l.rating || 5);
-        
-        // POPUP con Tasto RAGGIUNGI
         const popupHtml = `
-          <div style="min-width:200px; max-width:260px; max-height:240px; overflow-y:auto; padding-right:5px;">
+          <div style="min-width:200px; max-width:260px; max-height:220px; overflow-y:auto; padding-right:5px;">
             <b style="font-size:15px; display:block; margin-bottom:4px;">${stars} ${l.nome}</b>
             <i style="color:#a9b6db; font-size:12px;">${l.categoria}</i>
-            <p style="margin:10px 0; font-size:13px; line-height:1.5;">${l.recensione || ''}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <p style="margin:10px 0 0; font-size:13px; line-height:1.5;">${l.recensione || ''}</p>
           </div>`;
         
         if(layerMain) L.marker([l.lat, l.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
