@@ -676,6 +676,35 @@
     // =========================
     // CONFIG E VARIABILI GLOBALI
     // =========================
+
+    // =========================
+    // LOGICA INSTALLAZIONE INTELLIGENTE (APP PRINCIPALE)
+    // =========================
+    let deferredPrompt = null;
+    
+    // Intercetta l'evento di installazione se il browser lo permette (Android/Chrome)
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault(); 
+      deferredPrompt = e;
+    });
+
+    document.getElementById("installPill").addEventListener("click", async () => {
+      if (deferredPrompt) {
+        // Se possibile, mostra il popup nativo e bellissimo di Android
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      } else {
+        // Se siamo su iPhone, o se l'app è già installata, mostra le istruzioni manuali
+        alert(
+          "Istruzioni per l'installazione:\n\n" +
+          "🍏 SU iPHONE (Safari): Tocca l'icona 'Condividi' in basso (il quadrato con la freccia che punta in alto) e scorri fino a 'Aggiungi alla schermata Home'.\n\n" +
+          "🤖 SU ANDROID: Se non appare il popup, clicca sui 3 pallini in alto a destra del browser e seleziona 'Aggiungi a schermata Home'.\n\n" +
+          "(Nota: se stai già usando l'app dalla tua schermata Home, non c'è bisogno di fare nulla!)"
+        );
+      }
+    });
+    
     const CONFIG = {
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
