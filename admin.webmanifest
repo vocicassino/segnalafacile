@@ -1,5 +1,5 @@
 {
-  "name": "Admin SegnalaFacile",
+  "name": "Admin Segnala Facile",
   "short_name": "Admin",
   "start_url": "./admin.html",
   "display": "standalone",
