@@ -16,7 +16,7 @@
     .card { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
     h1, h2 { margin-top: 0; }
     
-    input[type="text"], input[type="password"], select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d7dff; background: #070c18; color: white; margin-bottom: 15px; box-sizing: border-box; }
+    input[type="text"], input[type="password"], input[type="number"], select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d7dff; background: #070c18; color: white; margin-bottom: 15px; box-sizing: border-box; }
     textarea { min-height: 100px; resize: vertical; }
     button { cursor: pointer; background: #2d7dff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-right: 5px; }
     button:hover { filter: brightness(1.2); }
@@ -42,8 +42,8 @@
     .filter-btn:hover { background: rgba(255,255,255,0.15); }
     .filter-btn.active { background: #2d7dff; color: #ffffff; border-color: #2d7dff; font-weight: bold; box-shadow: 0 4px 10px rgba(45,125,255,0.3); }
 
-    /* BOTTONE INSTALLA SEMPRE VISIBILE */
-    #installAdminPill { display: block; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; border-radius: 12px; }
+    /* BOTTONE INSTALLA (Nascosto di default, gestito da JS) */
+    #installAdminPill { display: none; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; border-radius: 12px; box-shadow: 0 4px 10px rgba(25,195,125,0.3); }
 
     /* MODAL PER LA MODIFICA */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; padding: 20px; z-index: 1000; }
@@ -129,42 +129,42 @@
 
 <script>
   // =========================
-  // LOGICA INSTALLAZIONE INTELLIGENTE
+  // LOGICA INSTALLAZIONE INTELLIGENTE PWA
   // =========================
+  const installBtn = document.getElementById("installAdminPill");
   let deferredPrompt = null;
   
-  // Se Chrome/Android ci permette di installarla, salviamo l'evento
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault(); 
-    deferredPrompt = e;
-  });
+  // Controllo se l'app è già installata (Standalone mode)
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-  document.getElementById("installAdminPill").addEventListener("click", async () => {
-    if (deferredPrompt) {
-      // Chrome/Android: avvia il popup nativo
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    } else {
-      // iPhone o Già Installata: mostra istruzioni manuali
-      alert(
-        "Istruzioni per l'installazione:\\n\\n" +
-        "🍏 SU iPHONE (Safari): Tocca l'icona 'Condividi' (il quadrato con la freccia in basso) e seleziona 'Aggiungi alla schermata Home'.\\n\\n" +
-        "🤖 SU ANDROID: Se non appare il popup, clicca sui 3 pallini in alto a destra e seleziona 'Aggiungi a schermata Home'. (Potresti averla già installata!)"
-      );
-    }
-  });
+  if (!isStandalone) {
+    // 1. Logica per Android / Chrome / Edge
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault(); 
+      deferredPrompt = e;
+      installBtn.style.display = "block"; // Mostra il bottone
+      
+      installBtn.addEventListener("click", async () => {
+        if(deferredPrompt) {
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          installBtn.style.display = "none";
+        }
+      }, { once: true });
+    });
 
-  // Funzione per Aprire/Chiudere le Sezioni
-  function toggleSection(sectionId, iconId) {
-    const section = document.getElementById(sectionId);
-    const icon = document.getElementById(iconId);
-    if (section.style.display === "block") {
-      section.style.display = "none";
-      icon.style.transform = "rotate(0deg)";
-    } else {
-      section.style.display = "block";
-      icon.style.transform = "rotate(180deg)";
+    // 2. Logica di Fallback per dispositivi iOS (iPhone/iPad)
+    if (isIOS) {
+      installBtn.style.display = "block"; // Su iOS lo mostriamo sempre
+      installBtn.addEventListener("click", () => {
+        alert(
+          "Istruzioni per installare l'Admin su iPhone/iPad:\n\n" +
+          "1️⃣ Tocca l'icona 'Condividi' in basso (il quadrato con la freccia verso l'alto).\n" +
+          "2️⃣ Scorri in basso e seleziona 'Aggiungi alla schermata Home'."
+        );
+      });
     }
   }
 
@@ -180,6 +180,19 @@
 
   let editingId = null;
   let editingType = null;
+
+  // Funzione per Aprire/Chiudere le Sezioni
+  function toggleSection(sectionId, iconId) {
+    const section = document.getElementById(sectionId);
+    const icon = document.getElementById(iconId);
+    if (section.style.display === "block") {
+      section.style.display = "none";
+      icon.style.transform = "rotate(0deg)";
+    } else {
+      section.style.display = "block";
+      icon.style.transform = "rotate(180deg)";
+    }
+  }
 
   function login() {
     const input = document.getElementById("apiKeyInput").value.trim();
@@ -251,7 +264,7 @@
     if (type === "luoghi") {
       renderListHTML("luoghiList", items, "luoghi", l => `
         <div class="details">
-          <h3>⭐ ${l.nome} (${l.rating} stelle)</h3>
+          <h3>⭐ ${l.nome} (${l.rating || 5} stelle)</h3>
           <p><span class="badge">${l.categoria}</span> ${l.recensione || 'Senza testo'}</p>
         </div>
       `);
