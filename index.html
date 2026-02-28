@@ -566,11 +566,24 @@
           <button class="btn small ghost" onclick="fetchPublicData()" type="button">🔄 Sincronizza</button>
         </div>
         <div class="mapShell" style="margin-top:14px">
-          <div class="mapTopBar">
-            <div>
-              <div class="mapTitle">Tutti i punti</div>
-            </div>
-            <button class="btn small ghost" id="btnMapFit" type="button">🎯 Inquadra Tutto</button>
+          <div class="mapTopBar" style="flex-wrap:wrap;">
+            <select id="mapCategoryFilter" style="flex:1; min-width:160px; padding:8px 12px; font-size:13px; border-radius:14px; margin:0; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.5); color:white;">
+              <option value="all">🌍 Tutti i punti</option>
+              <optgroup label="📍 Segnalazioni">
+                <option value="verde">🌳 Verde Pubblico</option>
+                <option value="strade">🛣️ Strade / Buche</option>
+                <option value="rifiuti">🗑️ Rifiuti / Decoro</option>
+                <option value="luce">💡 Illuminazione</option>
+              </optgroup>
+              <optgroup label="⭐ Luoghi e Recensioni">
+                <option value="ristorante">🍕 Ristoranti / Bar</option>
+                <option value="negozio">🛍️ Negozi</option>
+                <option value="cultura">🏛️ Cultura / Monumenti</option>
+                <option value="natura">🌲 Parchi / Natura</option>
+              </optgroup>
+              <option value="altro">❓ Altro</option>
+            </select>
+            <button class="btn small ghost" id="btnMapFit" type="button" style="flex:0 0 auto;">🎯 Inquadra</button>
           </div>
           <div id="mapMain" class="mapBox big"></div>
         </div>
@@ -874,6 +887,9 @@
       if(layerHome) layerHome.clearLayers();
       const bounds = [];
 
+      // Legge il filtro selezionato nel dropdown (se non c'è, è 'all')
+      const mapFilter = document.getElementById("mapCategoryFilter") ? document.getElementById("mapCategoryFilter").value : "all";
+
       // 1. Aggiungi Segnalazioni (Emoji Tonde)
       const mixSegnalazioni = [...window.publicSegnalazioni];
       loadReports().filter(r => r.geo).forEach(lr => {
@@ -884,7 +900,11 @@
 
       mixSegnalazioni.forEach(r => {
         if(!r.lat) return;
-        const info = catInfo[r.categoria] || catInfo.altro;
+        const cat = r.categoria || "altro";
+        // Filtro Segnalazioni
+        if(mapFilter !== "all" && cat !== mapFilter) return;
+
+        const info = catInfo[cat] || catInfo.altro;
         const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
         const popupHtml = `
@@ -903,7 +923,11 @@
       // 2. Aggiungi Luoghi (Icone per Categoria)
       window.publicLuoghi.forEach(l => {
         if(!l.lat) return;
-        const info = placeCatInfo[l.categoria] || placeCatInfo.altro; 
+        const cat = l.categoria || "altro";
+        // Filtro Luoghi
+        if(mapFilter !== "all" && cat !== mapFilter) return;
+
+        const info = placeCatInfo[cat] || placeCatInfo.altro; 
         
         const iconHtml = `<div style="background:${info.color}; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
@@ -930,8 +954,14 @@
       setTimeout(() => mapMain?.setView([lat, lng], 18), 300);
     }
 
+    // Listener per il click su "Inquadra Tutto"
     document.getElementById("btnMapFit")?.addEventListener("click", () => {
       refreshPublicMaps(); 
+    });
+
+    // Listener per il cambio filtro sulla mappa (NUOVO)
+    document.getElementById("mapCategoryFilter")?.addEventListener("change", () => {
+      refreshPublicMaps();
     });
 
     // =========================
