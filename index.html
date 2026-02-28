@@ -155,7 +155,7 @@
     .thumbs{ display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; padding:2px; }
     .thumbs img{
       width:76px; height:76px; object-fit:cover; border-radius:18px;
-      border:1px solid var(--stroke); background:rgba(255,255,255,.05); box-shadow: 0 10px 18px rgba(0,0,0,.30);
+      border:1px solid var(--stroke); background:rgba(255,255,255,.05); box-shadow: 0 10px 18px rgba(0,0,0,.30); cursor: pointer;
     }
 
     .pill{
@@ -177,11 +177,11 @@
     .cat-strade { border-left: 5px solid #95a5a6; }
     .cat-rifiuti { border-left: 5px solid #f39c12; }
     .cat-luce { border-left: 5px solid #f1c40f; }
-    .cat-altro, .cat-ristorante, .cat-negozio, .cat-cultura, .cat-natura { border-left: 5px solid #2d7dff; }
+    .cat-altro, .cat-ristorante, .cat-negozio, .cat-cultura, .cat-natura, .cat-bar, .cat-monumento, .cat-parco { border-left: 5px solid #2d7dff; }
 
-    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 10px; }
-    .gallery-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--stroke); cursor: pointer; }
-    .place-img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 12px; margin-top: 10px; border: 1px solid var(--stroke); }
+    .gallery-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .gallery-img { height: 80px; width: 80px; object-fit: cover; border-radius: 12px; border: 1px solid var(--stroke); cursor: pointer; }
+    .place-img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; margin-top: 10px; margin-right: 5px; border: 1px solid var(--stroke); cursor: pointer; }
 
     .hidden{display:none !important}
     section{display:none} section:not(.hidden){display:block}
@@ -381,11 +381,11 @@
         </div>
         <div id="geoLine" class="hint" style="margin-top:10px; display:none;"></div>
 
-        <label>Foto (opzionale)</label>
+        <label>Foto (Massimo 3)</label>
         <div class="row">
           <button class="ghost" id="btnPickCamera" type="button">📷 Scatta foto</button>
           <button class="ghost" id="btnPickGallery" type="button">🖼️ Scegli dalla galleria</button>
-          <input id="fotoCamera" type="file" accept="image/*" capture="environment" class="hidden" />
+          <input id="fotoCamera" type="file" accept="image/*" capture="environment" multiple class="hidden" />
           <input id="fotoGallery" type="file" accept="image/*" multiple class="hidden" />
           <button class="danger" id="btnClearPhoto" type="button">🧹 Rimuovi</button>
         </div>
@@ -521,14 +521,14 @@
         <label>La tua recensione</label>
         <textarea id="placeReview" placeholder="Come ti sei trovato? Cosa consigli?"></textarea>
 
-        <label>Posizione e Foto</label>
+        <label>Posizione e Foto (Massimo 3)</label>
         <div class="row">
           <button class="ghost" id="btnPlaceGeoPick" type="button">📍 Posizione sulla mappa (Obbligatoria)</button>
           <button class="ghost" onclick="document.getElementById('placePhotoInput').click()" type="button">📷 Aggiungi Foto</button>
-          <input type="file" id="placePhotoInput" accept="image/*" class="hidden" />
+          <input type="file" id="placePhotoInput" accept="image/*" multiple class="hidden" />
         </div>
         <div id="placeGeoLine" class="hint" style="margin-top:10px; color:var(--accent2); font-weight:bold;"></div>
-        <div id="placePhotoPreview" style="margin-top:10px;"></div>
+        <div id="placePhotoPreview" style="display:flex; flex-wrap:wrap; margin-top:10px;"></div>
 
         <button class="btn primary" id="btnSendPlace" type="button" style="width:100%; margin-top:20px;">⭐ Pubblica Recensione</button>
       </div>
@@ -584,7 +584,7 @@
                 <option value="negozio">🛍️ Negozi</option>
                 <option value="cultura">📚 Cultura</option>
                 <option value="monumento">🏛️ Monumenti</option>
-                <option value="parcho">🌳 Parchi</option>
+                <option value="parco">🌳 Parchi</option>
                 <option value="natura">☘️ Natura</option>
               </optgroup>
               <option value="altro">❓ Altro</option>
@@ -627,6 +627,11 @@
       </div>
       <div class="hint" id="pickedLine" style="margin-top:10px">Nessun punto selezionato.</div>
     </div>
+  </div>
+
+  <div class="modalOverlay" id="imageViewer" style="z-index: 999999; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.9);">
+    <button class="modalClose" onclick="document.getElementById('imageViewer').style.display='none'" style="align-self: flex-end; margin-right: 10px; margin-top: 10px; font-size: 16px;">✕ Chiudi</button>
+    <img id="imageViewerImg" src="" style="max-width: 95%; max-height: 80vh; border-radius: 12px; object-fit: contain;" />
   </div>
 
   <nav class="bottom" aria-label="Navigazione">
@@ -782,17 +787,27 @@
     }
     window.addEventListener("hashchange", route);
 
-    const estraiFoto = (item) => {
-      if(!item) return '';
-      if (item.foto) return item.foto;
-      if (item.photoDataUrl) return item.photoDataUrl;
+    // Apre la foto nella lightbox
+    window.openImage = function(src) {
+      document.getElementById('imageViewerImg').src = src;
+      document.getElementById('imageViewer').style.display = 'flex';
+    };
+
+    // Estrae TUTTE le foto possibili fino ad un massimo di 3
+    const estraiTutteLeFoto = (item) => {
+      if(!item) return [];
+      let arr = [];
+      if (item.foto) arr.push(item.foto);
+      if (item.photoDataUrl) arr.push(item.photoDataUrl);
       if (item.photos) {
         try {
-          const arr = typeof item.photos === 'string' ? JSON.parse(item.photos) : item.photos;
-          if (Array.isArray(arr) && arr.length > 0) return arr[0].dataUrl || arr[0];
+          const parsed = typeof item.photos === 'string' ? JSON.parse(item.photos) : item.photos;
+          if (Array.isArray(parsed)) {
+            parsed.forEach(p => { if(p.dataUrl) arr.push(p.dataUrl); else if(typeof p === 'string') arr.push(p); });
+          }
         } catch(e) {}
       }
-      return '';
+      return [...new Set(arr)].filter(Boolean).slice(0, 3);
     };
 
     async function fetchPublicData() {
@@ -818,12 +833,10 @@
         return; 
       }
 
-      // Raggruppa i luoghi per NOME esatto
       const groupedPlaces = {};
       window.publicLuoghi.forEach(l => {
         const nome = l.nome ? l.nome.trim() : 'Sconosciuto';
         const key = nome.toLowerCase();
-        // Genera un ID sicuro senza spazi
         const safeKey = key.replace(/[^a-z0-9]/g, '-');
         
         if(!groupedPlaces[key]) {
@@ -834,20 +847,24 @@
 
       const html = Object.keys(groupedPlaces).map((key) => {
         const group = groupedPlaces[key];
-        // Calcola la media delle stelle
         const avgRating = Math.round(group.reviews.reduce((acc, r) => acc + (r.rating||5), 0) / group.reviews.length);
         const stars = '⭐'.repeat(avgRating);
         const info = placeCatInfo[group.categoria] || placeCatInfo.altro;
         const uniqueId = group.safeKey;
         
-        // Genera la lista delle singole recensioni dentro la scheda
         const reviewsHtml = group.reviews.map(r => {
-           const rFoto = estraiFoto(r);
+           const immagini = estraiTutteLeFoto(r);
+           const imagesHtml = immagini.length > 0 
+             ? `<div style="display:flex; gap:5px; margin-top:8px; flex-wrap:wrap;">` + 
+               immagini.map(img => `<img src="${img}" style="width:70px; height:70px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="openImage(this.src)">`).join('') + 
+               `</div>`
+             : '';
+
            return `
              <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:10px;">
                <div style="font-size:11px; color:#a9b6db; margin-bottom:4px;">${'⭐'.repeat(r.rating||5)} • ${r.dataStr || ''}</div>
                <p style="margin:0; font-size:13px; line-height:1.4;">${r.recensione}</p>
-               ${rFoto ? `<img src="${rFoto}" style="width:100px; height:100px; object-fit:cover; border-radius:8px; margin-top:8px; border:1px solid rgba(255,255,255,0.1);" onclick="window.open('${rFoto}')">` : ''}
+               ${imagesHtml}
              </div>
            `;
         }).join('');
@@ -884,7 +901,6 @@
       container.innerHTML = html;
     }
 
-    // Funzione per l'apertura a tendina
     window.togglePlace = function(id) {
       const desc = document.getElementById('desc-' + id);
       const icon = document.getElementById('icon-' + id);
@@ -898,7 +914,6 @@
       }
     };
 
-    // FUNZIONE MAGICA: Viene chiamata dalla mappa, apre la sezione Luoghi, scorre fino alla scheda e la apre!
     window.openPlaceCard = function(safeKey) {
        location.hash = "#/places";
        setTimeout(() => {
@@ -906,15 +921,14 @@
           if(card) {
               card.scrollIntoView({behavior: "smooth", block: "center"});
               card.classList.add("highlight"); 
-              setTimeout(() => card.classList.remove("highlight"), 1500); // Effetto lampeggio
+              setTimeout(() => card.classList.remove("highlight"), 1500);
               
               const desc = card.querySelector('.hidden');
-              if(desc) card.click(); // Simula il clic per aprire la tendina
+              if(desc) card.click(); 
           }
-       }, 400); // Aspetta che la pagina sia cambiata
+       }, 400); 
     };
 
-    // FUNZIONE MAGICA 2: Pre-compila e blocca il modulo per aggiungere una recensione allo stesso posto
     window.addReviewToPlace = function(keyToFind) {
        const place = window.publicLuoghi.find(l => (l.nome||'').trim().toLowerCase() === keyToFind);
        if(place) {
@@ -922,20 +936,19 @@
           setTimeout(() => {
              const nameInput = document.getElementById("placeName");
              nameInput.value = place.nome;
-             nameInput.readOnly = true; // Blocca il nome
+             nameInput.readOnly = true; 
              
              const catInput = document.getElementById("placeCategory");
              catInput.value = place.categoria;
-             catInput.disabled = true; // Blocca la categoria
+             catInput.disabled = true; 
              
              placeGeo = { lat: place.lat, lng: place.lng };
              document.getElementById("placeGeoLine").textContent = `📍 Posizione Bloccata (Collegato a: ${place.nome})`;
-             document.getElementById("btnPlaceGeoPick").style.display = "none"; // Nasconde il tasto mappa
+             document.getElementById("btnPlaceGeoPick").style.display = "none"; 
           }, 100);
        }
     };
 
-    // FUNZIONE RESET: Libera il modulo se clicchi su "Nuova Scheda"
     window.resetAddPlace = function() {
        document.getElementById("placeName").value = "";
        document.getElementById("placeName").readOnly = false;
@@ -948,15 +961,11 @@
        document.getElementById("placePhotoPreview").innerHTML = "";
     };
 
-    // =========================
-    // MAPPE E MARKER
-    // =========================
     let mapHome = null, mapMain = null;
     let layerHome = null, layerMain = null;
 
     function ensureMaps(){
       if(!mapHome && document.getElementById("mapHome")){ 
-        // Tolto il blocco: ora la mappa in Home è interattiva!
         mapHome = L.map("mapHome").setView([41.492, 13.831], 13); 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapHome); 
         layerHome = L.layerGroup().addTo(mapHome); 
@@ -980,9 +989,9 @@
       const localReps = loadReports(); 
 
       mixSegnalazioni.forEach(serverItem => {
-        if(!estraiFoto(serverItem)) {
+        if(estraiTutteLeFoto(serverItem).length === 0) {
           const match = localReps.find(lr => lr.geo && lr.geo.lat === serverItem.lat);
-          if(match) serverItem.photoDataUrl = estraiFoto(match);
+          if(match) serverItem.photos = match.photos || match.photoDataUrl;
         }
       });
 
@@ -1004,8 +1013,13 @@
         const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
         
-        const imgSrc = estraiFoto(r);
-        const photoHtml = imgSrc ? `<img src="${imgSrc}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="window.open('${imgSrc}')">` : '';
+        const immagini = estraiTutteLeFoto(r);
+        const imagesHtml = immagini.length > 0 
+          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` + 
+            immagini.map(img => `<img src="${img}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') + 
+            `</div>`
+          : '';
+
         const title = r.titolo || 'Segnalazione';
         const dateStr = r.dataStr || r.when || '';
 
@@ -1013,7 +1027,7 @@
           <div style="min-width:200px; max-width:260px; max-height:300px; overflow-y:auto; padding-right:5px;">
             <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${title}</b>
             <small style="color:#a9b6db;">${dateStr}</small>
-            ${photoHtml}
+            ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione.'}</p>
             <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
@@ -1023,7 +1037,7 @@
         bounds.push([lat, lng]);
       });
 
-      // 2. LUOGHI E RECENSIONI (RAGGRUPPATI SULLA MAPPA)
+      // 2. LUOGHI E RECENSIONI
       const mapPlacesGroups = {};
       window.publicLuoghi.forEach(l => {
         const lat = l.lat || (l.geo && l.geo.lat);
@@ -1036,8 +1050,7 @@
            mapPlacesGroups[key] = { safeKey: safeKey, name: nome, categoria: l.categoria, lat: lat, lng: (l.lng || l.geo.lng), count: 1, fotoObj: l };
         } else {
            mapPlacesGroups[key].count++;
-           // Mantiene la prima foto trovata per il gruppo
-           if(!estraiFoto(mapPlacesGroups[key].fotoObj) && estraiFoto(l)) {
+           if(estraiTutteLeFoto(mapPlacesGroups[key].fotoObj).length === 0 && estraiTutteLeFoto(l).length > 0) {
               mapPlacesGroups[key].fotoObj = l;
            }
         }
@@ -1053,15 +1066,18 @@
         const iconHtml = `<div style="background:${info.color}; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
         
-        const imgSrc = estraiFoto(group.fotoObj);
-        const photoHtml = imgSrc ? `<img src="${imgSrc}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="window.open('${imgSrc}')">` : '';
+        const immagini = estraiTutteLeFoto(group.fotoObj);
+        const imagesHtml = immagini.length > 0 
+          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` + 
+            immagini.map(img => `<img src="${img}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') + 
+            `</div>`
+          : '';
 
-        // TASTO MAGICO: apre la scheda recensioni
         const popupHtml = `
           <div style="min-width:200px; max-width:260px; padding-right:5px;">
             <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${group.name}</b>
             <i style="color:#a9b6db; font-size:12px;">${group.categoria}</i>
-            ${photoHtml}
+            ${imagesHtml}
             <div style="margin-top:10px;">
                <button class="btn primary small" style="width:100%; justify-content:center;" onclick="openPlaceCard('${group.safeKey}')">📝 Vedi ${group.count} recensioni</button>
             </div>
@@ -1083,10 +1099,6 @@
     document.getElementById("btnMapFit")?.addEventListener("click", () => { refreshPublicMaps(); });
     document.getElementById("mapCategoryFilter")?.addEventListener("change", () => { refreshPublicMaps(); });
 
-    // =========================
-    // GESTIONE FOTO E DOCUMENTI
-    // =========================
-    
     document.getElementById("btnPickCamera").addEventListener("click", () => document.getElementById("fotoCamera").click());
     document.getElementById("btnPickGallery").addEventListener("click", () => document.getElementById("fotoGallery").click());
     document.getElementById("btnPickDocs").addEventListener("click", () => document.getElementById("docsInput").click());
@@ -1104,14 +1116,19 @@
       });
     }
 
+    // MODIFICA: Limita a 3 le foto per le Segnalazioni
     async function handlePhotoUpload(e) {
       if(!e.target.files.length) return;
       for(const f of e.target.files) { 
+        if(photos.length >= 3) {
+           showBanner("error", "Massimo 3 foto consentite.");
+           break;
+        }
         const d = await fileToDataUrl(f); 
         photos.push({ dataUrl: d, name: f.name, type: "image/jpeg" }); 
       }
       document.getElementById("photoPreview").style.display = "flex";
-      document.getElementById("thumbs").innerHTML = photos.map(p => `<img src="${p.dataUrl}">`).join('');
+      document.getElementById("thumbs").innerHTML = photos.map(p => `<img src="${p.dataUrl}" onclick="openImage(this.src)">`).join('');
     }
     document.getElementById("fotoGallery").addEventListener("change", handlePhotoUpload);
     document.getElementById("fotoCamera").addEventListener("change", handlePhotoUpload);
@@ -1143,9 +1160,6 @@
       document.getElementById("docsInput").value = "";
     });
 
-    // =========================
-    // FORM SEGNALAZIONE + GPS
-    // =========================
     let geo = null; let geoWatchId = null; let geoLiveOn = false;
     let photos = []; let documents = []; 
 
@@ -1189,22 +1203,27 @@
       try{
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
         if(!res.ok) throw new Error();
-        document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null;
+        document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null; document.getElementById("photoPreview").style.display="none";
         location.hash = "#/success"; fetchPublicData(); 
       }catch(e){
         showBanner("error", "Offline: Segnalazione salvata sul dispositivo."); location.hash = "#/my";
       }finally{ document.getElementById("btnSend").disabled = false; }
     });
 
-    // =========================
-    // FORM NUOVO LUOGO CON STELLINE
-    // =========================
     let placeGeo = null; let placePhotos = [];
+    
+    // MODIFICA: Limita a 3 le foto per i Luoghi
     document.getElementById("placePhotoInput").addEventListener("change", async (e) => {
       if(e.target.files.length) { 
-        const d = await fileToDataUrl(e.target.files[0]); 
-        placePhotos.push({dataUrl: d}); 
-        document.getElementById("placePhotoPreview").innerHTML = `<img src="${d}" class="place-img-preview">`; 
+        for(const f of e.target.files) {
+          if (placePhotos.length >= 3) {
+             showBanner("error", "Massimo 3 foto consentite.");
+             break;
+          }
+          const d = await fileToDataUrl(f); 
+          placePhotos.push({dataUrl: d}); 
+        }
+        document.getElementById("placePhotoPreview").innerHTML = placePhotos.map(p => `<img src="${p.dataUrl}" class="place-img-preview" onclick="openImage(this.src)">`).join(''); 
       }
     });
 
@@ -1215,7 +1234,6 @@
       const ratingInput = document.querySelector('input[name="rating"]:checked');
       const rating = ratingInput ? parseInt(ratingInput.value) : 5;
 
-      // Leggiamo la categoria direttamente per assicurarci che passi anche se "disabled"
       const category = document.getElementById("placeCategory").value;
 
       const payload = {
@@ -1230,16 +1248,13 @@
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/luoghi", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
         if(res.ok) { 
           showBanner("success", "Recensione pubblicata!"); 
-          resetAddPlace(); // Pulisce tutto il modulo e lo sblocca
+          resetAddPlace(); 
           setTimeout(() => { fetchPublicData(); location.hash = "#/places"; }, 1000);
         } else throw new Error();
       }catch(e){ showBanner("error", "Errore di connessione."); }
       finally{ document.getElementById("btnSendPlace").disabled = false; }
     });
 
-    // =========================
-    // MAP PICKER MODAL
-    // =========================
     let mapPicker = null, picked = null, pickedMarker = null, activePickerTarget = null;
 
     function openMapPicker(target){
@@ -1280,7 +1295,7 @@
             <span class="pill">${r.categoria || 'Altro'}</span><span class="hint">${r.when}</span>
           </div>
           <h3 style="margin:8px 0">${r.titolo}</h3><p style="margin:0 0 10px">${r.descrizione}</p>
-          ${(r.photos && r.photos.length) ? `<div class="gallery-grid">${r.photos.map(p=>`<img src="${p.dataUrl}" class="gallery-img" onclick="window.open('${p.dataUrl}')">`).join('')}</div>` : (r.photoDataUrl ? `<div class="gallery-grid"><img src="${r.photoDataUrl}" class="gallery-img"></div>` : '')}
+          ${(r.photos && r.photos.length) ? `<div class="gallery-grid">${r.photos.map(p=>`<img src="${p.dataUrl}" class="gallery-img" onclick="openImage(this.src)">`).join('')}</div>` : (r.photoDataUrl ? `<div class="gallery-grid"><img src="${r.photoDataUrl}" class="gallery-img" onclick="openImage(this.src)"></div>` : '')}
           ${r.geo ? `<button class="btn ghost small" style="margin-top:10px" onclick="focusOnMap(${r.geo.lat}, ${r.geo.lng})">🗺️ Vedi in mappa</button>` : ''}
         </div>
       `).join('');
