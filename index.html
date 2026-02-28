@@ -894,19 +894,17 @@
       const mixSegnalazioni = [...window.publicSegnalazioni];
       loadReports().filter(r => r.geo).forEach(lr => {
         if(!mixSegnalazioni.find(ps => ps.lat === lr.geo.lat)) {
-           // Recupera anche la foto locale se disponibile
-           let localPhoto = lr.foto || lr.photoDataUrl;
-           if(!localPhoto && lr.photos && lr.photos.length) localPhoto = lr.photos[0].dataUrl;
-           
-           mixSegnalazioni.push({
-             titolo: lr.titolo, descrizione: lr.descrizione, categoria: lr.categoria, 
-             lat: lr.geo.lat, lng: lr.geo.lng, dataStr: lr.when, foto: localPhoto
-           });
+           // Mantiene tutto l'oggetto locale intatto
+           mixSegnalazioni.push(lr);
         }
       });
 
       mixSegnalazioni.forEach(r => {
-        if(!r.lat) return;
+        // Uniformiamo coordinate e date
+        const lat = r.lat || (r.geo && r.geo.lat);
+        const lng = r.lng || (r.geo && r.geo.lng);
+        if(!lat) return;
+
         const cat = r.categoria || "altro";
         // Filtro Segnalazioni
         if(mapFilter !== "all" && cat !== mapFilter) return;
@@ -915,26 +913,36 @@
         const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
         
-        // FOTO NEL POPUP: Se c'è una foto, crea l'HTML per mostrarla
-        const photoHtml = r.foto ? `<img src="${r.foto}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="window.open('${r.foto}')">` : '';
+        // RECUPERO FOTO INTELLIGENTE: cerca ovunque sia salvata
+        let imgSrc = r.foto || r.photoDataUrl;
+        if (!imgSrc && r.photos && r.photos.length > 0) {
+            imgSrc = r.photos[0].dataUrl || r.photos[0];
+        }
+
+        const photoHtml = imgSrc ? `<img src="${imgSrc}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="window.open('${imgSrc}')">` : '';
+        const title = r.titolo || 'Segnalazione';
+        const dateStr = r.dataStr || r.when || '';
 
         const popupHtml = `
           <div style="min-width:200px; max-width:260px; max-height:300px; overflow-y:auto; padding-right:5px;">
-            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${r.titolo}</b>
-            <small style="color:#a9b6db;">${r.dataStr || ''}</small>
+            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${title}</b>
+            <small style="color:#a9b6db;">${dateStr}</small>
             ${photoHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${r.lat},${r.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$$${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
-        if(layerMain) L.marker([r.lat, r.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
-        if(layerHome) L.marker([r.lat, r.lng], {icon}).addTo(layerHome);
-        bounds.push([r.lat, r.lng]);
+        if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
+        if(layerHome) L.marker([lat, lng], {icon}).addTo(layerHome);
+        bounds.push([lat, lng]);
       });
 
       // 2. Aggiungi Luoghi (Icone per Categoria)
       window.publicLuoghi.forEach(l => {
-        if(!l.lat) return;
+        const lat = l.lat || (l.geo && l.geo.lat);
+        const lng = l.lng || (l.geo && l.geo.lng);
+        if(!lat) return;
+
         const cat = l.categoria || "altro";
         // Filtro Luoghi
         if(mapFilter !== "all" && cat !== mapFilter) return;
@@ -945,8 +953,13 @@
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
         const stars = '⭐'.repeat(l.rating || 5);
         
-        // FOTO NEL POPUP: Se c'è una foto, crea l'HTML per mostrarla
-        const photoHtml = l.foto ? `<img src="${l.foto}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="window.open('${l.foto}')">` : '';
+        // RECUPERO FOTO INTELLIGENTE PER I LUOGHI
+        let imgSrc = l.foto || l.photoDataUrl;
+        if (!imgSrc && l.photos && l.photos.length > 0) {
+            imgSrc = l.photos[0].dataUrl || l.photos[0];
+        }
+
+        const photoHtml = imgSrc ? `<img src="${imgSrc}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="window.open('${imgSrc}')">` : '';
 
         const popupHtml = `
           <div style="min-width:200px; max-width:260px; max-height:300px; overflow-y:auto; padding-right:5px;">
@@ -954,12 +967,12 @@
             <i style="color:#a9b6db; font-size:12px;">${stars} • ${l.categoria}</i>
             ${photoHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5;">${l.recensione || ''}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${l.lat},${l.lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$$${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
-        if(layerMain) L.marker([l.lat, l.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
-        if(layerHome) L.marker([l.lat, l.lng], {icon}).addTo(layerHome);
-        bounds.push([l.lat, l.lng]);
+        if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
+        if(layerHome) L.marker([lat, lng], {icon}).addTo(layerHome);
+        bounds.push([lat, lng]);
       });
 
       if(bounds.length && mapMain) mapMain.fitBounds(L.latLngBounds(bounds).pad(0.2));
