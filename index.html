@@ -128,6 +128,7 @@
       background: rgba(0,0,0,.22); color: var(--text); outline:none; transition: border-color .12s ease, box-shadow .12s ease;
     }
     input:focus, textarea:focus, select:focus{ border-color: rgba(45,125,255,.55); box-shadow: 0 0 0 3px rgba(45,125,255,.16); }
+    input[readonly], select:disabled { opacity: 0.6; cursor: not-allowed; }
     textarea{min-height:120px; resize:vertical}
     select option { background: var(--bg2); color: var(--text); }
 
@@ -166,9 +167,9 @@
     .list{display:grid; gap:10px; margin-top:12px}
     .item{
       padding: 14px; border-radius: 22px; background: rgba(0,0,0,.18); border: 1px solid var(--stroke);
-      display:flex; flex-direction:column; gap:12px; transition: border-color .12s ease, transform .12s ease;
+      display:flex; flex-direction:column; gap:12px; transition: border-color .12s ease, transform .12s ease, box-shadow 0.3s ease;
     }
-    .item.highlight { border-color: var(--accent); box-shadow: 0 0 15px rgba(45,125,255,0.3); }
+    .item.highlight { border-color: var(--accent); box-shadow: 0 0 20px rgba(45,125,255,0.4); transform: scale(1.02); }
     .item-top { display:flex; gap:12px; align-items:flex-start; }
     .item:hover{border-color: var(--stroke2)}
     
@@ -290,7 +291,6 @@
       background: rgba(255,255,255,.92); box-shadow: 0 0 0 6px rgba(45,125,255,.14); opacity:.95;
     }
 
-    /* Docs preview */
     .docsList{ display:grid; gap:8px; margin-top:10px; }
     .docItem{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 10px 12px; border-radius: 18px; border:1px solid var(--stroke); background: rgba(0,0,0,.14); }
   </style>
@@ -475,12 +475,12 @@
 
     <section id="view-places" class="grid hidden">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px;">
           <div>
             <div style="font-weight:980;font-size:18px">Luoghi e Recensioni</div>
             <div class="hint" style="margin:0">Scopri i posti suggeriti.</div>
           </div>
-          <button class="btn primary small" onclick="location.hash='#/add-place'">➕ Recensisci</button>
+          <button class="btn primary small" onclick="resetAddPlace(); location.hash='#/add-place'">➕ Nuova Scheda</button>
         </div>
         <div id="public-places-list" class="list">
            <div class="hint" style="text-align:center;">Caricamento dati dal cloud...</div>
@@ -656,22 +656,16 @@
   </nav>
 
   <script>
-    // =========================
-    // CONFIG E VARIABILI GLOBALI
-    // =========================
     const CONFIG = {
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
-      // Assicurati che questo sia l'url del tuo Worker Cloudflare aggiornato
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
       telegramApiKey: "Marco-Admin-2026"
     };
 
-    // Database Pubblico (Cloud D1)
     window.publicSegnalazioni = [];
     window.publicLuoghi = [];
 
-    // Mappatura EMOJI per la Mappa (Segnalazioni)
     const catInfo = { 
       verde:   { color: '#19c37d', emoji: '🌳' }, 
       strade:  { color: '#95a5a6', emoji: '🛣️' }, 
@@ -680,7 +674,6 @@
       altro:   { color: '#2d7dff', emoji: '❓' } 
     };
 
-    // Mappatura EMOJI per i Luoghi recensiti
     const placeCatInfo = {
       ristorante: { color: '#e74c3c', emoji: '🍕' },
       negozio:    { color: '#9b59b6', emoji: '🛍️' },
@@ -689,18 +682,13 @@
       altro:      { color: '#ff9f43', emoji: '⭐' }
     };
 
-    // =========================
-    // INSTALLAZIONE PWA (App Pubblica)
-    // =========================
     let deferredPrompt = null;
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      
       const pill = document.getElementById("installPill");
       if(pill) {
         pill.style.display = "inline-flex";
-        
         pill.addEventListener("click", async () => {
           try {
             deferredPrompt.prompt();
@@ -712,9 +700,6 @@
       }
     });
 
-    // =========================
-    // INDEXEDDB - Gestione Memoria Locale
-    // =========================
     let db;
     let localReportsCache = [];
 
@@ -752,9 +737,6 @@
       }
     }
 
-    // =========================
-    // UI Helpers
-    // =========================
     const banner = document.getElementById("banner");
     const bannerText = document.getElementById("bannerText");
     let bannerTimer = null;
@@ -767,9 +749,6 @@
     }
     document.getElementById("bannerClose").addEventListener("click", () => banner.classList.add("hidden"));
 
-    // =========================
-    // ROUTER
-    // =========================
     const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place'];
     function route(){
       const hash = (location.hash || "#/").replace("#/", "");
@@ -794,9 +773,19 @@
     }
     window.addEventListener("hashchange", route);
 
-    // =========================
-    // CLOUD SYNC: RECUPERO DATI (D1)
-    // =========================
+    const estraiFoto = (item) => {
+      if(!item) return '';
+      if (item.foto) return item.foto;
+      if (item.photoDataUrl) return item.photoDataUrl;
+      if (item.photos) {
+        try {
+          const arr = typeof item.photos === 'string' ? JSON.parse(item.photos) : item.photos;
+          if (Array.isArray(arr) && arr.length > 0) return arr[0].dataUrl || arr[0];
+        } catch(e) {}
+      }
+      return '';
+    };
+
     async function fetchPublicData() {
       try {
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/public-data");
@@ -810,57 +799,144 @@
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
 
+    // =========================
+    // RAGGRUPPAMENTO SCHEDE LUOGHI
+    // =========================
     function renderPublicPlaces() {
       const container = document.getElementById("public-places-list");
       if(!window.publicLuoghi.length) { 
         container.innerHTML = "<p class='hint' style='text-align:center;'>Nessun luogo recensito ancora.</p>"; 
         return; 
       }
-      container.innerHTML = window.publicLuoghi.map((l, idx) => {
-        const stars = '⭐'.repeat(l.rating || 5);
-        const info = placeCatInfo[l.categoria] || placeCatInfo.altro; // Recupera l'icona
-        const uniqueId = 'place-' + idx;
+
+      // Raggruppa i luoghi per NOME esatto
+      const groupedPlaces = {};
+      window.publicLuoghi.forEach(l => {
+        const nome = l.nome ? l.nome.trim() : 'Sconosciuto';
+        const key = nome.toLowerCase();
+        // Genera un ID sicuro senza spazi
+        const safeKey = key.replace(/[^a-z0-9]/g, '-');
         
+        if(!groupedPlaces[key]) {
+           groupedPlaces[key] = { safeKey: safeKey, name: nome, categoria: l.categoria, lat: l.lat, lng: l.lng, reviews: [] };
+        }
+        groupedPlaces[key].reviews.push(l);
+      });
+
+      const html = Object.keys(groupedPlaces).map((key) => {
+        const group = groupedPlaces[key];
+        // Calcola la media delle stelle
+        const avgRating = Math.round(group.reviews.reduce((acc, r) => acc + (r.rating||5), 0) / group.reviews.length);
+        const stars = '⭐'.repeat(avgRating);
+        const info = placeCatInfo[group.categoria] || placeCatInfo.altro;
+        const uniqueId = group.safeKey;
+        
+        // Genera la lista delle singole recensioni dentro la scheda
+        const reviewsHtml = group.reviews.map(r => {
+           const rFoto = estraiFoto(r);
+           return `
+             <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:10px;">
+               <div style="font-size:11px; color:#a9b6db; margin-bottom:4px;">${'⭐'.repeat(r.rating||5)} • ${r.dataStr || ''}</div>
+               <p style="margin:0; font-size:13px; line-height:1.4;">${r.recensione}</p>
+               ${rFoto ? `<img src="${rFoto}" style="width:100px; height:100px; object-fit:cover; border-radius:8px; margin-top:8px; border:1px solid rgba(255,255,255,0.1);" onclick="window.open('${rFoto}')">` : ''}
+             </div>
+           `;
+        }).join('');
+
         return `
-          <div class="item cat-altro" style="cursor:pointer; transition:0.2s;" onclick="togglePlace('${uniqueId}')">
+          <div class="item cat-altro" id="card-${uniqueId}" style="cursor:pointer; transition:all 0.3s ease;" onclick="togglePlace('${uniqueId}')">
             
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
               <div>
-                <h3 style="margin:0">${info.emoji} ${l.nome}</h3>
-                <div style="font-size:12px; color:#a9b6db; margin-top:4px;">${stars}</div>
+                <h3 style="margin:0">${info.emoji} ${group.name}</h3>
+                <div style="font-size:12px; color:#a9b6db; margin-top:4px;">${stars} (${group.reviews.length} recensioni)</div>
               </div>
               <div style="display:flex; gap:8px; align-items:center;">
-                <span class="pill" style="border-color:${info.color}; color:${info.color};">${l.categoria}</span>
+                <span class="pill" style="border-color:${info.color}; color:${info.color};">${group.categoria}</span>
                 <span id="icon-${uniqueId}" style="font-size:14px; opacity:0.7; transition:0.3s;">▼</span>
               </div>
             </div>
             
             <div id="desc-${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; cursor:default;" onclick="event.stopPropagation()">
-              <p style="margin:0 0 10px">${l.recensione}</p>
-              ${l.foto ? `<img src="${l.foto}" class="place-img-preview" onclick="window.open('${l.foto}')">` : ''}
+              
+              <div style="margin-bottom:15px;">${reviewsHtml}</div>
               
               <div class="row" style="margin-top:10px;">
-                <button class="btn ghost small" onclick="focusOnMap(${l.lat}, ${l.lng})">📍 Vedi in mappa</button>
-                <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${l.lat},${l.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
+                <button class="btn ghost small" onclick="focusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
+                <a class="btn ghost small" href="https://www.google.com/maps/dir/?api=1&destination=$$${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
           </div>
         `;
       }).join('');
+      
+      container.innerHTML = html;
     }
 
     // Funzione per l'apertura a tendina
     window.togglePlace = function(id) {
       const desc = document.getElementById('desc-' + id);
       const icon = document.getElementById('icon-' + id);
+      if(!desc) return;
       if(desc.classList.contains('hidden')) {
         desc.classList.remove('hidden');
-        icon.style.transform = "rotate(180deg)";
+        if(icon) icon.style.transform = "rotate(180deg)";
       } else {
         desc.classList.add('hidden');
-        icon.style.transform = "rotate(0deg)";
+        if(icon) icon.style.transform = "rotate(0deg)";
       }
+    };
+
+    // FUNZIONE MAGICA: Viene chiamata dalla mappa, apre la sezione Luoghi, scorre fino alla scheda e la apre!
+    window.openPlaceCard = function(safeKey) {
+       location.hash = "#/places";
+       setTimeout(() => {
+          const card = document.getElementById('card-' + safeKey);
+          if(card) {
+              card.scrollIntoView({behavior: "smooth", block: "center"});
+              card.classList.add("highlight"); 
+              setTimeout(() => card.classList.remove("highlight"), 1500); // Effetto lampeggio
+              
+              const desc = card.querySelector('.hidden');
+              if(desc) card.click(); // Simula il clic per aprire la tendina
+          }
+       }, 400); // Aspetta che la pagina sia cambiata
+    };
+
+    // FUNZIONE MAGICA 2: Pre-compila e blocca il modulo per aggiungere una recensione allo stesso posto
+    window.addReviewToPlace = function(keyToFind) {
+       const place = window.publicLuoghi.find(l => (l.nome||'').trim().toLowerCase() === keyToFind);
+       if(place) {
+          location.hash = "#/add-place";
+          setTimeout(() => {
+             const nameInput = document.getElementById("placeName");
+             nameInput.value = place.nome;
+             nameInput.readOnly = true; // Blocca il nome
+             
+             const catInput = document.getElementById("placeCategory");
+             catInput.value = place.categoria;
+             catInput.disabled = true; // Blocca la categoria
+             
+             placeGeo = { lat: place.lat, lng: place.lng };
+             document.getElementById("placeGeoLine").textContent = `📍 Posizione Bloccata (Collegato a: ${place.nome})`;
+             document.getElementById("btnPlaceGeoPick").style.display = "none"; // Nasconde il tasto mappa
+          }, 100);
+       }
+    };
+
+    // FUNZIONE RESET: Libera il modulo se clicchi su "Nuova Scheda"
+    window.resetAddPlace = function() {
+       document.getElementById("placeName").value = "";
+       document.getElementById("placeName").readOnly = false;
+       document.getElementById("placeCategory").disabled = false;
+       document.getElementById("btnPlaceGeoPick").style.display = "inline-flex";
+       placeGeo = null;
+       document.getElementById("placeGeoLine").textContent = "";
+       document.getElementById("placeReview").value = "";
+       placePhotos = [];
+       document.getElementById("placePhotoPreview").innerHTML = "";
     };
 
     // =========================
@@ -871,6 +947,7 @@
 
     function ensureMaps(){
       if(!mapHome && document.getElementById("mapHome")){ 
+        // Tolto il blocco: ora la mappa in Home è interattiva!
         mapHome = L.map("mapHome").setView([41.492, 13.831], 13); 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapHome); 
         layerHome = L.layerGroup().addTo(mapHome); 
@@ -887,37 +964,19 @@
       if(layerHome) layerHome.clearLayers();
       const bounds = [];
 
-      // Legge il filtro selezionato nel dropdown
       const mapFilter = document.getElementById("mapCategoryFilter") ? document.getElementById("mapCategoryFilter").value : "all";
 
-      // MINI-FUNZIONE: Trova la foto a prescindere da dove sia
-      const estraiFoto = (item) => {
-        if (item.foto) return item.foto;
-        if (item.photoDataUrl) return item.photoDataUrl;
-        if (item.photos) {
-          try {
-            const arr = typeof item.photos === 'string' ? JSON.parse(item.photos) : item.photos;
-            if (Array.isArray(arr) && arr.length > 0) return arr[0].dataUrl || arr[0];
-          } catch(e) {}
-        }
-        return '';
-      };
-
-      // 1. Aggiungi Segnalazioni
-      // Facciamo una copia dei dati del server
+      // 1. SEGNALAZIONI
       const mixSegnalazioni = JSON.parse(JSON.stringify(window.publicSegnalazioni));
-      const localReps = loadReports(); // Dati salvati sul tuo telefono
+      const localReps = loadReports(); 
 
-      // IL TRUCCO: Arricchiamo i dati del server con le tue foto locali!
       mixSegnalazioni.forEach(serverItem => {
         if(!estraiFoto(serverItem)) {
-          // Se il server non ha la foto, cerchiamo nella tua memoria locale tramite le coordinate
           const match = localReps.find(lr => lr.geo && lr.geo.lat === serverItem.lat);
           if(match) serverItem.photoDataUrl = estraiFoto(match);
         }
       });
 
-      // Aggiungiamo anche quelli locali che non sono ancora arrivati dal server
       localReps.filter(r => r.geo).forEach(lr => {
         if(!mixSegnalazioni.find(ps => ps.lat === lr.geo.lat)) {
            mixSegnalazioni.push(lr);
@@ -930,14 +989,12 @@
         if(!lat) return;
 
         const cat = r.categoria || "altro";
-        // Filtro Segnalazioni
         if(mapFilter !== "all" && cat !== mapFilter) return;
 
         const info = catInfo[cat] || catInfo.altro;
         const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
         
-        // RECUPERO FOTO MAGICO
         const imgSrc = estraiFoto(r);
         const photoHtml = imgSrc ? `<img src="${imgSrc}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="window.open('${imgSrc}')">` : '';
         const title = r.titolo || 'Segnalazione';
@@ -957,38 +1014,53 @@
         bounds.push([lat, lng]);
       });
 
-      // 2. Aggiungi Luoghi (Icone per Categoria)
+      // 2. LUOGHI E RECENSIONI (RAGGRUPPATI SULLA MAPPA)
+      const mapPlacesGroups = {};
       window.publicLuoghi.forEach(l => {
         const lat = l.lat || (l.geo && l.geo.lat);
-        const lng = l.lng || (l.geo && l.geo.lng);
         if(!lat) return;
+        const nome = l.nome ? l.nome.trim() : 'Sconosciuto';
+        const key = nome.toLowerCase();
+        const safeKey = key.replace(/[^a-z0-9]/g, '-');
+        
+        if(!mapPlacesGroups[key]) {
+           mapPlacesGroups[key] = { safeKey: safeKey, name: nome, categoria: l.categoria, lat: lat, lng: (l.lng || l.geo.lng), count: 1, fotoObj: l };
+        } else {
+           mapPlacesGroups[key].count++;
+           // Mantiene la prima foto trovata per il gruppo
+           if(!estraiFoto(mapPlacesGroups[key].fotoObj) && estraiFoto(l)) {
+              mapPlacesGroups[key].fotoObj = l;
+           }
+        }
+      });
 
-        const cat = l.categoria || "altro";
-        // Filtro Luoghi
+      Object.keys(mapPlacesGroups).forEach(key => {
+        const group = mapPlacesGroups[key];
+        const cat = group.categoria || "altro";
         if(mapFilter !== "all" && cat !== mapFilter) return;
 
         const info = placeCatInfo[cat] || placeCatInfo.altro; 
         
         const iconHtml = `<div style="background:${info.color}; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">${info.emoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
-        const stars = '⭐'.repeat(l.rating || 5);
         
-        // RECUPERO FOTO PER I LUOGHI
-        const imgSrc = estraiFoto(l);
+        const imgSrc = estraiFoto(group.fotoObj);
         const photoHtml = imgSrc ? `<img src="${imgSrc}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="window.open('${imgSrc}')">` : '';
 
+        // TASTO MAGICO: apre la scheda recensioni
         const popupHtml = `
-          <div style="min-width:200px; max-width:260px; max-height:300px; overflow-y:auto; padding-right:5px;">
-            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${l.nome}</b>
-            <i style="color:#a9b6db; font-size:12px;">${stars} • ${l.categoria}</i>
+          <div style="min-width:200px; max-width:260px; padding-right:5px;">
+            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${group.name}</b>
+            <i style="color:#a9b6db; font-size:12px;">${group.categoria}</i>
             ${photoHtml}
-            <p style="margin:10px 0; font-size:13px; line-height:1.5;">${l.recensione || ''}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <div style="margin-top:10px;">
+               <button class="btn primary small" style="width:100%; justify-content:center;" onclick="openPlaceCard('${group.safeKey}')">📝 Vedi ${group.count} recensioni</button>
+            </div>
           </div>`;
         
-        if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
-        if(layerHome) L.marker([lat, lng], {icon}).addTo(layerHome);
-        bounds.push([lat, lng]);
+        if(layerMain) L.marker([group.lat, group.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
+        if(layerHome) L.marker([group.lat, group.lng], {icon}).addTo(layerHome);
+        bounds.push([group.lat, group.lng]);
       });
 
       if(bounds.length && mapMain) mapMain.fitBounds(L.latLngBounds(bounds).pad(0.2));
@@ -999,15 +1071,8 @@
       setTimeout(() => mapMain?.setView([lat, lng], 18), 300);
     }
 
-    // Listener per il click su "Inquadra Tutto"
-    document.getElementById("btnMapFit")?.addEventListener("click", () => {
-      refreshPublicMaps(); 
-    });
-
-    // Listener per il cambio filtro sulla mappa (NUOVO)
-    document.getElementById("mapCategoryFilter")?.addEventListener("change", () => {
-      refreshPublicMaps();
-    });
+    document.getElementById("btnMapFit")?.addEventListener("click", () => { refreshPublicMaps(); });
+    document.getElementById("mapCategoryFilter")?.addEventListener("change", () => { refreshPublicMaps(); });
 
     // =========================
     // GESTIONE FOTO E DOCUMENTI
@@ -1094,7 +1159,6 @@
     document.getElementById("btnGeoClear")?.addEventListener("click", () => { geo = null; renderGeo(); showBanner("info", "Posizione rimossa."); });
     document.getElementById("anonimo").addEventListener("change", (e) => document.getElementById("contactBox").classList.toggle("hidden", e.target.checked));
 
-    // INVIO SEGNALAZIONE
     document.getElementById("btnSend").addEventListener("click", async () => {
       const titolo = document.getElementById("titolo").value.trim(); 
       const descrizione = document.getElementById("descrizione").value.trim();
@@ -1135,7 +1199,6 @@
       }
     });
 
-    // INVIO LUOGO
     document.getElementById("btnSendPlace").addEventListener("click", async () => {
       const nome = document.getElementById("placeName").value.trim();
       if(!nome || !placeGeo) return showBanner("error", "Nome e Posizione sono obbligatori!");
@@ -1143,8 +1206,11 @@
       const ratingInput = document.querySelector('input[name="rating"]:checked');
       const rating = ratingInput ? parseInt(ratingInput.value) : 5;
 
+      // Leggiamo la categoria direttamente per assicurarci che passi anche se "disabled"
+      const category = document.getElementById("placeCategory").value;
+
       const payload = {
-        nome, categoria: document.getElementById("placeCategory").value, 
+        nome, categoria: category, 
         recensione: document.getElementById("placeReview").value,
         geo: placeGeo, photos: placePhotos, when: new Date().toLocaleString("it-IT"),
         rating: rating
@@ -1155,7 +1221,7 @@
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/luoghi", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
         if(res.ok) { 
           showBanner("success", "Recensione pubblicata!"); 
-          document.getElementById("placeName").value = ""; document.getElementById("placeReview").value = ""; placeGeo = null; placePhotos = []; document.getElementById("placePhotoPreview").innerHTML = ""; document.getElementById("placeGeoLine").textContent="";
+          resetAddPlace(); // Pulisce tutto il modulo e lo sblocca
           setTimeout(() => { fetchPublicData(); location.hash = "#/places"; }, 1000);
         } else throw new Error();
       }catch(e){ showBanner("error", "Errore di connessione."); }
@@ -1163,7 +1229,7 @@
     });
 
     // =========================
-    // MAP PICKER MODAL (Condiviso)
+    // MAP PICKER MODAL
     // =========================
     let mapPicker = null, picked = null, pickedMarker = null, activePickerTarget = null;
 
@@ -1195,9 +1261,6 @@
       document.getElementById("mapPickerOverlay").style.display="none";
     });
 
-    // =========================
-    // STORICO LOCALE (My Reports)
-    // =========================
     function renderList(){
       const arr = loadReports();
       const listEl = document.getElementById("list");
@@ -1219,13 +1282,10 @@
       saveReports([]); renderList(); refreshPublicMaps();
     });
 
-    // =========================
-    // INIZIALIZZAZIONE
-    // =========================
     function applyContacts(){
       const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
       document.getElementById("mailLink").href = `mailto:${CONFIG.email}?subject=Messaggio&body=${body}`;
-      document.getElementById("mapLink").href = `https://www.google.com/maps?q=$${encodeURIComponent(CONFIG.mapsQuery)}`;
+      document.getElementById("mapLink").href = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(CONFIG.mapsQuery)}`;
     }
 
     initStorage().then(() => {
