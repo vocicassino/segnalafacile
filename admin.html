@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#0b1220" />
   <title>Pannello Amministratore</title>
   
-  <link rel="manifest" href="admin.webmanifest?v=2" />
-  <link rel="icon" href="icons/admin-192.png" />
-  <link rel="apple-touch-icon" href="icons/admin-192.png" />
+  <link rel="manifest" href="admin.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
   <style>
     body { font-family: system-ui, sans-serif; background: #0b1220; color: #eaf0ff; margin: 0; padding: 20px; }
@@ -16,7 +16,7 @@
     .card { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
     h1, h2 { margin-top: 0; }
     
-    input[type="text"], input[type="password"], input[type="number"], select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d7dff; background: #070c18; color: white; margin-bottom: 15px; box-sizing: border-box; }
+    input[type="text"], input[type="password"], select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d7dff; background: #070c18; color: white; margin-bottom: 15px; box-sizing: border-box; }
     textarea { min-height: 100px; resize: vertical; }
     button { cursor: pointer; background: #2d7dff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-right: 5px; }
     button:hover { filter: brightness(1.2); }
@@ -30,11 +30,11 @@
     .badge { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
     #dashboard { display: none; }
 
-    /* SEZIONI ESPANDIBILI */
+    /* SEZIONI ESPANDIBILI (NUOVO) */
     .section-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: 5px; }
     .section-header h2 { margin: 0; font-size: 20px; }
     .section-icon { font-size: 14px; transition: transform 0.3s ease; opacity: 0.8; }
-    .section-content { margin-top: 15px; display: none; } 
+    .section-content { margin-top: 15px; display: none; } /* Nascoste di default */
 
     /* STILI PER I FILTRI DELLE CATEGORIE */
     .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
@@ -42,8 +42,8 @@
     .filter-btn:hover { background: rgba(255,255,255,0.15); }
     .filter-btn.active { background: #2d7dff; color: #ffffff; border-color: #2d7dff; font-weight: bold; box-shadow: 0 4px 10px rgba(45,125,255,0.3); }
 
-    /* BOTTONE INSTALLA (Nascosto di default, gestito da JS) */
-    #installAdminPill { display: none; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; border-radius: 12px; box-shadow: 0 4px 10px rgba(25,195,125,0.3); }
+    /* BOTTONE INSTALLA */
+    #installAdminPill { display: none; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; }
 
     /* MODAL PER LA MODIFICA */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; padding: 20px; z-index: 1000; }
@@ -107,7 +107,24 @@
 
     <div class="form-group">
       <label>Categoria</label>
-      <input type="text" id="editCategoria" placeholder="es. ristorante, rifiuti..." />
+      <select id="editCategoria">
+        <optgroup label="📍 Segnalazioni">
+          <option value="verde">🌳 Verde Pubblico</option>
+          <option value="strade">🛣️ Strade e Marciapiedi</option>
+          <option value="rifiuti">🗑️ Rifiuti/Decoro</option>
+          <option value="luce">💡 Illuminazione</option>
+        </optgroup>
+        <optgroup label="⭐ Luoghi">
+          <option value="ristorante">🍕 Ristorante</option>
+          <option value="bar">🍺 Bar</option>
+          <option value="negozio">🛍️ Negozio</option>
+          <option value="cultura">📚 Cultura</option>
+          <option value="monumento">🏛️ Monumento</option>
+          <option value="parco">🌲 Parco</option>
+          <option value="natura">☘️ Natura</option>
+        </optgroup>
+        <option value="altro">❓ Altro</option>
+      </select>
     </div>
 
     <div class="form-group" id="ratingGroup" style="display:none;">
@@ -128,58 +145,16 @@
 </div>
 
 <script>
-  // =========================
-  // LOGICA INSTALLAZIONE INTELLIGENTE PWA
-  // =========================
-  const installBtn = document.getElementById("installAdminPill");
+  // Installazione PWA
   let deferredPrompt = null;
-  
-  // Controllo se l'app è già installata (Standalone mode)
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-  if (!isStandalone) {
-    // 1. Logica per Android / Chrome / Edge
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault(); 
-      deferredPrompt = e;
-      installBtn.style.display = "block"; // Mostra il bottone
-      
-      installBtn.addEventListener("click", async () => {
-        if(deferredPrompt) {
-          deferredPrompt.prompt();
-          await deferredPrompt.userChoice;
-          deferredPrompt = null;
-          installBtn.style.display = "none";
-        }
-      }, { once: true });
-    });
-
-    // 2. Logica di Fallback per dispositivi iOS (iPhone/iPad)
-    if (isIOS) {
-      installBtn.style.display = "block"; // Su iOS lo mostriamo sempre
-      installBtn.addEventListener("click", () => {
-        alert(
-          "Istruzioni per installare l'Admin su iPhone/iPad:\n\n" +
-          "1️⃣ Tocca l'icona 'Condividi' in basso (il quadrato con la freccia verso l'alto).\n" +
-          "2️⃣ Scorri in basso e seleziona 'Aggiungi alla schermata Home'."
-        );
-      });
-    }
-  }
-
-  // =========================
-  // LOGICA PANNELLO ADMIN
-  // =========================
-  const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev";
-  let apiKey = "";
-  let allData = { luoghi: [], segnalazioni: [] };
-  
-  let filterLuoghi = "Tutte";
-  let filterSegnalazioni = "Tutte";
-
-  let editingId = null;
-  let editingType = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault(); deferredPrompt = e;
+    const pill = document.getElementById("installAdminPill");
+    pill.style.display = "block";
+    pill.addEventListener("click", async () => {
+      try { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; pill.style.display = "none"; } catch(err) {}
+    }, { once: true });
+  });
 
   // Funzione per Aprire/Chiudere le Sezioni
   function toggleSection(sectionId, iconId) {
@@ -193,6 +168,20 @@
       icon.style.transform = "rotate(180deg)";
     }
   }
+
+  // =========================
+  // LOGICA PANNELLO ADMIN
+  // =========================
+  const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev";
+  let apiKey = "";
+  let allData = { luoghi: [], segnalazioni: [] };
+  
+  // Variabili per ricordare quale categoria stiamo guardando
+  let filterLuoghi = "Tutte";
+  let filterSegnalazioni = "Tutte";
+
+  let editingId = null;
+  let editingType = null;
 
   function login() {
     const input = document.getElementById("apiKeyInput").value.trim();
@@ -221,6 +210,7 @@
       allData.luoghi = data.luoghi || [];
       allData.segnalazioni = data.segnalazioni || [];
 
+      // Genera i pulsanti filtro e mostra le liste
       renderFilters("luoghi");
       renderFilters("segnalazioni");
       updateListView("luoghi");
@@ -231,9 +221,12 @@
     }
   }
 
+  // Crea i pulsanti delle categorie estraendole dai dati
   function renderFilters(type) {
     const items = allData[type];
     const container = document.getElementById(type + "Filters");
+    
+    // Trova tutte le categorie uniche
     const categoriePresenti = items.map(i => i.categoria ? i.categoria.trim() : "Altro");
     const categorieUniche = ["Tutte", ...new Set(categoriePresenti)];
 
@@ -245,14 +238,16 @@
     }).join('');
   }
 
+  // Imposta il filtro cliccato e ricarica la lista
   function setFilter(type, category) {
     if (type === "luoghi") filterLuoghi = category;
     else filterSegnalazioni = category;
     
-    renderFilters(type);
-    updateListView(type);
+    renderFilters(type); // Aggiorna i colori dei bottoni
+    updateListView(type); // Aggiorna la lista mostrata
   }
 
+  // Mostra solo gli elementi della categoria scelta
   function updateListView(type) {
     let items = allData[type];
     const currentFilter = type === "luoghi" ? filterLuoghi : filterSegnalazioni;
@@ -264,7 +259,7 @@
     if (type === "luoghi") {
       renderListHTML("luoghiList", items, "luoghi", l => `
         <div class="details">
-          <h3>⭐ ${l.nome} (${l.rating || 5} stelle)</h3>
+          <h3>⭐ ${l.nome} (${l.rating} stelle)</h3>
           <p><span class="badge">${l.categoria}</span> ${l.recensione || 'Senza testo'}</p>
         </div>
       `);
@@ -279,6 +274,7 @@
     }
   }
 
+  // Genera l'HTML della singola riga
   function renderListHTML(containerId, items, type, formatHtml) {
     const container = document.getElementById(containerId);
     if (!items || items.length === 0) {
@@ -315,6 +311,7 @@
     } catch (e) { alert("Errore di rete."); }
   }
 
+  // --- LOGICA MODALE MODIFICA ---
   function openEditModal(id, type) {
     editingId = id;
     editingType = type;
@@ -329,7 +326,7 @@
       document.getElementById("ratingGroup").style.display = "none";
 
       document.getElementById("editTitolo").value = item.titolo || "";
-      document.getElementById("editCategoria").value = item.categoria || "";
+      document.getElementById("editCategoria").value = item.categoria || "altro";
       document.getElementById("editDescrizione").value = item.descrizione || "";
     } else {
       document.getElementById("modalTitle").innerText = "Modifica Luogo";
@@ -338,7 +335,7 @@
       document.getElementById("ratingGroup").style.display = "block";
 
       document.getElementById("editTitolo").value = item.nome || "";
-      document.getElementById("editCategoria").value = item.categoria || "";
+      document.getElementById("editCategoria").value = item.categoria || "altro";
       document.getElementById("editRating").value = item.rating || 5;
       document.getElementById("editDescrizione").value = item.recensione || "";
     }
@@ -356,11 +353,11 @@
     const payload = {};
     if(editingType === 'segnalazioni') {
       payload.titolo = document.getElementById("editTitolo").value.trim();
-      payload.categoria = document.getElementById("editCategoria").value.trim();
+      payload.categoria = document.getElementById("editCategoria").value;
       payload.descrizione = document.getElementById("editDescrizione").value.trim();
     } else {
       payload.nome = document.getElementById("editTitolo").value.trim();
-      payload.categoria = document.getElementById("editCategoria").value.trim();
+      payload.categoria = document.getElementById("editCategoria").value;
       payload.recensione = document.getElementById("editDescrizione").value.trim();
       payload.rating = parseInt(document.getElementById("editRating").value) || 5;
     }
@@ -375,7 +372,7 @@
       
       if (result.ok) {
         closeModal();
-        loadData(); 
+        loadData(); // Ricarica tutto dal server per riflettere le modifiche
       } else {
         alert("Errore: " + (result.error || "Non Autorizzato"));
       }
