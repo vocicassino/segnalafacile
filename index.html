@@ -210,7 +210,6 @@
     .emptyIcon{ font-size:48px; margin-bottom:10px; }
     .contactInfo{ margin: 8px 2px 0; opacity:.75; font-size:14px; text-align:left; }
 
-    /* CSS STELLINE RECENSIONE */
     .star-rating {
       display: flex; flex-direction: row-reverse; justify-content: flex-end;
       gap: 4px; font-size: 32px; margin-bottom: 12px; margin-top: 4px;
@@ -221,7 +220,6 @@
     .star-rating label:hover,
     .star-rating label:hover ~ label { color: #ff9f43; }
 
-    /* MAP UI */
     .mapShell{
       margin-top: 14px; border-radius: 24px; border: 1px solid rgba(255,255,255,.12); overflow:hidden;
       background: rgba(0,0,0,.16); box-shadow: 0 18px 45px rgba(0,0,0,.32);
@@ -236,7 +234,6 @@
     .mapBox.big{ height: 520px; }
     @media (max-width: 420px){ .mapBox.big{ height: 460px; } }
 
-    /* Modals */
     .modalOverlay{
       position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(8px);
       display:none; align-items:center; justify-content:center; z-index: 99999; padding: 14px;
@@ -254,13 +251,11 @@
     }
     .mapPickerBox{ width:100%; height: 380px; border-radius: 22px; overflow:hidden; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.16); margin-top: 10px; }
 
-    /* Leaflet stile */
     .leaflet-container{ background: rgba(0,0,0,.18); font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial; }
     .leaflet-control-zoom a{ background: rgba(10,16,32,.75) !important; color: var(--text) !important; border: 1px solid rgba(255,255,255,.12) !important; backdrop-filter: blur(10px); }
     .leaflet-popup-content-wrapper{ background: rgba(10,16,32,.92); color: var(--text); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 50px rgba(0,0,0,.55); border-radius: 18px; backdrop-filter: blur(10px); }
     .leaflet-popup-tip{ background: rgba(10,16,32,.92); }
 
-    /* DOCK PREMIUM */
     nav.bottom{ position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; padding: 10px 12px 12px; background: transparent; }
     nav .inner{
       max-width: 560px; margin: 0 auto; display:flex; justify-content:space-between; gap: 5px;
@@ -520,6 +515,9 @@
 
         <label>La tua recensione</label>
         <textarea id="placeReview" placeholder="Come ti sei trovato? Cosa consigli?"></textarea>
+
+        <label>Il tuo Nome (Opzionale)</label>
+        <input id="placeAuthor" type="text" placeholder="Es. Mario Rossi o Il tuo nickname">
 
         <label>Posizione e Foto (Massimo 3)</label>
         <div class="row">
@@ -787,17 +785,25 @@
     }
     window.addEventListener("hashchange", route);
 
-    // Apre la foto nella lightbox
     window.openImage = function(src) {
       document.getElementById('imageViewerImg').src = src;
       document.getElementById('imageViewer').style.display = 'flex';
     };
 
-    // Estrae TUTTE le foto possibili fino ad un massimo di 3
+    // FIX FOTO: Legge correttamente le foto salvate come stringa JSON
     const estraiTutteLeFoto = (item) => {
       if(!item) return [];
       let arr = [];
-      if (item.foto) arr.push(item.foto);
+      
+      if (item.foto) {
+        try {
+          const parsed = JSON.parse(item.foto);
+          if (Array.isArray(parsed)) arr.push(...parsed);
+          else arr.push(item.foto);
+        } catch(e) {
+          arr.push(item.foto);
+        }
+      }
       if (item.photoDataUrl) arr.push(item.photoDataUrl);
       if (item.photos) {
         try {
@@ -823,9 +829,6 @@
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
 
-    // =========================
-    // RAGGRUPPAMENTO SCHEDE LUOGHI
-    // =========================
     function renderPublicPlaces() {
       const container = document.getElementById("public-places-list");
       if(!window.publicLuoghi.length) { 
@@ -863,7 +866,7 @@
            return `
              <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:10px;">
                <div style="font-size:11px; color:#a9b6db; margin-bottom:4px;">${'⭐'.repeat(r.rating||5)} • ${r.dataStr || ''}</div>
-               <p style="margin:0; font-size:13px; line-height:1.4;">${r.recensione}</p>
+               <p style="margin:0; font-size:13px; line-height:1.4; white-space:pre-wrap;">${r.recensione}</p>
                ${imagesHtml}
              </div>
            `;
@@ -890,7 +893,7 @@
               <div class="row" style="margin-top:10px;">
                 <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
                 <button class="btn ghost small" onclick="focusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
-                <a class="btn ghost small" href="https://www.google.com/maps/dir/?api=1&destination=$$${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <a class="btn ghost small" href="https://www.google.com/maps/dir/?api=1&destination=$${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
@@ -957,6 +960,7 @@
        placeGeo = null;
        document.getElementById("placeGeoLine").textContent = "";
        document.getElementById("placeReview").value = "";
+       document.getElementById("placeAuthor").value = "";
        placePhotos = [];
        document.getElementById("placePhotoPreview").innerHTML = "";
     };
@@ -984,7 +988,6 @@
 
       const mapFilter = document.getElementById("mapCategoryFilter") ? document.getElementById("mapCategoryFilter").value : "all";
 
-      // 1. SEGNALAZIONI
       const mixSegnalazioni = JSON.parse(JSON.stringify(window.publicSegnalazioni));
       const localReps = loadReports(); 
 
@@ -1028,7 +1031,7 @@
             <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${title}</b>
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
-            <p style="margin:10px 0; font-size:13px; line-height:1.5;">${r.descrizione || 'Nessuna descrizione.'}</p>
+            <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
             <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
@@ -1037,7 +1040,6 @@
         bounds.push([lat, lng]);
       });
 
-      // 2. LUOGHI E RECENSIONI
       const mapPlacesGroups = {};
       window.publicLuoghi.forEach(l => {
         const lat = l.lat || (l.geo && l.geo.lat);
@@ -1116,7 +1118,6 @@
       });
     }
 
-    // MODIFICA: Limita a 3 le foto per le Segnalazioni
     async function handlePhotoUpload(e) {
       if(!e.target.files.length) return;
       for(const f of e.target.files) { 
@@ -1198,7 +1199,7 @@
       document.getElementById("btnSend").disabled = true;
       showBanner("info", "Invio in corso...");
       
-      const arr = loadReports(); arr.push({ id: String(Date.now()), ...payload, photoDataUrl: photos[0]?.dataUrl }); saveReports(arr);
+      const arr = loadReports(); arr.push({ id: String(Date.now()), ...payload }); saveReports(arr);
 
       try{
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
@@ -1212,7 +1213,6 @@
 
     let placeGeo = null; let placePhotos = [];
     
-    // MODIFICA: Limita a 3 le foto per i Luoghi
     document.getElementById("placePhotoInput").addEventListener("change", async (e) => {
       if(e.target.files.length) { 
         for(const f of e.target.files) {
@@ -1233,12 +1233,12 @@
 
       const ratingInput = document.querySelector('input[name="rating"]:checked');
       const rating = ratingInput ? parseInt(ratingInput.value) : 5;
-
       const category = document.getElementById("placeCategory").value;
 
       const payload = {
         nome, categoria: category, 
         recensione: document.getElementById("placeReview").value,
+        autore: document.getElementById("placeAuthor").value.trim(),
         geo: placeGeo, photos: placePhotos, when: new Date().toLocaleString("it-IT"),
         rating: rating
       };
@@ -1295,7 +1295,7 @@
             <span class="pill">${r.categoria || 'Altro'}</span><span class="hint">${r.when}</span>
           </div>
           <h3 style="margin:8px 0">${r.titolo}</h3><p style="margin:0 0 10px">${r.descrizione}</p>
-          ${(r.photos && r.photos.length) ? `<div class="gallery-grid">${r.photos.map(p=>`<img src="${p.dataUrl}" class="gallery-img" onclick="openImage(this.src)">`).join('')}</div>` : (r.photoDataUrl ? `<div class="gallery-grid"><img src="${r.photoDataUrl}" class="gallery-img" onclick="openImage(this.src)"></div>` : '')}
+          ${(r.photos && r.photos.length) ? `<div class="gallery-grid">${r.photos.map(p=>`<img src="${p.dataUrl || p}" class="gallery-img" onclick="openImage(this.src)">`).join('')}</div>` : (r.photoDataUrl ? `<div class="gallery-grid"><img src="${r.photoDataUrl}" class="gallery-img" onclick="openImage(this.src)"></div>` : '')}
           ${r.geo ? `<button class="btn ghost small" style="margin-top:10px" onclick="focusOnMap(${r.geo.lat}, ${r.geo.lng})">🗺️ Vedi in mappa</button>` : ''}
         </div>
       `).join('');
