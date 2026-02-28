@@ -871,7 +871,7 @@
 
     function ensureMaps(){
       if(!mapHome && document.getElementById("mapHome")){ 
-        mapHome = L.map("mapHome", { zoomControl: false, dragging: false }).setView([41.492, 13.831], 13); 
+        mapHome = L.map("mapHome").setView([41.492, 13.831], 13); 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapHome); 
         layerHome = L.layerGroup().addTo(mapHome); 
       }
