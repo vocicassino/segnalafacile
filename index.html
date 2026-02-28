@@ -500,10 +500,13 @@
 
         <label>Categoria</label>
         <select id="placeCategory">
-          <option value="ristorante">🍕 Ristorante / Bar</option>
+          <option value="ristorante">🍕 Ristorante</option>
+          <option value="bar">🍺 Bar</option>
           <option value="negozio">🛍️ Negozio</option>
-          <option value="cultura">🏛️ Monumento / Cultura</option>
-          <option value="natura">🌲 Natura / Parco</option>
+          <option value="cultura">🏛️ Cultura</option>
+          <option value="monumento">⭐ Monumento</option>
+          <option value="parco">🌲 Parco</option>
+          <option value="natura">☘️ Natura</option>
         </select>
 
         <label>Valutazione</label>
@@ -576,10 +579,13 @@
                 <option value="luce">💡 Illuminazione</option>
               </optgroup>
               <optgroup label="⭐ Luoghi e Recensioni">
-                <option value="ristorante">🍕 Ristoranti / Bar</option>
-                <option value="negozio">🛍️ Negozi</option>
-                <option value="cultura">🏛️ Cultura / Monumenti</option>
-                <option value="natura">🌲 Parchi / Natura</option>
+                <option value="ristorante">🍕 Ristoranti</option>
+                <option value="bar">🍺 Bar</option>
+                <option value="negozi">🛍️ Negozi</option>
+                <option value="cultura">📚 Cultura</option>
+                <option value="monumenti">🏛️ Monumenti</option>
+                <option value="parchi">🌳 Parchi</option>
+                <option value="natura">☘️ Natura</option>
               </optgroup>
               <option value="altro">❓ Altro</option>
             </select>
@@ -676,9 +682,12 @@
 
     const placeCatInfo = {
       ristorante: { color: '#e74c3c', emoji: '🍕' },
+      bar:        { color: '#e74c3c', emoji: '🍺' },
       negozio:    { color: '#9b59b6', emoji: '🛍️' },
-      cultura:    { color: '#f39c12', emoji: '🏛️' },
-      natura:     { color: '#2ecc71', emoji: '🌲' },
+      cultura:    { color: '#f39c12', emoji: '📚' },
+      monumenti:  { color: '#f39c12', emoji: '🏛️' },
+      natura:     { color: '#2ecc71', emoji: '☘️' },
+      parco:      { color: '#2ecc71', emoji: '🌳' },
       altro:      { color: '#ff9f43', emoji: '⭐' }
     };
 
