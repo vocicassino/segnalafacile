@@ -320,11 +320,7 @@
             <h1>La tua Città.</h1>
             <p>Segnala problemi, scopri luoghi e leggi le recensioni della community.</p>
           </div>
-          
-          <video class="heroCover" autoplay loop muted playsinline>
-            <source src="vocidicassino.mp4" type="video/mp4">
-          </video>
-
+          <img class="heroCover" src="icons/hero.jpg" alt="SegnalaFacile" loading="lazy">
         </div>
 
         <div class="btnRow">
@@ -904,7 +900,7 @@
               <div class="row" style="margin-top:10px;">
                 <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
                 <button class="btn ghost small" onclick="focusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
-                <a class="btn ghost small" href="https://www.google.com/maps/dir/?api=1&destination=$${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <a class="btn ghost small" href="https://www.google.com/maps?q=${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
@@ -1043,7 +1039,7 @@
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=$${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -1320,7 +1316,7 @@
     function applyContacts(){
       const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
       document.getElementById("mailLink").href = `mailto:${CONFIG.email}?subject=Messaggio&body=${body}`;
-      document.getElementById("mapLink").href = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(CONFIG.mapsQuery)}`;
+      document.getElementById("mapLink").href = `https://www.google.com/maps?q=${encodeURIComponent(CONFIG.mapsQuery)}`;
     }
 
     initStorage().then(() => {
