@@ -417,6 +417,18 @@
           <div class="docsList" id="docsList"></div>
         </div>
 
+        <label>Messaggio Vocale (Opzionale)</label>
+        <div class="row" id="audioControls">
+          <button class="ghost" id="btnRecordAudio" type="button">🎤 Registra Vocale</button>
+          <button class="danger hidden" id="btnStopAudio" type="button">⏹️ Ferma Registrazione</button>
+        </div>
+
+        <div id="audioPreview" class="preview" style="flex-direction:column;">
+          <div style="font-weight:980;color:var(--text); margin-bottom:8px;">Anteprima Vocale</div>
+          <audio id="audioPlayback" controls style="width:100%; height:40px; outline:none; border-radius:20px;"></audio>
+          <button class="ghost small" id="btnClearAudio" type="button" style="margin-top:10px; align-self:flex-start;">🧹 Rimuovi Vocale</button>
+        </div>
+
         <div class="toggle">
           <div>
             <strong>Invia anche in forma anonima</strong><br>
