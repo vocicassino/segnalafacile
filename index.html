@@ -914,7 +914,7 @@
               <div class="row" style="margin-top:10px;">
                 <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
                 <button class="btn ghost small" onclick="focusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
-                <a class="btn ghost small" href="https://maps.google.com/?q=${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <a class="btn ghost small" href="https://www.google.com/maps/search/?api=1&query=${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
@@ -1053,7 +1053,7 @@
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="https://maps.google.com/?q=${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -1185,6 +1185,65 @@
     let geo = null; let geoWatchId = null; let geoLiveOn = false;
     let photos = []; let documents = []; 
 
+    // --- NUOVA LOGICA AUDIO ---
+    let audioDataUrl = null;
+    let mediaRecorder;
+    let audioChunks = [];
+
+    const btnRecord = document.getElementById('btnRecordAudio');
+    const btnStopRecord = document.getElementById('btnStopAudio');
+    const audioPreview = document.getElementById('audioPreview');
+    const audioPlayback = document.getElementById('audioPlayback');
+
+    btnRecord?.addEventListener('click', async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) audioChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    audioDataUrl = reader.result;
+                    audioPlayback.src = audioDataUrl;
+                    audioPreview.style.display = 'flex';
+                };
+                reader.readAsDataURL(audioBlob);
+                stream.getTracks().forEach(t => t.stop());
+            };
+
+            mediaRecorder.start();
+            btnRecord.classList.add('hidden');
+            btnStopRecord.classList.remove('hidden');
+            showBanner("info", "🔴 Registrazione in corso...", null);
+        } catch (err) {
+            showBanner("error", "Accesso al microfono negato o non supportato.");
+        }
+    });
+
+    btnStopRecord?.addEventListener('click', () => {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            btnStopRecord.classList.add('hidden');
+            btnRecord.classList.remove('hidden');
+            btnRecord.textContent = '🎤 Registra di nuovo';
+            showBanner("success", "Vocale registrato!");
+        }
+    });
+
+    document.getElementById('btnClearAudio')?.addEventListener('click', () => {
+        audioDataUrl = null;
+        audioPlayback.src = "";
+        audioPreview.style.display = 'none';
+        btnRecord.textContent = '🎤 Registra Vocale';
+    });
+    // --- FINE LOGICA AUDIO ---
+
     function renderGeo(){
       const geoLine = document.getElementById("geoLine");
       if(!geo){ geoLine.style.display = "none"; geoLine.textContent = ""; return; }
@@ -1214,6 +1273,7 @@
         titolo, descrizione, anonimo: isAnon, categoria: document.getElementById("categoria").value,
         when: new Date().toLocaleString("it-IT"), geo: geo,
         photos: photos, documents: documents, 
+        audio: audioDataUrl, // Ora invia anche l'audio registrato
         sender_contact: isAnon ? "Anonimo" : `👤 ${document.getElementById("contactName").value} 📞 ${document.getElementById("contactPhone").value} ✉️ ${document.getElementById("contactEmail").value}`
       };
 
@@ -1226,6 +1286,7 @@
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
         if(!res.ok) throw new Error();
         document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null; document.getElementById("photoPreview").style.display="none";
+        document.getElementById("btnClearAudio")?.click(); // Pulisce il vocale dopo l'invio
         location.hash = "#/success"; fetchPublicData(); 
       }catch(e){
         showBanner("error", "Offline: Segnalazione salvata sul dispositivo."); location.hash = "#/my";
@@ -1330,7 +1391,7 @@
     function applyContacts(){
       const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
       document.getElementById("mailLink").href = `mailto:${CONFIG.email}?subject=Messaggio&body=${body}`;
-      document.getElementById("mapLink").href = `https://maps.google.com/?q=${encodeURIComponent(CONFIG.mapsQuery)}`;
+      document.getElementById("mapLink").href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
     }
 
     initStorage().then(() => {
