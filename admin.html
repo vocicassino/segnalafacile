@@ -269,6 +269,7 @@
           <h3>📍 ${s.titolo}</h3>
           <p><span class="badge">${s.categoria}</span> ${s.dataStr}</p>
           <p style="margin-top:4px;">${s.descrizione || 'Senza descrizione'}</p>
+          ${s.audio ? `<audio controls src="${s.audio}" style="width:100%; max-width:400px; height:40px; margin-top:10px; margin-bottom:5px; outline:none; border-radius:20px;"></audio>` : ''}
         </div>
       `);
     }
