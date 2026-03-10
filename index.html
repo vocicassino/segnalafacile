@@ -295,6 +295,32 @@
 
     .docsList{ display:grid; gap:8px; margin-top:10px; }
     .docItem{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 10px 12px; border-radius: 18px; border:1px solid var(--stroke); background: rgba(0,0,0,.14); }
+
+    /* EFFETTI MAPPA: Radar e Mini-Feed */
+    .user-dot {
+      width: 16px; height: 16px; background: #2d7dff; border-radius: 50%;
+      border: 2px solid #fff; box-shadow: 0 0 15px rgba(45,125,255,0.9); position: relative;
+    }
+    .user-dot::after {
+      content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      border-radius: 50%; border: 2px solid #2d7dff;
+      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
+    .live-feed {
+      position: absolute; bottom: 15px; left: 15px; right: 15px; z-index: 1000;
+      background: rgba(10, 16, 32, 0.75); border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateY(120%); opacity: 0;
+      animation: slide-up-feed 0.6s ease forwards; animation-delay: 2.5s; pointer-events: none;
+    }
+    @keyframes slide-up-feed { to { transform: translateY(0); opacity: 1; } }
+    .feed-icon { font-size: 22px; flex-shrink: 0; }
+    .feed-text { font-size: 12px; line-height: 1.3; color: #eaf0ff; display:flex; flex-direction:column; overflow:hidden;}
+    .feed-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;}
+    .feed-time { font-size: 10.5px; color: #a9b6db; margin-top: 2px; }
   </style>
 </head>
 
@@ -345,8 +371,18 @@
           <a class="btn small ghost" href="#/map">Mappa →</a>
         </div>
 
-        <div class="mapShell" style="margin-top:14px">
+        <div class="mapShell" style="margin-top:14px; position: relative;">
+          <button id="btnHomeRadar" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: rgba(10,16,32,0.8); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); color: white;" type="button" aria-label="La mia posizione">📍</button>
+          
           <div id="mapHome" class="mapBox"></div>
+          
+          <div id="miniFeed" class="live-feed hidden">
+            <div class="feed-icon" id="feedIcon">🔔</div>
+            <div class="feed-text">
+              <span class="feed-title" id="feedTitle">Ricerca attività...</span>
+              <span class="feed-time" id="feedTime">In aggiornamento</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -846,9 +882,77 @@
           window.publicLuoghi = data.luoghi || [];
           refreshPublicMaps();
           if(location.hash === '#/places') renderPublicPlaces();
+          updateMiniFeed(); // PUNTO 4: Aggiorna il Feed Trasparente
         }
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
+
+    // --- PUNTO 4: POPOLA IL MINI-FEED CON L'ULTIMA ATTIVITÀ ---
+    function updateMiniFeed() {
+      const feed = document.getElementById("miniFeed");
+      if (!feed) return;
+      
+      // Uniamo tutto per trovare l'evento più recente
+      const allItems = [...window.publicSegnalazioni, ...window.publicLuoghi];
+      if (allItems.length === 0) return;
+      
+      const latest = allItems[0]; // I dati da Cloudflare arrivano già ordinati dal più recente
+      const isSegnalazione = latest.titolo !== undefined;
+      const titolo = isSegnalazione ? latest.titolo : latest.nome;
+      const cat = latest.categoria || "altro";
+      
+      let emoji = "🔔";
+      if (isSegnalazione) emoji = (catInfo[cat] || catInfo.altro).emoji;
+      else emoji = (placeCatInfo[cat] || placeCatInfo.altro).emoji;
+
+      document.getElementById("feedIcon").innerText = emoji;
+      document.getElementById("feedTitle").innerText = titolo;
+      document.getElementById("feedTime").innerText = latest.dataStr ? "Aggiornamento: " + latest.dataStr.split(",")[0] : "Di recente";
+      
+      feed.classList.remove("hidden");
+    }
+
+    // --- PUNTO 5: IL RADAR PERSONALE (Pallino blu pulsante) ---
+    let homeUserMarker = null;
+    let homeWatchId = null;
+
+    document.getElementById("btnHomeRadar")?.addEventListener("click", () => {
+      if(!navigator.geolocation) return showBanner("error", "GPS non supportato dal dispositivo.");
+      
+      const btn = document.getElementById("btnHomeRadar");
+      
+      if (homeWatchId) {
+         // Disattiva Radar
+         navigator.geolocation.clearWatch(homeWatchId);
+         homeWatchId = null;
+         if(homeUserMarker) { homeUserMarker.remove(); homeUserMarker = null; }
+         btn.style.background = "rgba(10,16,32,0.8)"; // Torna grigio scuro
+         showBanner("info", "Radar disattivato.");
+         return;
+      }
+
+      showBanner("info", "Ricerca satellite in corso...");
+      btn.style.background = "rgba(45,125,255,0.9)"; // Diventa blu accesso per far capire che è attivo
+      
+      homeWatchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          
+          const iconHtml = `<div class="user-dot"></div>`;
+          const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[16,16], iconAnchor:[8,8] });
+          
+          if(!homeUserMarker) {
+             homeUserMarker = L.marker([lat, lng], {icon, zIndexOffset: 1000}).addTo(mapHome);
+             mapHome.flyTo([lat, lng], 14, { duration: 1.5 });
+          } else {
+             homeUserMarker.setLatLng([lat, lng]);
+          }
+        },
+        (err) => { showBanner("error", "Devi attivare il GPS per usare il Radar."); btn.style.background = "rgba(10,16,32,0.8)"; }, 
+        { enableHighAccuracy: true, maximumAge: 10000 }
+      );
+    });
 
     function renderPublicPlaces() {
       const container = document.getElementById("public-places-list");
@@ -991,9 +1095,14 @@
 
     function ensureMaps(){
       if(!mapHome && document.getElementById("mapHome")){ 
-        mapHome = L.map("mapHome").setView([41.492, 13.831], 13); 
+        // PUNTO 3: Effetto Sorvolo Aereo
+        mapHome = L.map("mapHome", { zoomControl: false, dragging: false }).setView([45.0, 12.0], 5); 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapHome); 
         layerHome = L.layerGroup().addTo(mapHome); 
+        
+        setTimeout(() => {
+          mapHome.flyTo([41.492, 13.831], 13, { duration: 2.8, easeLinearity: 0.25 });
+        }, 800);
       }
       if(!mapMain && document.getElementById("mapMain")){ 
         mapMain = L.map("mapMain").setView([41.492, 13.831], 13); 
@@ -1185,7 +1294,7 @@
     let geo = null; let geoWatchId = null; let geoLiveOn = false;
     let photos = []; let documents = []; 
 
-    // --- NUOVA LOGICA AUDIO ---
+    // --- LOGICA AUDIO ---
     let audioDataUrl = null;
     let mediaRecorder;
     let audioChunks = [];
@@ -1273,7 +1382,7 @@
         titolo, descrizione, anonimo: isAnon, categoria: document.getElementById("categoria").value,
         when: new Date().toLocaleString("it-IT"), geo: geo,
         photos: photos, documents: documents, 
-        audio: audioDataUrl, // Ora invia anche l'audio registrato
+        audio: audioDataUrl,
         sender_contact: isAnon ? "Anonimo" : `👤 ${document.getElementById("contactName").value} 📞 ${document.getElementById("contactPhone").value} ✉️ ${document.getElementById("contactEmail").value}`
       };
 
@@ -1286,7 +1395,7 @@
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
         if(!res.ok) throw new Error();
         document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null; document.getElementById("photoPreview").style.display="none";
-        document.getElementById("btnClearAudio")?.click(); // Pulisce il vocale dopo l'invio
+        document.getElementById("btnClearAudio")?.click(); 
         location.hash = "#/success"; fetchPublicData(); 
       }catch(e){
         showBanner("error", "Offline: Segnalazione salvata sul dispositivo."); location.hash = "#/my";
@@ -1378,7 +1487,6 @@
           </div>
           <h3 style="margin:8px 0">${r.titolo}</h3><p style="margin:0 0 10px">${r.descrizione}</p>
           
-          ${/* SE C'È UN AUDIO, MOSTRA IL PLAYER */ ''}
           ${r.audio ? `<audio controls src="${r.audio}" style="width:100%; height:40px; margin-top:5px; margin-bottom:10px; border-radius:20px; outline:none; background: rgba(0,0,0,0.2);"></audio>` : ''}
 
           ${(r.photos && r.photos.length) ? `<div class="gallery-grid">${r.photos.map(p=>`<img src="${p.dataUrl || p}" class="gallery-img" onclick="openImage(this.src)">`).join('')}</div>` : (r.photoDataUrl ? `<div class="gallery-grid"><img src="${r.photoDataUrl}" class="gallery-img" onclick="openImage(this.src)"></div>` : '')}
