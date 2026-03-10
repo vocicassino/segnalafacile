@@ -915,29 +915,29 @@
       feed.classList.remove("hidden");
     }
 
-    // --- PUNTO 5: IL RADAR PERSONALE (Pallino blu pulsante) ---
-    let homeUserMarker = null;
-    let homeWatchId = null;
+    /// --- RADAR PERSONALE PER LA MAPPA PRINCIPALE ---
+    let mainUserMarker = null;
+    let mainWatchId = null;
 
-    document.getElementById("btnHomeRadar")?.addEventListener("click", () => {
+    document.getElementById("btnMainRadar")?.addEventListener("click", () => {
       if(!navigator.geolocation) return showBanner("error", "GPS non supportato dal dispositivo.");
       
-      const btn = document.getElementById("btnHomeRadar");
+      const btn = document.getElementById("btnMainRadar");
       
-      if (homeWatchId) {
-         // Disattiva Radar
-         navigator.geolocation.clearWatch(homeWatchId);
-         homeWatchId = null;
-         if(homeUserMarker) { homeUserMarker.remove(); homeUserMarker = null; }
+      if (mainWatchId) {
+         // Disattiva Radar Mappa Principale
+         navigator.geolocation.clearWatch(mainWatchId);
+         mainWatchId = null;
+         if(mainUserMarker) { mainUserMarker.remove(); mainUserMarker = null; }
          btn.style.background = "rgba(10,16,32,0.8)"; // Torna grigio scuro
          showBanner("info", "Radar disattivato.");
          return;
       }
 
       showBanner("info", "Ricerca satellite in corso...");
-      btn.style.background = "rgba(45,125,255,0.9)"; // Diventa blu accesso per far capire che è attivo
+      btn.style.background = "rgba(45,125,255,0.9)"; // Diventa blu
       
-      homeWatchId = navigator.geolocation.watchPosition(
+      mainWatchId = navigator.geolocation.watchPosition(
         (pos) => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
@@ -945,11 +945,11 @@
           const iconHtml = `<div class="user-dot"></div>`;
           const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[16,16], iconAnchor:[8,8] });
           
-          if(!homeUserMarker) {
-             homeUserMarker = L.marker([lat, lng], {icon, zIndexOffset: 1000}).addTo(mapHome);
-             mapHome.flyTo([lat, lng], 14, { duration: 1.5 });
+          if(!mainUserMarker) {
+             mainUserMarker = L.marker([lat, lng], {icon, zIndexOffset: 1000}).addTo(mapMain);
+             mapMain.flyTo([lat, lng], 15, { duration: 1.5 }); // Zoom più vicino rispetto alla home
           } else {
-             homeUserMarker.setLatLng([lat, lng]);
+             mainUserMarker.setLatLng([lat, lng]);
           }
         },
         (err) => { showBanner("error", "Devi attivare il GPS per usare il Radar."); btn.style.background = "rgba(10,16,32,0.8)"; }, 
