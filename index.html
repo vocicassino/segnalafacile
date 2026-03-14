@@ -1532,6 +1532,9 @@
           ${r.audio ? `<audio controls src="${r.audio}" style="width:100%; height:40px; margin-top:5px; margin-bottom:10px; border-radius:20px; outline:none; background: rgba(0,0,0,0.2);"></audio>` : ''}
 
           ${(r.photos && r.photos.length) ? `<div class="gallery-grid">${r.photos.map(p=>`<img src="${p.dataUrl || p}" class="gallery-img" onclick="openImage(this.src)">`).join('')}</div>` : (r.photoDataUrl ? `<div class="gallery-grid"><img src="${r.photoDataUrl}" class="gallery-img" onclick="openImage(this.src)"></div>` : '')}
+          
+          ${(r.documents && r.documents.length) ? `<div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">${r.documents.map(d=>`<a href="${d.dataUrl}" download="${d.name}" class="btn ghost small" style="justify-content:flex-start; text-transform:none; border-color:rgba(255,255,255,0.2);">📄 ${d.name}</a>`).join('')}</div>` : ''}
+
           ${r.geo ? `<button class="btn ghost small" style="margin-top:10px" onclick="focusOnMap(${r.geo.lat}, ${r.geo.lng})">🗺️ Vedi in mappa</button>` : ''}
         </div>
       `).join('');
