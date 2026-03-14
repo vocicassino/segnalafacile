@@ -729,7 +729,8 @@
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
-      telegramApiKey: "Marco-Admin-2026"
+      // --- NOME NASCOSTO PER PRIVACY ---
+      telegramApiKey: "SF-Secure-Key-2026" 
     };
 
     window.publicSegnalazioni = [];
@@ -850,7 +851,6 @@
       document.getElementById('imageViewer').style.display = 'flex';
     };
 
-    // FIX FOTO: Legge correttamente le foto salvate come stringa JSON
     const estraiTutteLeFoto = (item) => {
       if(!item) return [];
       let arr = [];
@@ -885,21 +885,19 @@
           window.publicLuoghi = data.luoghi || [];
           refreshPublicMaps();
           if(location.hash === '#/places') renderPublicPlaces();
-          updateMiniFeed(); // PUNTO 4: Aggiorna il Feed Trasparente
+          updateMiniFeed(); 
         }
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
 
-    // --- PUNTO 4: POPOLA IL MINI-FEED CON L'ULTIMA ATTIVITÀ ---
     function updateMiniFeed() {
       const feed = document.getElementById("miniFeed");
       if (!feed) return;
       
-      // Uniamo tutto per trovare l'evento più recente
       const allItems = [...window.publicSegnalazioni, ...window.publicLuoghi];
       if (allItems.length === 0) return;
       
-      const latest = allItems[0]; // I dati da Cloudflare arrivano già ordinati dal più recente
+      const latest = allItems[0]; 
       const isSegnalazione = latest.titolo !== undefined;
       const titolo = isSegnalazione ? latest.titolo : latest.nome;
       const cat = latest.categoria || "altro";
@@ -915,7 +913,49 @@
       feed.classList.remove("hidden");
     }
 
-    /// --- RADAR PERSONALE PER LA MAPPA PRINCIPALE ---
+    // --- PUNTO 5: IL RADAR PERSONALE (Pallino blu pulsante) ---
+    let homeUserMarker = null;
+    let homeWatchId = null;
+
+    document.getElementById("btnHomeRadar")?.addEventListener("click", () => {
+      if(!navigator.geolocation) return showBanner("error", "GPS non supportato dal dispositivo.");
+      
+      const btn = document.getElementById("btnHomeRadar");
+      
+      if (homeWatchId) {
+         // Disattiva Radar
+         navigator.geolocation.clearWatch(homeWatchId);
+         homeWatchId = null;
+         if(homeUserMarker) { homeUserMarker.remove(); homeUserMarker = null; }
+         btn.style.background = "rgba(10,16,32,0.8)"; // Torna grigio scuro
+         showBanner("info", "Radar disattivato.");
+         return;
+      }
+
+      showBanner("info", "Ricerca satellite in corso...");
+      btn.style.background = "rgba(45,125,255,0.9)"; // Diventa blu accesso per far capire che è attivo
+      
+      homeWatchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          
+          const iconHtml = `<div class="user-dot"></div>`;
+          const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[16,16], iconAnchor:[8,8] });
+          
+          if(!homeUserMarker) {
+             homeUserMarker = L.marker([lat, lng], {icon, zIndexOffset: 1000}).addTo(mapHome);
+             mapHome.flyTo([lat, lng], 14, { duration: 1.5 });
+          } else {
+             homeUserMarker.setLatLng([lat, lng]);
+          }
+        },
+        (err) => { showBanner("error", "Devi attivare il GPS per usare il Radar."); btn.style.background = "rgba(10,16,32,0.8)"; }, 
+        { enableHighAccuracy: true, maximumAge: 10000 }
+      );
+    });
+
+    // --- RADAR PERSONALE PER LA MAPPA PRINCIPALE ---
     let mainUserMarker = null;
     let mainWatchId = null;
 
@@ -1098,7 +1138,6 @@
 
     function ensureMaps(){
       if(!mapHome && document.getElementById("mapHome")){ 
-        // PUNTO 3: Effetto Sorvolo Aereo
         mapHome = L.map("mapHome", { zoomControl: false, dragging: false }).setView([45.0, 12.0], 5); 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapHome); 
         layerHome = L.layerGroup().addTo(mapHome); 
