@@ -1498,7 +1498,7 @@
       document.getElementById("mapPickerOverlay").style.display = "flex";
       if(!mapPicker){
         mapPicker = L.map("mapPicker").setView([41.492, 13.831], 13);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(mapPicker);
+        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19 }).addTo(mapPicker);
         mapPicker.on("click", (e) => {
           picked = { lat: e.latlng.lat, lng: e.latlng.lng };
           document.getElementById("pickedLine").textContent = `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
