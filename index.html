@@ -1260,9 +1260,13 @@
 
         // --- FASE 3: MUTAZIONE GRAFICA SULLA MAPPA ---
         if (r.status === 'resolved') {
-           pinColor = '#19c37d'; // Sovrascrive con il verde
+           pinColor = '#19c37d'; 
            pinEmoji = '✅';
            statusBadgePopup = '<div style="margin-bottom:6px;"><span style="background: rgba(25,195,125,0.2); color: #19c37d; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(25,195,125,0.4); font-weight: bold;">✅ Problema Risolto</span></div>';
+        } else if (r.status === 'in_progress') {
+           pinColor = '#f39c12'; // Arancione/Giallo
+           pinEmoji = '🚧';
+           statusBadgePopup = '<div style="margin-bottom:6px;"><span style="background: rgba(243,156,18,0.2); color: #f39c12; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(243,156,18,0.4); font-weight: bold;">🚧 In Lavorazione</span></div>';
         }
 
         const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${pinColor}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${pinEmoji}</div>`;
