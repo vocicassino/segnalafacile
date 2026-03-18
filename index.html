@@ -1142,7 +1142,7 @@
     function ensureMaps(){
       if(!mapHome && document.getElementById("mapHome")){ 
         mapHome = L.map("mapHome", { zoomControl: false, dragging: false }).setView([45.0, 12.0], 5); 
-        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}").addTo(mapHome); 
+        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}").addTo(mapHome); 
         layerHome = L.layerGroup().addTo(mapHome); 
         
         setTimeout(() => {
@@ -1151,7 +1151,7 @@
       }
       if(!mapMain && document.getElementById("mapMain")){ 
         mapMain = L.map("mapMain").setView([41.492, 13.831], 13); 
-        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19 }).addTo(mapMain); 
+        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19 }).addTo(mapMain); 
         layerMain = L.layerGroup().addTo(mapMain); 
       }
     }
