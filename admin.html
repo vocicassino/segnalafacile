@@ -27,32 +27,29 @@
     .details { flex-grow: 1; margin-right: 15px; min-width: 250px; }
     .details h3 { margin: 0 0 5px 0; font-size: 16px; color: #19c37d; }
     .details p { margin: 0; font-size: 13px; color: #a9b6db; }
-    .badge { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
+    .badge { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; font-weight: bold; }
+    .badge-open { background: rgba(255,77,79,0.2); color: #ff4d4f; border: 1px solid rgba(255,77,79,0.4); }
+    .badge-resolved { background: rgba(25,195,125,0.2); color: #19c37d; border: 1px solid rgba(25,195,125,0.4); }
     #dashboard { display: none; }
 
-    /* SEZIONI ESPANDIBILI */
     .section-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: 5px; }
     .section-header h2 { margin: 0; font-size: 20px; }
     .section-icon { font-size: 14px; transition: transform 0.3s ease; opacity: 0.8; }
     .section-content { margin-top: 15px; display: none; }
 
-    /* STILI FILTRI */
     .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
     .filter-btn { background: rgba(255,255,255,0.08); color: #a9b6db; border: 1px solid rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: normal; margin: 0; transition: 0.2s ease; }
     .filter-btn:hover { background: rgba(255,255,255,0.15); }
     .filter-btn.active { background: #2d7dff; color: #ffffff; border-color: #2d7dff; font-weight: bold; box-shadow: 0 4px 10px rgba(45,125,255,0.3); }
 
-    /* BOTTONE INSTALLA */
     #installAdminPill { display: none; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; }
 
-    /* MODAL PER LA MODIFICA */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; padding: 20px; z-index: 1000; }
     .modal { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); width: 100%; max-width: 500px; box-sizing: border-box; }
     .modal h3 { margin-top: 0; }
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 12px; color: #a9b6db; margin-bottom: 5px; }
     
-    /* STILE GHOST RADAR */
     .ghost-alert { color: #ff4d4f !important; font-weight: 900 !important; background: rgba(255,77,79,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;}
   </style>
 </head>
@@ -103,6 +100,14 @@
   <div class="modal">
     <h3 id="modalTitle">Modifica</h3>
     
+    <div class="form-group" id="statusGroup" style="display:none;">
+      <label>Stato Segnalazione</label>
+      <select id="editStatus" style="font-weight:bold;">
+        <option value="open">🔴 Da Risolvere (Aperta)</option>
+        <option value="resolved">✅ Problema Risolto</option>
+      </select>
+    </div>
+
     <div class="form-group">
       <label id="labelTitoloNome">Titolo / Nome</label>
       <input type="text" id="editTitolo" />
@@ -180,6 +185,7 @@
 
   let editingId = null;
   let editingType = null;
+  let currentEditingItem = null; // Memorizza l'oggetto in modifica
 
   function login() {
     const input = document.getElementById("apiKeyInput").value.trim();
@@ -267,10 +273,12 @@
         const lat = s.lat || (s.geo && s.geo.lat) || 0;
         const lng = s.lng || (s.geo && s.geo.lng) || 0;
         const isGhost = (parseFloat(lat) === 0 && parseFloat(lng) === 0);
+        const statusBadge = (s.status === 'resolved') ? '<span class="badge badge-resolved">✅ Risolta</span>' : '<span class="badge badge-open">🔴 Aperta</span>';
+        
         return `
         <div class="details">
           <h3>📍 ${s.titolo}</h3>
-          <p><span class="badge">${s.categoria}</span> ${s.dataStr || ''}</p>
+          <p>${statusBadge} <span class="badge">${s.categoria}</span> ${s.dataStr || ''}</p>
           <p style="margin-top:4px;">${s.descrizione || 'Senza descrizione'}</p>
           <p style="margin-top:6px; font-size:12px; color:#a9b6db;" class="${isGhost ? 'ghost-alert' : ''}">
             📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA! Elimina subito.' : ''}
@@ -321,28 +329,31 @@
     editingId = id;
     editingType = type;
     
-    const item = allData[type].find(x => x.id === id);
-    if(!item) return;
+    currentEditingItem = allData[type].find(x => x.id === id);
+    if(!currentEditingItem) return;
 
     if(type === 'segnalazioni') {
       document.getElementById("modalTitle").innerText = "Modifica Segnalazione";
       document.getElementById("labelTitoloNome").innerText = "Titolo";
       document.getElementById("labelDescrizione").innerText = "Descrizione";
       document.getElementById("ratingGroup").style.display = "none";
+      document.getElementById("statusGroup").style.display = "block"; // Mostra gestione Stato
 
-      document.getElementById("editTitolo").value = item.titolo || "";
-      document.getElementById("editCategoria").value = item.categoria || "altro";
-      document.getElementById("editDescrizione").value = item.descrizione || "";
+      document.getElementById("editTitolo").value = currentEditingItem.titolo || "";
+      document.getElementById("editCategoria").value = currentEditingItem.categoria || "altro";
+      document.getElementById("editDescrizione").value = currentEditingItem.descrizione || "";
+      document.getElementById("editStatus").value = currentEditingItem.status || "open";
     } else {
       document.getElementById("modalTitle").innerText = "Modifica Luogo";
       document.getElementById("labelTitoloNome").innerText = "Nome del Luogo";
       document.getElementById("labelDescrizione").innerText = "Recensione";
       document.getElementById("ratingGroup").style.display = "block";
+      document.getElementById("statusGroup").style.display = "none"; // Nascondi stato per i Luoghi
 
-      document.getElementById("editTitolo").value = item.nome || "";
-      document.getElementById("editCategoria").value = item.categoria || "altro";
-      document.getElementById("editRating").value = item.rating || 5;
-      document.getElementById("editDescrizione").value = item.recensione || "";
+      document.getElementById("editTitolo").value = currentEditingItem.nome || "";
+      document.getElementById("editCategoria").value = currentEditingItem.categoria || "altro";
+      document.getElementById("editRating").value = currentEditingItem.rating || 5;
+      document.getElementById("editDescrizione").value = currentEditingItem.recensione || "";
     }
 
     document.getElementById("editModalOverlay").style.display = "flex";
@@ -352,6 +363,7 @@
     document.getElementById("editModalOverlay").style.display = "none";
     editingId = null;
     editingType = null;
+    currentEditingItem = null;
   }
 
   async function saveEdit() {
@@ -360,6 +372,17 @@
       payload.titolo = document.getElementById("editTitolo").value.trim();
       payload.categoria = document.getElementById("editCategoria").value;
       payload.descrizione = document.getElementById("editDescrizione").value.trim();
+      
+      // Calcolo avanzato dello stato
+      payload.status = document.getElementById("editStatus").value;
+      if (payload.status === 'resolved' && currentEditingItem.status !== 'resolved') {
+          payload.resolvedAt = new Date().toISOString(); // Appena chiuso, salva l'ora esatta
+      } else if (payload.status === 'open') {
+          payload.resolvedAt = null; // Riaperto, azzera il timer
+      } else {
+          payload.resolvedAt = currentEditingItem.resolvedAt || null; // Nessun cambio, mantieni quello vecchio
+      }
+
     } else {
       payload.nome = document.getElementById("editTitolo").value.trim();
       payload.categoria = document.getElementById("editCategoria").value;
