@@ -1142,16 +1142,24 @@
     function ensureMaps(){
       if(!mapHome && document.getElementById("mapHome")){ 
         mapHome = L.map("mapHome", { zoomControl: false, dragging: false }).setView([45.0, 12.0], 5); 
-        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}").addTo(mapHome); 
-        layerHome = L.layerGroup().addTo(mapHome); 
         
-        setTimeout(() => {
-          mapHome.flyTo([41.492, 13.831], 13, { duration: 2.8, easeLinearity: 0.25 });
-        }, 800);
+        const streetHome = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { maxZoom: 20 });
+        const hybridHome = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { maxZoom: 20 });
+        streetHome.addTo(mapHome); 
+        L.control.layers({ "🗺️ Strade": streetHome, "🛰️ Satellite": hybridHome }, null, {position: 'bottomleft'}).addTo(mapHome);
+        
+        layerHome = L.layerGroup().addTo(mapHome); 
+        setTimeout(() => mapHome.flyTo([41.492, 13.831], 13, { duration: 2.8, easeLinearity: 0.25 }), 800);
       }
+      
       if(!mapMain && document.getElementById("mapMain")){ 
         mapMain = L.map("mapMain").setView([41.492, 13.831], 13); 
-        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19 }).addTo(mapMain); 
+        
+        const streetMain = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { maxZoom: 20 });
+        const hybridMain = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { maxZoom: 20 });
+        streetMain.addTo(mapMain); 
+        L.control.layers({ "🗺️ Strade": streetMain, "🛰️ Satellite": hybridMain }, null, {position: 'bottomleft'}).addTo(mapMain);
+        
         layerMain = L.layerGroup().addTo(mapMain); 
       }
     }
