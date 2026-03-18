@@ -1672,6 +1672,19 @@
       ensureMaps();
       fetchPublicData();
       route();
+      
+      // IL BATTITO CARDIACO: Sincronizzazione silenziosa in background ogni 45 secondi
+      setInterval(() => {
+         // Aggiorna solo se la pagina è visibile per non sprecare dati
+         if(document.visibilityState === 'visible') {
+             fetchPublicData();
+         }
+      }, 45000);
+      
+      // Sincronizza istantaneamente quando l'utente riapre l'app dopo averla messa in background
+      document.addEventListener("visibilitychange", () => {
+         if(document.visibilityState === 'visible') fetchPublicData();
+      });
     });
   </script>
 </body>
