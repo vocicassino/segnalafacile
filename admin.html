@@ -206,7 +206,8 @@
     document.getElementById("segnalazioniList").innerHTML = "Caricamento...";
     
     try {
-      const res = await fetch(WORKER_URL + "/api/public-data");
+      // CACHE BUSTER: Il parametro ?t= costringe il browser a ignorare la cache e leggere il server
+      const res = await fetch(WORKER_URL + "/api/public-data?t=" + Date.now());
       const data = await res.json();
       
       if (!data.ok) throw new Error("Errore caricamento dati");
