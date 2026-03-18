@@ -956,45 +956,34 @@
           const localReps = loadReports();
           let cacheChanged = false;
           
-          // PROTOCOLLO DI PURGA AUTOMATICA E SINCRONIZZAZIONE
           const validLocalReps = localReps.filter(lr => {
-            // Cerca corrispondenza (o per ID ufficiale, o per Titolo + Data esatta)
             const serverMatch = window.publicSegnalazioni.find(s => 
                s.id === lr.id || (s.titolo === lr.titolo && s.dataStr === lr.when)
             );
 
             if (serverMatch) {
-              // 1. Allinea l'ID locale con quello ufficiale del server
               if (lr.id !== serverMatch.id) {
                  lr.id = serverMatch.id;
                  cacheChanged = true;
               }
-              // 2. Sincronizza lo stato (Aperto, In Lavorazione, Risolto)
               if (serverMatch.status && serverMatch.status !== lr.status) {
                  lr.status = serverMatch.status;
                  lr.resolvedAt = serverMatch.resolvedAt;
                  cacheChanged = true;
               }
-              return true; // Mantieni in memoria
+              return true; 
             } else {
-              // NON TROVATO SUL SERVER.
-              
-              // Se l'ID è un UUID (contiene trattini), significa che in passato era sincronizzato col server. 
-              // Se ora non c'è più, l'Admin l'ha eliminata matematicamente. Polverizza la copia locale.
               if (String(lr.id).includes('-')) {
                  cacheChanged = true;
                  return false; 
               }
               
-              // Se l'ID non ha trattini, è un Timestamp locale (segnalazione creata offline da poco).
-              // Se è più vecchia di 15 minuti e non ha mai raggiunto il server, è un errore. Scartala.
               const ageMs = Date.now() - parseInt(lr.id);
               if (ageMs > 15 * 60 * 1000) {
                  cacheChanged = true;
                  return false; 
               }
               
-              // È recente e offline, tieni duro.
               return true; 
             }
           });
@@ -1008,6 +997,7 @@
         }
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
+    
     function parseDateString(dStr) {
        if(!dStr) return 0;
        try {
@@ -1204,7 +1194,7 @@
               <div class="row" style="margin-top:10px;">
                 <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
                 <button class="btn ghost small" onclick="focusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
-                <a class="btn ghost small" href="http://googleusercontent.com/maps.google.com/4{group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <a class="btn ghost small" href="http://googleusercontent.com/maps.google.com/4${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
@@ -1333,16 +1323,14 @@
         
         if(isNaN(lat) || isNaN(lng)) return;
 
-        // --- FASE 3: L'ALGORITMO DELL'OBLIO (7 GIORNI) ---
         if (r.status === 'resolved' && r.resolvedAt) {
           const resolvedTime = new Date(r.resolvedAt).getTime();
           const now = Date.now();
           const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
           if (now - resolvedTime > sevenDaysInMs) {
-             return; // Scarta matematicamente il punto. La mappa rimane pulita.
+             return; 
           }
         }
-        // --------------------------------------------------
 
         const cat = r.categoria || "altro";
         if(mapFilter !== "all" && cat !== mapFilter) return;
@@ -1352,13 +1340,12 @@
         let pinEmoji = info.emoji;
         let statusBadgePopup = '';
 
-        // --- FASE 3: MUTAZIONE GRAFICA SULLA MAPPA ---
         if (r.status === 'resolved') {
            pinColor = '#19c37d'; 
            pinEmoji = '✅';
            statusBadgePopup = '<div style="margin-bottom:6px;"><span style="background: rgba(25,195,125,0.2); color: #19c37d; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(25,195,125,0.4); font-weight: bold;">✅ Problema Risolto</span></div>';
         } else if (r.status === 'in_progress') {
-           pinColor = '#f39c12'; // Arancione/Giallo
+           pinColor = '#f39c12'; 
            pinEmoji = '🚧';
            statusBadgePopup = '<div style="margin-bottom:6px;"><span style="background: rgba(243,156,18,0.2); color: #f39c12; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(243,156,18,0.4); font-weight: bold;">🚧 In Lavorazione</span></div>';
         }
@@ -1383,7 +1370,7 @@
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="http://googleusercontent.com/maps.google.com/5{lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="http://googleusercontent.com/maps.google.com/5${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -1716,7 +1703,6 @@
       document.getElementById("mapPickerOverlay").style.display="none";
     });
 
-    // --- FASE 3: AGGIORNAMENTO LISTA STORICA CON BADGE ---
     function renderList(){
       const arr = loadReports();
       const listEl = document.getElementById("list");
@@ -1755,27 +1741,17 @@
       saveReports([]); renderList(); refreshPublicMaps();
     });
 
-    function applyContacts(){
-      const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
-      document.getElementById("mailLink").href = `mailto:${CONFIG.email}?subject=Messaggio&body=${body}`;
-      document.getElementById("mapLink").href = `http://googleusercontent.com/maps.google.com/6{encodeURIComponent(CONFIG.mapsQuery)}`;
-    }
-
     initStorage().then(() => {
-      applyContacts();
       ensureMaps();
       fetchPublicData();
       route();
       
-      // IL BATTITO CARDIACO: Sincronizzazione silenziosa in background ogni 45 secondi
       setInterval(() => {
-         // Aggiorna solo se la pagina è visibile per non sprecare dati
          if(document.visibilityState === 'visible') {
              fetchPublicData();
          }
       }, 45000);
       
-      // Sincronizza istantaneamente quando l'utente riapre l'app dopo averla messa in background
       document.addEventListener("visibilitychange", () => {
          if(document.visibilityState === 'visible') fetchPublicData();
       });
