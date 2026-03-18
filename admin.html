@@ -374,14 +374,13 @@
       payload.categoria = document.getElementById("editCategoria").value;
       payload.descrizione = document.getElementById("editDescrizione").value.trim();
       
-      // Calcolo avanzato dello stato
       payload.status = document.getElementById("editStatus").value;
       if (payload.status === 'resolved' && currentEditingItem.status !== 'resolved') {
-          payload.resolvedAt = new Date().toISOString(); // Appena chiuso, salva l'ora esatta
-      } else if (payload.status === 'open') {
-          payload.resolvedAt = null; // Riaperto, azzera il timer
+          payload.resolvedAt = new Date().toISOString(); 
+      } else if (payload.status === 'open' || payload.status === 'in_progress') {
+          payload.resolvedAt = null; // Azzera il timer se è aperta o in lavorazione
       } else {
-          payload.resolvedAt = currentEditingItem.resolvedAt || null; // Nessun cambio, mantieni quello vecchio
+          payload.resolvedAt = currentEditingItem.resolvedAt || null; 
       }
 
     } else {
