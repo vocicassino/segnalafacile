@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b1220" />
-  <title>Pannello Amministratore</title>
+  <title>Pannello Amministratore - Centro di Comando</title>
   
   <link rel="manifest" href="admin.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
@@ -12,13 +12,13 @@
 
   <style>
     body { font-family: system-ui, sans-serif; background: #0b1220; color: #eaf0ff; margin: 0; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; }
-    .card { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .card { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     h1, h2 { margin-top: 0; }
     
     input[type="text"], input[type="password"], select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #2d7dff; background: #070c18; color: white; margin-bottom: 15px; box-sizing: border-box; }
     textarea { min-height: 100px; resize: vertical; }
-    button { cursor: pointer; background: #2d7dff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-right: 5px; }
+    button { cursor: pointer; background: #2d7dff; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-right: 5px; transition: 0.2s; }
     button:hover { filter: brightness(1.2); }
     .btn-danger { background: #ff4d4f; }
     .btn-success { background: #19c37d; }
@@ -27,9 +27,13 @@
     .details { flex-grow: 1; margin-right: 15px; min-width: 250px; }
     .details h3 { margin: 0 0 5px 0; font-size: 16px; color: #19c37d; }
     .details p { margin: 0; font-size: 13px; color: #a9b6db; }
-    .badge { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; font-weight: bold; }
+    
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; font-weight: bold; }
+    .badge-cat { background: rgba(255,255,255,0.1); color: #eaf0ff; }
     .badge-open { background: rgba(255,77,79,0.2); color: #ff4d4f; border: 1px solid rgba(255,77,79,0.4); }
+    .badge-progress { background: rgba(243,156,18,0.2); color: #f39c12; border: 1px solid rgba(243,156,18,0.4); }
     .badge-resolved { background: rgba(25,195,125,0.2); color: #19c37d; border: 1px solid rgba(25,195,125,0.4); }
+    
     #dashboard { display: none; }
 
     .section-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: 5px; }
@@ -38,18 +42,30 @@
     .section-content { margin-top: 15px; display: none; }
 
     .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
-    .filter-btn { background: rgba(255,255,255,0.08); color: #a9b6db; border: 1px solid rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: normal; margin: 0; transition: 0.2s ease; }
+    .filter-btn { background: rgba(255,255,255,0.08); color: #a9b6db; border: 1px solid rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-size: 13px; margin: 0; transition: 0.2s ease; }
     .filter-btn:hover { background: rgba(255,255,255,0.15); }
     .filter-btn.active { background: #2d7dff; color: #ffffff; border-color: #2d7dff; font-weight: bold; box-shadow: 0 4px 10px rgba(45,125,255,0.3); }
 
-    #installAdminPill { display: none; background: #19c37d; margin-bottom: 20px; width: 100%; font-size: 16px; padding: 14px; }
+    /* DASHBOARD ANALITICA */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-box { background: #070c18; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); text-align: center; display: flex; flex-direction: column; justify-content: center; }
+    .stat-val { font-size: 32px; font-weight: 900; margin-bottom: 5px; color: #ffffff; }
+    .stat-label { font-size: 12px; color: #a9b6db; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-val.green { color: #19c37d; text-shadow: 0 0 15px rgba(25,195,125,0.4); }
+    .stat-val.blue { color: #2d7dff; text-shadow: 0 0 15px rgba(45,125,255,0.4); }
+    
+    .cat-perf-list { display: flex; flex-direction: column; gap: 12px; }
+    .cat-perf-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; }
+    .cat-perf-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: bold; }
+    .cat-perf-bar-bg { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; display: flex; }
+    .cat-perf-bar-fill-resolved { height: 100%; background: #19c37d; transition: width 0.5s ease; }
+    .cat-perf-bar-fill-progress { height: 100%; background: #f39c12; transition: width 0.5s ease; }
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; padding: 20px; z-index: 1000; }
     .modal { background: #162440; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); width: 100%; max-width: 500px; box-sizing: border-box; }
     .modal h3 { margin-top: 0; }
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 12px; color: #a9b6db; margin-bottom: 5px; }
-    
     .ghost-alert { color: #ff4d4f !important; font-weight: 900 !important; background: rgba(255,77,79,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;}
   </style>
 </head>
@@ -57,8 +73,6 @@
 
 <div class="container">
   
-  <button id="installAdminPill" type="button">⬇️ Installa Pannello Admin sul Telefono</button>
-
   <div class="card" id="loginBox">
     <h1>Area Amministratore 🔒</h1>
     <p style="color: #a9b6db;">Inserisci la Password (API Key) per gestire il database.</p>
@@ -68,29 +82,57 @@
 
   <div id="dashboard">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-      <h1 style="margin:0;">Gestione Database</h1>
-      <button onclick="loadData()">🔄 Aggiorna Dati</button>
+      <h1 style="margin:0;">Cruscotto di Comando</h1>
+      <button onclick="loadData()">🔄 Sincronizza Dati</button>
+    </div>
+
+    <div class="card" style="border-color: rgba(45,125,255,0.3); background: linear-gradient(145deg, #162440, #0c1527);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:10px;">
+        <h2 style="margin:0;">Intelligence Efficienza 📊</h2>
+        <select id="statsTimeframe" style="width:auto; margin:0; padding: 8px 12px; background: rgba(0,0,0,0.4);" onchange="renderAnalytics()">
+          <option value="all">Tutto lo storico</option>
+          </select>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="statTotale">-</div>
+          <div class="stat-label">Segnalazioni Ricevute</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val green" id="statRisolte">-</div>
+          <div class="stat-label">Tasso di Risoluzione</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val blue" id="statTempo">-</div>
+          <div class="stat-label">Tempo Medio Risoluzione</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; margin-top:20px; margin-bottom:10px; color:#a9b6db;">Ripartizione Efficienza per Settore</h3>
+      <div class="cat-perf-list" id="catPerfList">
+        </div>
+    </div>
+
+    <div class="card">
+      <div class="section-header" onclick="toggleSection('segnalazioniSection', 'segnalazioniIcon')">
+        <h2>Gestione Segnalazioni 📍</h2>
+        <span id="segnalazioniIcon" class="section-icon" style="transform: rotate(180deg);">▼</span>
+      </div>
+      <div id="segnalazioniSection" class="section-content" style="display:block;">
+        <div id="segnalazioniFilters" class="filters"></div>
+        <div id="segnalazioniList">Caricamento...</div>
+      </div>
     </div>
 
     <div class="card">
       <div class="section-header" onclick="toggleSection('luoghiSection', 'luoghiIcon')">
-        <h2>Luoghi e Recensioni ⭐</h2>
+        <h2>Gestione Luoghi ⭐</h2>
         <span id="luoghiIcon" class="section-icon">▼</span>
       </div>
       <div id="luoghiSection" class="section-content">
         <div id="luoghiFilters" class="filters"></div>
         <div id="luoghiList">Caricamento...</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-header" onclick="toggleSection('segnalazioniSection', 'segnalazioniIcon')">
-        <h2>Segnalazioni Utenti 📍</h2>
-        <span id="segnalazioniIcon" class="section-icon">▼</span>
-      </div>
-      <div id="segnalazioniSection" class="section-content">
-        <div id="segnalazioniFilters" class="filters"></div>
-        <div id="segnalazioniList">Caricamento...</div>
       </div>
     </div>
   </div>
@@ -101,7 +143,7 @@
     <h3 id="modalTitle">Modifica</h3>
     
     <div class="form-group" id="statusGroup" style="display:none;">
-      <label>Stato Segnalazione</label>
+      <label>Stato Operativo</label>
       <select id="editStatus" style="font-weight:bold;">
         <option value="open">🔴 Da Risolvere (Aperta)</option>
         <option value="in_progress">🚧 In Lavorazione (Presa in carico)</option>
@@ -149,22 +191,12 @@
 
     <div style="display:flex; justify-content:space-between; margin-top:20px;">
       <button onclick="closeModal()" style="background:transparent; border:1px solid white;">Annulla</button>
-      <button class="btn-success" onclick="saveEdit()">💾 Salva Modifiche</button>
+      <button class="btn-success" onclick="saveEdit()">💾 Applica Modifiche</button>
     </div>
   </div>
 </div>
 
 <script>
-  let deferredPrompt = null;
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault(); deferredPrompt = e;
-    const pill = document.getElementById("installAdminPill");
-    pill.style.display = "block";
-    pill.addEventListener("click", async () => {
-      try { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; pill.style.display = "none"; } catch(err) {}
-    }, { once: true });
-  });
-
   function toggleSection(sectionId, iconId) {
     const section = document.getElementById(sectionId);
     const icon = document.getElementById(iconId);
@@ -186,7 +218,20 @@
 
   let editingId = null;
   let editingType = null;
-  let currentEditingItem = null; // Memorizza l'oggetto in modifica
+  let currentEditingItem = null;
+
+  // Parser robusto per le date
+  function parseDateString(dStr) {
+     if(!dStr) return 0;
+     try {
+       const parts = dStr.split(/[ ,]+/); 
+       const datePart = parts[0];
+       const timePart = parts[1] || '00:00:00';
+       const [d, m, y] = datePart.split('/');
+       const [hr, min, sec] = timePart.split(':');
+       return new Date(y, m-1, d, hr, min, sec).getTime();
+     } catch(e) { return 0; }
+  }
 
   function login() {
     const input = document.getElementById("apiKeyInput").value.trim();
@@ -194,19 +239,14 @@
     apiKey = input;
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
-    
-    document.getElementById("luoghiSection").style.display = "block";
-    document.getElementById("luoghiIcon").style.transform = "rotate(180deg)";
-
     loadData();
   }
 
   async function loadData() {
-    document.getElementById("luoghiList").innerHTML = "Caricamento...";
-    document.getElementById("segnalazioniList").innerHTML = "Caricamento...";
+    document.getElementById("luoghiList").innerHTML = "Estrazione dati...";
+    document.getElementById("segnalazioniList").innerHTML = "Estrazione dati...";
     
     try {
-      // CACHE BUSTER: Il parametro ?t= costringe il browser a ignorare la cache e leggere il server
       const res = await fetch(WORKER_URL + "/api/public-data?t=" + Date.now());
       const data = await res.json();
       
@@ -215,15 +255,168 @@
       allData.luoghi = data.luoghi || [];
       allData.segnalazioni = data.segnalazioni || [];
 
+      buildTimeframeOptions();
+      renderAnalytics();
+
       renderFilters("luoghi");
       renderFilters("segnalazioni");
       updateListView("luoghi");
       updateListView("segnalazioni");
 
     } catch (e) {
-      alert("Errore di connessione al database.");
+      alert("Errore di connessione all'infrastruttura.");
     }
   }
+
+  // ==========================================
+  // IL MOTORE ANALITICO
+  // ==========================================
+  
+  function buildTimeframeOptions() {
+    const selector = document.getElementById("statsTimeframe");
+    const currentSelection = selector.value;
+    
+    const months = new Set();
+    allData.segnalazioni.forEach(s => {
+      if (s.dataStr) {
+        const parts = s.dataStr.split(/[ ,/]+/);
+        if (parts.length >= 3) {
+          const monthYear = `${parts[2]}-${parts[1]}`; // YYYY-MM
+          months.add(monthYear);
+        }
+      }
+    });
+
+    const sortedMonths = Array.from(months).sort().reverse();
+    
+    let optionsHtml = `<option value="all">Tutto lo storico</option>`;
+    sortedMonths.forEach(m => {
+      const [year, month] = m.split('-');
+      const monthName = new Date(year, parseInt(month)-1, 1).toLocaleString('it-IT', { month: 'long' });
+      const label = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
+      optionsHtml += `<option value="${m}">${label}</option>`;
+    });
+
+    selector.innerHTML = optionsHtml;
+    if (Array.from(selector.options).some(o => o.value === currentSelection)) {
+       selector.value = currentSelection;
+    }
+  }
+
+  function renderAnalytics() {
+    const timeframe = document.getElementById("statsTimeframe").value;
+    
+    let filteredData = allData.segnalazioni;
+    
+    // Filtro per Mese
+    if (timeframe !== 'all') {
+      const [targetYear, targetMonth] = timeframe.split('-');
+      filteredData = allData.segnalazioni.filter(s => {
+        if(!s.dataStr) return false;
+        const parts = s.dataStr.split(/[ ,/]+/);
+        return parts[2] === targetYear && parts[1] === targetMonth;
+      });
+    }
+
+    const total = filteredData.length;
+    let resolved = 0;
+    let inProgress = 0;
+    let totalMsToResolve = 0;
+    let resolvedCountForAvg = 0;
+
+    const catStats = {};
+
+    filteredData.forEach(s => {
+      const st = s.status || 'open';
+      const cat = (s.categoria || 'altro').trim();
+
+      if (!catStats[cat]) {
+         catStats[cat] = { total: 0, resolved: 0, in_progress: 0 };
+      }
+      catStats[cat].total++;
+
+      if (st === 'resolved') {
+        resolved++;
+        catStats[cat].resolved++;
+        
+        // Calcolo millisecondi
+        if (s.resolvedAt) {
+          const startMs = parseDateString(s.dataStr);
+          const endMs = new Date(s.resolvedAt).getTime();
+          if (startMs > 0 && endMs > startMs) {
+            totalMsToResolve += (endMs - startMs);
+            resolvedCountForAvg++;
+          }
+        }
+      } else if (st === 'in_progress') {
+        inProgress++;
+        catStats[cat].in_progress++;
+      }
+    });
+
+    // 1. Statistiche Globali
+    document.getElementById("statTotale").innerText = total;
+    
+    const resolutionRate = total === 0 ? 0 : Math.round((resolved / total) * 100);
+    document.getElementById("statRisolte").innerText = `${resolutionRate}%`;
+
+    if (resolvedCountForAvg > 0) {
+      const avgMs = totalMsToResolve / resolvedCountForAvg;
+      const hours = Math.floor(avgMs / (1000 * 60 * 60));
+      const days = Math.floor(hours / 24);
+      const remainingHours = hours % 24;
+      
+      if (days > 0) {
+         document.getElementById("statTempo").innerText = `${days}g ${remainingHours}h`;
+      } else {
+         document.getElementById("statTempo").innerText = `${hours}h`;
+      }
+    } else {
+      document.getElementById("statTempo").innerText = "N/A";
+    }
+
+    // 2. Prestazioni per Categoria
+    const catContainer = document.getElementById("catPerfList");
+    let catHtml = '';
+
+    const sortedCats = Object.keys(catStats).sort((a,b) => catStats[b].total - catStats[a].total);
+
+    sortedCats.forEach(cat => {
+      const data = catStats[cat];
+      const resPct = Math.round((data.resolved / data.total) * 100);
+      const progPct = Math.round((data.in_progress / data.total) * 100);
+      
+      // Mappatura Nomi Categorie (estetico)
+      const catNames = {
+        'verde': '🌳 Verde Pubblico', 'strade': '🛣️ Strade / Buche',
+        'rifiuti': '🗑️ Rifiuti', 'luce': '💡 Illuminazione', 'altro': '❓ Altro'
+      };
+      const displayName = catNames[cat] || cat;
+
+      catHtml += `
+        <div class="cat-perf-item">
+          <div class="cat-perf-header">
+            <span>${displayName} (${data.total})</span>
+            <span style="color:#a9b6db;">Risolte: <span style="color:#19c37d">${resPct}%</span> | Lavori: <span style="color:#f39c12">${progPct}%</span></span>
+          </div>
+          <div class="cat-perf-bar-bg">
+            <div class="cat-perf-bar-fill-resolved" style="width: ${resPct}%;"></div>
+            <div class="cat-perf-bar-fill-progress" style="width: ${progPct}%;"></div>
+          </div>
+        </div>
+      `;
+    });
+
+    if (sortedCats.length === 0) {
+       catHtml = '<div style="color:#a9b6db; font-size:13px;">Nessun dato per il periodo selezionato.</div>';
+    }
+    
+    catContainer.innerHTML = catHtml;
+  }
+
+  // ==========================================
+  // GESTIONE LISTE E MODIFICHE (ESISTENTE)
+  // ==========================================
 
   function renderFilters(type) {
     const items = allData[type];
@@ -243,7 +436,6 @@
   function setFilter(type, category) {
     if (type === "luoghi") filterLuoghi = category;
     else filterSegnalazioni = category;
-    
     renderFilters(type); 
     updateListView(type); 
   }
@@ -264,9 +456,9 @@
         return `
         <div class="details">
           <h3>⭐ ${l.nome} (${l.rating} stelle)</h3>
-          <p><span class="badge">${l.categoria}</span> ${l.recensione || 'Senza testo'}</p>
+          <p><span class="badge badge-cat">${l.categoria}</span> ${l.recensione || 'Senza testo'}</p>
           <p style="margin-top:6px; font-size:12px; color:#a9b6db;" class="${isGhost ? 'ghost-alert' : ''}">
-            📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA! Elimina subito.' : ''}
+            📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA!' : ''}
           </p>
         </div>
       `});
@@ -275,17 +467,19 @@
         const lat = s.lat || (s.geo && s.geo.lat) || 0;
         const lng = s.lng || (s.geo && s.geo.lng) || 0;
         const isGhost = (parseFloat(lat) === 0 && parseFloat(lng) === 0);
-        const statusBadge = (s.status === 'resolved') ? '<span class="badge badge-resolved">✅ Risolta</span>' : '<span class="badge badge-open">🔴 Aperta</span>';
         
+        let statusBadge = '<span class="badge badge-open">🔴 Aperta</span>';
+        if (s.status === 'resolved') statusBadge = '<span class="badge badge-resolved">✅ Risolta</span>';
+        else if (s.status === 'in_progress') statusBadge = '<span class="badge badge-progress">🚧 In Lavorazione</span>';
+
         return `
         <div class="details">
           <h3>📍 ${s.titolo}</h3>
-          <p>${statusBadge} <span class="badge">${s.categoria}</span> ${s.dataStr || ''}</p>
+          <p>${statusBadge} <span class="badge badge-cat">${s.categoria}</span> ${s.dataStr || ''}</p>
           <p style="margin-top:4px;">${s.descrizione || 'Senza descrizione'}</p>
           <p style="margin-top:6px; font-size:12px; color:#a9b6db;" class="${isGhost ? 'ghost-alert' : ''}">
-            📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA! Elimina subito.' : ''}
+            📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA!' : ''}
           </p>
-          ${s.audio ? `<audio controls src="${s.audio}" style="width:100%; max-width:400px; height:40px; margin-top:10px; margin-bottom:5px; outline:none; border-radius:20px;"></audio>` : ''}
         </div>
       `});
     }
@@ -294,7 +488,7 @@
   function renderListHTML(containerId, items, type, formatHtml) {
     const container = document.getElementById(containerId);
     if (!items || items.length === 0) {
-      container.innerHTML = "<p style='color:#a9b6db;'>Nessun elemento in questa categoria.</p>";
+      container.innerHTML = "<p style='color:#a9b6db;'>Nessun dato disponibile.</p>";
       return;
     }
 
@@ -302,15 +496,15 @@
       <div class="list-item" id="item-${item.id}">
         ${formatHtml(item)}
         <div style="display:flex; gap:5px; flex-wrap:wrap; align-items:flex-start;">
-          <button onclick="openEditModal('${item.id}', '${type}')">✏️ Modifica</button>
-          <button class="btn-danger" onclick="deleteItem('${item.id}', '${type}')">🗑️ Cancella</button>
+          <button onclick="openEditModal('${item.id}', '${type}')">✏️ Gestisci</button>
+          <button class="btn-danger" onclick="deleteItem('${item.id}', '${type}')">🗑️ Elimina</button>
         </div>
       </div>
     `).join('');
   }
 
   async function deleteItem(id, type) {
-    if (!confirm("Sei sicuro di voler eliminare questo elemento?")) return;
+    if (!confirm("Azione Irreversibile. Eliminare definitivamente dal server?")) return;
     try {
       const res = await fetch(`${WORKER_URL}/api/${type}/${id}`, {
         method: "DELETE",
@@ -321,6 +515,7 @@
         allData[type] = allData[type].filter(i => i.id !== id);
         renderFilters(type);
         updateListView(type);
+        if (type === 'segnalazioni') renderAnalytics(); // Aggiorna le statistiche
       } else {
         alert("Errore: " + (result.error || "Non Autorizzato"));
       }
@@ -335,22 +530,22 @@
     if(!currentEditingItem) return;
 
     if(type === 'segnalazioni') {
-      document.getElementById("modalTitle").innerText = "Modifica Segnalazione";
+      document.getElementById("modalTitle").innerText = "Gestione Comando: Segnalazione";
       document.getElementById("labelTitoloNome").innerText = "Titolo";
       document.getElementById("labelDescrizione").innerText = "Descrizione";
       document.getElementById("ratingGroup").style.display = "none";
-      document.getElementById("statusGroup").style.display = "block"; // Mostra gestione Stato
+      document.getElementById("statusGroup").style.display = "block"; 
 
       document.getElementById("editTitolo").value = currentEditingItem.titolo || "";
       document.getElementById("editCategoria").value = currentEditingItem.categoria || "altro";
       document.getElementById("editDescrizione").value = currentEditingItem.descrizione || "";
       document.getElementById("editStatus").value = currentEditingItem.status || "open";
     } else {
-      document.getElementById("modalTitle").innerText = "Modifica Luogo";
+      document.getElementById("modalTitle").innerText = "Gestione Comando: Luogo";
       document.getElementById("labelTitoloNome").innerText = "Nome del Luogo";
       document.getElementById("labelDescrizione").innerText = "Recensione";
       document.getElementById("ratingGroup").style.display = "block";
-      document.getElementById("statusGroup").style.display = "none"; // Nascondi stato per i Luoghi
+      document.getElementById("statusGroup").style.display = "none"; 
 
       document.getElementById("editTitolo").value = currentEditingItem.nome || "";
       document.getElementById("editCategoria").value = currentEditingItem.categoria || "altro";
@@ -379,7 +574,7 @@
       if (payload.status === 'resolved' && currentEditingItem.status !== 'resolved') {
           payload.resolvedAt = new Date().toISOString(); 
       } else if (payload.status === 'open' || payload.status === 'in_progress') {
-          payload.resolvedAt = null; // Azzera il timer se è aperta o in lavorazione
+          payload.resolvedAt = null; 
       } else {
           payload.resolvedAt = currentEditingItem.resolvedAt || null; 
       }
@@ -405,7 +600,7 @@
       } else {
         alert("Errore: " + (result.error || "Non Autorizzato"));
       }
-    } catch (e) { alert("Errore di rete durante il salvataggio."); }
+    } catch (e) { alert("Errore di connessione."); }
   }
 </script>
 </body>
