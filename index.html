@@ -1629,9 +1629,13 @@
       document.getElementById("emptyState").style.display = arr.length ? "none" : "block";
       listEl.innerHTML = arr.slice().reverse().map(r => {
         const isResolved = r.status === 'resolved';
-        const badgeHTML = isResolved 
-           ? `<span style="background: rgba(25,195,125,0.2); color: #19c37d; border: 1px solid rgba(25,195,125,0.4); padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-right: 8px;">✅ Risolta</span>` 
-           : '';
+        let badgeHTML = '';
+        
+        if (isResolved) {
+           badgeHTML = `<span style="background: rgba(25,195,125,0.2); color: #19c37d; border: 1px solid rgba(25,195,125,0.4); padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-right: 8px;">✅ Risolta</span>`;
+        } else if (r.status === 'in_progress') {
+           badgeHTML = `<span style="background: rgba(243,156,18,0.2); color: #f39c12; border: 1px solid rgba(243,156,18,0.4); padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-right: 8px;">🚧 In Lavorazione</span>`;
+        }
 
         return `
         <div class="item cat-${r.categoria || 'altro'}" style="${isResolved ? 'border-color: rgba(25,195,125,0.5); opacity: 0.85;' : ''}">
