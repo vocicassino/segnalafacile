@@ -1506,7 +1506,12 @@
       document.getElementById("mapPickerOverlay").style.display = "flex";
       if(!mapPicker){
         mapPicker = L.map("mapPicker").setView([41.492, 13.831], 13);
-        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19 }).addTo(mapPicker);
+        
+        const streetPicker = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { maxZoom: 20 });
+        const hybridPicker = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { maxZoom: 20 });
+        streetPicker.addTo(mapPicker);
+        L.control.layers({ "🗺️ Strade": streetPicker, "🛰️ Satellite": hybridPicker }, null, {position: 'bottomleft'}).addTo(mapPicker);
+        
         mapPicker.on("click", (e) => {
           picked = { lat: e.latlng.lat, lng: e.latlng.lng };
           document.getElementById("pickedLine").textContent = `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
