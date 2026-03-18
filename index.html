@@ -887,13 +887,13 @@
 
     async function fetchPublicData() {
       try {
-        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/public-data");
+        // Cache Buster inserito
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/public-data?t=" + Date.now());
         const data = await res.json();
         if(data.ok) {
           window.publicSegnalazioni = data.segnalazioni || [];
           window.publicLuoghi = data.luoghi || [];
 
-          // --- FASE 3: SINCRONIZZAZIONE SILENZIOSA STATO LOCALE ---
           const localReps = loadReports();
           let cacheChanged = false;
           localReps.forEach(lr => {
