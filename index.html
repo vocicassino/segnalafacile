@@ -887,7 +887,6 @@
 
     async function fetchPublicData() {
       try {
-        // Cache Buster inserito
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/public-data?t=" + Date.now());
         const data = await res.json();
         if(data.ok) {
@@ -896,15 +895,51 @@
 
           const localReps = loadReports();
           let cacheChanged = false;
-          localReps.forEach(lr => {
-            const serverMatch = window.publicSegnalazioni.find(s => s.id === lr.id);
-            if(serverMatch && serverMatch.status && serverMatch.status !== lr.status) {
-              lr.status = serverMatch.status;
-              lr.resolvedAt = serverMatch.resolvedAt;
-              cacheChanged = true;
+          
+          // PROTOCOLLO DI PURGA AUTOMATICA E SINCRONIZZAZIONE
+          const validLocalReps = localReps.filter(lr => {
+            // Cerca corrispondenza (o per ID ufficiale, o per Titolo + Data esatta)
+            const serverMatch = window.publicSegnalazioni.find(s => 
+               s.id === lr.id || (s.titolo === lr.titolo && s.dataStr === lr.when)
+            );
+
+            if (serverMatch) {
+              // 1. Allinea l'ID locale con quello ufficiale del server
+              if (lr.id !== serverMatch.id) {
+                 lr.id = serverMatch.id;
+                 cacheChanged = true;
+              }
+              // 2. Sincronizza lo stato (Aperto, In Lavorazione, Risolto)
+              if (serverMatch.status && serverMatch.status !== lr.status) {
+                 lr.status = serverMatch.status;
+                 lr.resolvedAt = serverMatch.resolvedAt;
+                 cacheChanged = true;
+              }
+              return true; // Mantieni in memoria
+            } else {
+              // NON TROVATO SUL SERVER.
+              
+              // Se l'ID è un UUID (contiene trattini), significa che in passato era sincronizzato col server. 
+              // Se ora non c'è più, l'Admin l'ha eliminata matematicamente. Polverizza la copia locale.
+              if (String(lr.id).includes('-')) {
+                 cacheChanged = true;
+                 return false; 
+              }
+              
+              // Se l'ID non ha trattini, è un Timestamp locale (segnalazione creata offline da poco).
+              // Se è più vecchia di 15 minuti e non ha mai raggiunto il server, è un errore. Scartala.
+              const ageMs = Date.now() - parseInt(lr.id);
+              if (ageMs > 15 * 60 * 1000) {
+                 cacheChanged = true;
+                 return false; 
+              }
+              
+              // È recente e offline, tieni duro.
+              return true; 
             }
           });
-          if(cacheChanged) saveReports(localReps);
+
+          if(cacheChanged) saveReports(validLocalReps);
 
           refreshPublicMaps();
           if(location.hash === '#/places') renderPublicPlaces();
@@ -913,7 +948,6 @@
         }
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
     }
-
     function parseDateString(dStr) {
        if(!dStr) return 0;
        try {
