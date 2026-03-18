@@ -1220,9 +1220,11 @@
       });
 
       mixSegnalazioni.forEach(r => {
-        const lat = r.lat || (r.geo && r.geo.lat);
-        const lng = r.lng || (r.geo && r.geo.lng);
-        if(!lat) return;
+        const lat = parseFloat(r.lat || (r.geo && r.geo.lat));
+        const lng = parseFloat(r.lng || (r.geo && r.geo.lng));
+        
+        // Se non è un numero valido, salta questo giro. Niente errori sulla mappa.
+        if(isNaN(lat) || isNaN(lng)) return;
 
         const cat = r.categoria || "altro";
         if(mapFilter !== "all" && cat !== mapFilter) return;
@@ -1247,7 +1249,7 @@
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="https://maps.google.com/?q=${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps/search/?api=1&query=$$${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -1257,14 +1259,18 @@
 
       const mapPlacesGroups = {};
       window.publicLuoghi.forEach(l => {
-        const lat = l.lat || (l.geo && l.geo.lat);
-        if(!lat) return;
+        const lat = parseFloat(l.lat || (l.geo && l.geo.lat));
+        const lng = parseFloat(l.lng || (l.geo && l.geo.lng));
+        
+        // Filtro di sicurezza
+        if(isNaN(lat) || isNaN(lng)) return;
+
         const nome = l.nome ? l.nome.trim() : 'Sconosciuto';
         const key = nome.toLowerCase();
         const safeKey = key.replace(/[^a-z0-9]/g, '-');
         
         if(!mapPlacesGroups[key]) {
-           mapPlacesGroups[key] = { safeKey: safeKey, name: nome, categoria: l.categoria, lat: lat, lng: (l.lng || l.geo.lng), count: 1, fotoObj: l };
+           mapPlacesGroups[key] = { safeKey: safeKey, name: nome, categoria: l.categoria, lat: lat, lng: lng, count: 1, fotoObj: l };
         } else {
            mapPlacesGroups[key].count++;
            if(estraiTutteLeFoto(mapPlacesGroups[key].fotoObj).length === 0 && estraiTutteLeFoto(l).length > 0) {
@@ -1305,15 +1311,20 @@
         bounds.push([group.lat, group.lng]);
       });
 
-      // 1. Filtra ed elimina eventuali punti fantasma finiti a [0, 0]
-      const validBounds = bounds.filter(b => b[0] && b[1] && (parseFloat(b[0]) !== 0 || parseFloat(b[1]) !== 0));
+      // Calcolo Bounding Box Estremo: Scarta matematicamente NaN e [0,0]
+      const validBounds = bounds.filter(b => {
+        const lat = parseFloat(b[0]);
+        const lng = parseFloat(b[1]);
+        return !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0);
+      });
       
       if (validBounds.length === 1 && mapMain) {
-        // Se c'è un solo punto valido, inquadralo direttamente con uno zoom mirato
         mapMain.setView(validBounds[0], 16);
       } else if (validBounds.length > 1 && mapMain) {
-        // Se ci sono più punti, calcola l'area ma imponi un limite di zoom
         mapMain.fitBounds(L.latLngBounds(validBounds).pad(0.2), { maxZoom: 16 });
+      } else if (validBounds.length === 0 && mapMain) {
+        // Fallback di sicurezza: Nessun punto valido? Inquadra il centro di Cassino.
+        mapMain.setView([41.492, 13.831], 13);
       }
     }
 
