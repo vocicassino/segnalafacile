@@ -296,7 +296,7 @@
     .docsList{ display:grid; gap:8px; margin-top:10px; }
     .docItem{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 10px 12px; border-radius: 18px; border:1px solid var(--stroke); background: rgba(0,0,0,.14); }
 
-    /* EFFETTI MAPPA: Radar e Mini-Feed */
+    /* EFFETTI MAPPA E BADGE */
     .user-dot {
       width: 16px; height: 16px; background: #2d7dff; border-radius: 50%;
       border: 2px solid #fff; box-shadow: 0 0 15px rgba(45,125,255,0.9); position: relative;
@@ -358,7 +358,7 @@
         <div class="btnRow">
           <a class="btn ghost" href="#/places">⭐ Scopri Luoghi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
-          <a class="btn ghost" href="#/contacts">☎️ Contatti</a>
+          <a class="btn ghost" href="#/contacts">☎️ Contatti Comune</a>
         </div>
       </div>
 
@@ -734,7 +734,6 @@
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
-      // --- NOME NASCOSTO PER PRIVACY ---
       telegramApiKey: "SF-Secure-Key-2026" 
     };
 
@@ -846,7 +845,6 @@
       if(target === "places") renderPublicPlaces();
       if(target === "map" || target === "home") { 
         ensureMaps(); 
-        // Diamo al DOM il tempo di renderizzare i pixel, POI calcoliamo l'area
         setTimeout(() => { 
           if(mapMain) mapMain.invalidateSize(); 
           if(mapHome) mapHome.invalidateSize(); 
@@ -894,8 +892,23 @@
         if(data.ok) {
           window.publicSegnalazioni = data.segnalazioni || [];
           window.publicLuoghi = data.luoghi || [];
+
+          // --- FASE 3: SINCRONIZZAZIONE SILENZIOSA STATO LOCALE ---
+          const localReps = loadReports();
+          let cacheChanged = false;
+          localReps.forEach(lr => {
+            const serverMatch = window.publicSegnalazioni.find(s => s.id === lr.id);
+            if(serverMatch && serverMatch.status && serverMatch.status !== lr.status) {
+              lr.status = serverMatch.status;
+              lr.resolvedAt = serverMatch.resolvedAt;
+              cacheChanged = true;
+            }
+          });
+          if(cacheChanged) saveReports(localReps);
+
           refreshPublicMaps();
           if(location.hash === '#/places') renderPublicPlaces();
+          if(location.hash === '#/my') renderList();
           updateMiniFeed(); 
         }
       } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
@@ -953,7 +966,6 @@
       };
     }
 
-    // --- PUNTO 5: IL RADAR PERSONALE (Pallino blu pulsante) ---
     let homeUserMarker = null;
     let homeWatchId = null;
 
@@ -963,17 +975,16 @@
       const btn = document.getElementById("btnHomeRadar");
       
       if (homeWatchId) {
-         // Disattiva Radar
          navigator.geolocation.clearWatch(homeWatchId);
          homeWatchId = null;
          if(homeUserMarker) { homeUserMarker.remove(); homeUserMarker = null; }
-         btn.style.background = "rgba(10,16,32,0.8)"; // Torna grigio scuro
+         btn.style.background = "rgba(10,16,32,0.8)";
          showBanner("info", "Radar disattivato.");
          return;
       }
 
       showBanner("info", "Ricerca satellite in corso...");
-      btn.style.background = "rgba(45,125,255,0.9)"; // Diventa blu accesso per far capire che è attivo
+      btn.style.background = "rgba(45,125,255,0.9)";
       
       homeWatchId = navigator.geolocation.watchPosition(
         (pos) => {
@@ -995,7 +1006,6 @@
       );
     });
 
-    // --- RADAR PERSONALE PER LA MAPPA PRINCIPALE ---
     let mainUserMarker = null;
     let mainWatchId = null;
 
@@ -1005,17 +1015,16 @@
       const btn = document.getElementById("btnMainRadar");
       
       if (mainWatchId) {
-         // Disattiva Radar Mappa Principale
          navigator.geolocation.clearWatch(mainWatchId);
          mainWatchId = null;
          if(mainUserMarker) { mainUserMarker.remove(); mainUserMarker = null; }
-         btn.style.background = "rgba(10,16,32,0.8)"; // Torna grigio scuro
+         btn.style.background = "rgba(10,16,32,0.8)";
          showBanner("info", "Radar disattivato.");
          return;
       }
 
       showBanner("info", "Ricerca satellite in corso...");
-      btn.style.background = "rgba(45,125,255,0.9)"; // Diventa blu
+      btn.style.background = "rgba(45,125,255,0.9)";
       
       mainWatchId = navigator.geolocation.watchPosition(
         (pos) => {
@@ -1027,7 +1036,7 @@
           
           if(!mainUserMarker) {
              mainUserMarker = L.marker([lat, lng], {icon, zIndexOffset: 1000}).addTo(mapMain);
-             mapMain.flyTo([lat, lng], 15, { duration: 1.5 }); // Zoom più vicino rispetto alla home
+             mapMain.flyTo([lat, lng], 15, { duration: 1.5 });
           } else {
              mainUserMarker.setLatLng([lat, lng]);
           }
@@ -1101,7 +1110,7 @@
               <div class="row" style="margin-top:10px;">
                 <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
                 <button class="btn ghost small" onclick="focusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
-                <a class="btn ghost small" href="https://maps.google.com/?q=${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <a class="btn ghost small" href="http://googleusercontent.com/maps.google.com/4{group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
@@ -1228,14 +1237,35 @@
         const lat = parseFloat(r.lat || (r.geo && r.geo.lat));
         const lng = parseFloat(r.lng || (r.geo && r.geo.lng));
         
-        // Se non è un numero valido, salta questo giro. Niente errori sulla mappa.
         if(isNaN(lat) || isNaN(lng)) return;
+
+        // --- FASE 3: L'ALGORITMO DELL'OBLIO (7 GIORNI) ---
+        if (r.status === 'resolved' && r.resolvedAt) {
+          const resolvedTime = new Date(r.resolvedAt).getTime();
+          const now = Date.now();
+          const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+          if (now - resolvedTime > sevenDaysInMs) {
+             return; // Scarta matematicamente il punto. La mappa rimane pulita.
+          }
+        }
+        // --------------------------------------------------
 
         const cat = r.categoria || "altro";
         if(mapFilter !== "all" && cat !== mapFilter) return;
 
-        const info = catInfo[cat] || catInfo.altro;
-        const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${info.color}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${info.emoji}</div>`;
+        let info = catInfo[cat] || catInfo.altro;
+        let pinColor = info.color;
+        let pinEmoji = info.emoji;
+        let statusBadgePopup = '';
+
+        // --- FASE 3: MUTAZIONE GRAFICA SULLA MAPPA ---
+        if (r.status === 'resolved') {
+           pinColor = '#19c37d'; // Sovrascrive con il verde
+           pinEmoji = '✅';
+           statusBadgePopup = '<div style="margin-bottom:6px;"><span style="background: rgba(25,195,125,0.2); color: #19c37d; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(25,195,125,0.4); font-weight: bold;">✅ Problema Risolto</span></div>';
+        }
+
+        const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${pinColor}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${pinEmoji}</div>`;
         const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
         
         const immagini = estraiTutteLeFoto(r);
@@ -1250,11 +1280,12 @@
 
         const popupHtml = `
           <div style="min-width:200px; max-width:260px; max-height:300px; overflow-y:auto; padding-right:5px;">
+            ${statusBadgePopup}
             <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${title}</b>
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="https://www.google.com/maps/search/?api=1&query=$$${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="http://googleusercontent.com/maps.google.com/5{lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -1267,7 +1298,6 @@
         const lat = parseFloat(l.lat || (l.geo && l.geo.lat));
         const lng = parseFloat(l.lng || (l.geo && l.geo.lng));
         
-        // Filtro di sicurezza
         if(isNaN(lat) || isNaN(lng)) return;
 
         const nome = l.nome ? l.nome.trim() : 'Sconosciuto';
@@ -1316,7 +1346,6 @@
         bounds.push([group.lat, group.lng]);
       });
 
-      // Calcolo Bounding Box Estremo: Scarta matematicamente NaN e [0,0]
       const validBounds = bounds.filter(b => {
         const lat = parseFloat(b[0]);
         const lng = parseFloat(b[1]);
@@ -1328,7 +1357,6 @@
       } else if (validBounds.length > 1 && mapMain) {
         mapMain.fitBounds(L.latLngBounds(validBounds).pad(0.2), { maxZoom: 16 });
       } else if (validBounds.length === 0 && mapMain) {
-        // Fallback di sicurezza: Nessun punto valido? Inquadra il centro di Cassino.
         mapMain.setView([41.492, 13.831], 13);
       }
     }
@@ -1404,7 +1432,6 @@
     let geo = null; let geoWatchId = null; let geoLiveOn = false;
     let photos = []; let documents = []; 
 
-    // --- LOGICA AUDIO ---
     let audioDataUrl = null;
     let mediaRecorder;
     let audioChunks = [];
@@ -1461,7 +1488,6 @@
         audioPreview.style.display = 'none';
         btnRecord.textContent = '🎤 Registra Vocale';
     });
-    // --- FINE LOGICA AUDIO ---
 
     function renderGeo(){
       const geoLine = document.getElementById("geoLine");
@@ -1493,7 +1519,8 @@
         when: new Date().toLocaleString("it-IT"), geo: geo,
         photos: photos, documents: documents, 
         audio: audioDataUrl,
-        sender_contact: isAnon ? "Anonimo" : `👤 ${document.getElementById("contactName").value} 📞 ${document.getElementById("contactPhone").value} ✉️ ${document.getElementById("contactEmail").value}`
+        sender_contact: isAnon ? "Anonimo" : `👤 ${document.getElementById("contactName").value} 📞 ${document.getElementById("contactPhone").value} ✉️ ${document.getElementById("contactEmail").value}`,
+        status: 'open' // Di default nasce Aperta
       };
 
       document.getElementById("btnSend").disabled = true;
@@ -1591,14 +1618,22 @@
       document.getElementById("mapPickerOverlay").style.display="none";
     });
 
+    // --- FASE 3: AGGIORNAMENTO LISTA STORICA CON BADGE ---
     function renderList(){
       const arr = loadReports();
       const listEl = document.getElementById("list");
       document.getElementById("emptyState").style.display = arr.length ? "none" : "block";
-      listEl.innerHTML = arr.slice().reverse().map(r => `
-        <div class="item cat-${r.categoria || 'altro'}">
-          <div style="display:flex; justify-content:space-between;">
-            <span class="pill">${r.categoria || 'Altro'}</span><span class="hint">${r.when}</span>
+      listEl.innerHTML = arr.slice().reverse().map(r => {
+        const isResolved = r.status === 'resolved';
+        const badgeHTML = isResolved 
+           ? `<span style="background: rgba(25,195,125,0.2); color: #19c37d; border: 1px solid rgba(25,195,125,0.4); padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-right: 8px;">✅ Risolta</span>` 
+           : '';
+
+        return `
+        <div class="item cat-${r.categoria || 'altro'}" style="${isResolved ? 'border-color: rgba(25,195,125,0.5); opacity: 0.85;' : ''}">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>${badgeHTML}<span class="pill">${r.categoria || 'Altro'}</span></div>
+            <span class="hint" style="margin:0">${r.when}</span>
           </div>
           <h3 style="margin:8px 0">${r.titolo}</h3><p style="margin:0 0 10px">${r.descrizione}</p>
           
@@ -1610,7 +1645,7 @@
 
           ${r.geo ? `<button class="btn ghost small" style="margin-top:10px" onclick="focusOnMap(${r.geo.lat}, ${r.geo.lng})">🗺️ Vedi in mappa</button>` : ''}
         </div>
-      `).join('');
+      `}).join('');
     }
 
     document.getElementById("btnClearAll")?.addEventListener("click", () => {
@@ -1621,7 +1656,7 @@
     function applyContacts(){
       const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
       document.getElementById("mailLink").href = `mailto:${CONFIG.email}?subject=Messaggio&body=${body}`;
-      document.getElementById("mapLink").href = `https://maps.google.com/?q=${encodeURIComponent(CONFIG.mapsQuery)}`;
+      document.getElementById("mapLink").href = `http://googleusercontent.com/maps.google.com/6{encodeURIComponent(CONFIG.mapsQuery)}`;
     }
 
     initStorage().then(() => {
