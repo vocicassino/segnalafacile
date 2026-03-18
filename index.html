@@ -845,8 +845,13 @@
       if(target === "my") renderList();
       if(target === "places") renderPublicPlaces();
       if(target === "map" || target === "home") { 
-        ensureMaps(); refreshPublicMaps(); 
-        setTimeout(() => { mapMain?.invalidateSize(); mapHome?.invalidateSize(); }, 60); 
+        ensureMaps(); 
+        // Diamo al DOM il tempo di renderizzare i pixel, POI calcoliamo l'area
+        setTimeout(() => { 
+          if(mapMain) mapMain.invalidateSize(); 
+          if(mapHome) mapHome.invalidateSize(); 
+          refreshPublicMaps(); 
+        }, 150); 
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
