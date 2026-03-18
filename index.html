@@ -1305,16 +1305,9 @@
         bounds.push([group.lat, group.lng]);
       });
 
-      // 1. Filtra ed elimina eventuali punti fantasma finiti a [0, 0]
-      const validBounds = bounds.filter(b => b[0] && b[1] && (parseFloat(b[0]) !== 0 || parseFloat(b[1]) !== 0));
-      
-      if (validBounds.length === 1 && mapMain) {
-        // Se c'è un solo punto valido, inquadralo direttamente con uno zoom mirato
-        mapMain.setView(validBounds[0], 16);
-      } else if (validBounds.length > 1 && mapMain) {
-        // Se ci sono più punti, calcola l'area ma imponi un limite di zoom
-        mapMain.fitBounds(L.latLngBounds(validBounds).pad(0.2), { maxZoom: 16 });
-      }
+      if(bounds.length && mapMain) mapMain.fitBounds(L.latLngBounds(bounds).pad(0.2));
+    }
+
     function focusOnMap(lat, lng) {
       location.hash = "#/map";
       setTimeout(() => mapMain?.setView([lat, lng], 18), 300);
