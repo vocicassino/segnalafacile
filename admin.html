@@ -253,6 +253,16 @@
   async function loadData() {
     document.getElementById("luoghiList").innerHTML = "Estrazione dati...";
     document.getElementById("segnalazioniList").innerHTML = "Estrazione dati...";
+
+    // Recupero Telemetria
+      try {
+        const resTel = await fetch(WORKER_URL + "/api/telemetry");
+        const dataTel = await resTel.json();
+        if (dataTel.ok && dataTel.data) {
+          document.getElementById("statVisitatori").innerText = dataTel.data.visitatori || 0;
+          document.getElementById("statInstallazioni").innerText = dataTel.data.installazioni || 0;
+        }
+      } catch(e) { console.log("Errore caricamento telemetria"); }
     
     try {
       const res = await fetch(WORKER_URL + "/api/public-data?t=" + Date.now());
