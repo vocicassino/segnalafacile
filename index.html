@@ -838,6 +838,30 @@
       }
     });
 
+    // --- MOTORE DI TELEMETRIA INVISIBILE ---
+    
+    // 1. Tracciamento Visitatori Unici (Eseguito in background dopo 2 secondi per non rallentare l'app)
+    setTimeout(() => {
+      if (!localStorage.getItem('sf_visited')) {
+        fetch(CONFIG.telegramWorkerUrl + '/api/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'visitor' })
+        }).then(() => localStorage.setItem('sf_visited', 'true')).catch(e => console.log("Telemetria offline"));
+      }
+    }, 2000);
+
+    // 2. Tracciamento Installazioni Effettive (Scatta solo se il sistema operativo conferma l'installazione)
+    window.addEventListener('appinstalled', () => {
+      if (!localStorage.getItem('sf_installed')) {
+        fetch(CONFIG.telegramWorkerUrl + '/api/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'install' })
+        }).then(() => localStorage.setItem('sf_installed', 'true')).catch(e => console.log("Telemetria offline"));
+      }
+    });
+
     let db;
     let localReportsCache = [];
 
