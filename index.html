@@ -1394,7 +1394,7 @@
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="http://googleusercontent.com/maps.google.com/5${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
