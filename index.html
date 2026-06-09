@@ -944,6 +944,45 @@
       document.getElementById('imageViewer').style.display = 'flex';
     };
 
+
+    function toSafeNumber(value) {
+      if (value === null || value === undefined || value === "") return NaN;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function isValidLatLng(lat, lng) {
+      const a = toSafeNumber(lat);
+      const b = toSafeNumber(lng);
+      return Number.isFinite(a) && Number.isFinite(b) && a >= -90 && a <= 90 && b >= -180 && b <= 180 && !(a === 0 && b === 0);
+    }
+
+    function getItemLatLng(item) {
+      if (!item) return null;
+      const lat = toSafeNumber(item.lat ?? (item.geo && item.geo.lat));
+      const lng = toSafeNumber(item.lng ?? (item.geo && item.geo.lng));
+      if (!isValidLatLng(lat, lng)) return null;
+      return { lat, lng };
+    }
+
+    function getMapsDirectionsUrl(lat, lng) {
+      const a = toSafeNumber(lat);
+      const b = toSafeNumber(lng);
+      if (!isValidLatLng(a, b)) return "https://www.google.com/maps";
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(a + "," + b)}`;
+    }
+
+    function safeFocusOnMap(lat, lng) {
+      const a = toSafeNumber(lat);
+      const b = toSafeNumber(lng);
+      if (!isValidLatLng(a, b)) {
+        showBanner("error", "Coordinate non disponibili per questo punto.");
+        return;
+      }
+      focusOnMap(a, b);
+    }
+
+
     const estraiTutteLeFoto = (item) => {
       if(!item) return [];
       let arr = [];
@@ -1064,9 +1103,9 @@
 
       feed.onclick = () => {
          if(isSegnalazione) {
-            const lat = latest.lat || (latest.geo && latest.geo.lat);
-            const lng = latest.lng || (latest.geo && latest.geo.lng);
-            if(lat && lng) focusOnMap(lat, lng);
+            const coords = getItemLatLng(latest);
+            if(coords) safeFocusOnMap(coords.lat, coords.lng);
+            else showBanner("error", "Coordinate non disponibili per questo punto.");
          } else {
             const safeKey = latest.nome.toLowerCase().replace(/[^a-z0-9]/g, '-');
             openPlaceCard(safeKey);
@@ -1217,8 +1256,8 @@
               
               <div class="row" style="margin-top:10px;">
                 <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
-                <button class="btn ghost small" onclick="focusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
-                <a class="btn ghost small" href="http://googleusercontent.com/maps.google.com/4${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <button class="btn ghost small" onclick="safeFocusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
+                <a class="btn ghost small" href="${getMapsDirectionsUrl(group.lat, group.lng)}" target="_blank" rel="noreferrer" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
@@ -1270,9 +1309,16 @@
              catInput.value = place.categoria;
              catInput.disabled = true; 
              
-             placeGeo = { lat: place.lat, lng: place.lng };
-             document.getElementById("placeGeoLine").textContent = `📍 Posizione Bloccata (Collegato a: ${place.nome})`;
-             document.getElementById("btnPlaceGeoPick").style.display = "none"; 
+             const coords = getItemLatLng(place);
+             if (coords) {
+               placeGeo = coords;
+               document.getElementById("placeGeoLine").textContent = `📍 Posizione Bloccata (Collegato a: ${place.nome})`;
+               document.getElementById("btnPlaceGeoPick").style.display = "none";
+             } else {
+               placeGeo = null;
+               document.getElementById("placeGeoLine").textContent = "⚠️ Questo luogo non ha coordinate salvate: seleziona la posizione sulla mappa.";
+               document.getElementById("btnPlaceGeoPick").style.display = "inline-flex";
+             } 
           }, 100);
        }
     };
@@ -1394,7 +1440,7 @@
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="http://googleusercontent.com/maps.google.com/5${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="${getMapsDirectionsUrl(lat, lng)}" target="_blank" rel="noreferrer" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
@@ -1471,8 +1517,20 @@
     }
 
     function focusOnMap(lat, lng) {
+      const a = toSafeNumber(lat);
+      const b = toSafeNumber(lng);
+      if (!isValidLatLng(a, b)) {
+        showBanner("error", "Coordinate non disponibili per questo punto.");
+        return;
+      }
       location.hash = "#/map";
-      setTimeout(() => mapMain?.setView([lat, lng], 18), 300);
+      setTimeout(() => {
+        ensureMaps();
+        if (mapMain) {
+          mapMain.invalidateSize();
+          mapMain.setView([a, b], 18);
+        }
+      }, 300);
     }
 
     document.getElementById("btnMapFit")?.addEventListener("click", () => { refreshPublicMaps(); });
@@ -1755,7 +1813,7 @@
           
           ${(r.documents && r.documents.length) ? `<div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">${r.documents.map(d=>`<a href="${d.dataUrl}" download="${d.name}" class="btn ghost small" style="justify-content:flex-start; text-transform:none; border-color:rgba(255,255,255,0.2);">📄 ${d.name}</a>`).join('')}</div>` : ''}
 
-          ${r.geo ? `<button class="btn ghost small" style="margin-top:10px" onclick="focusOnMap(${r.geo.lat}, ${r.geo.lng})">🗺️ Vedi in mappa</button>` : ''}
+          ${r.geo ? `<button class="btn ghost small" style="margin-top:10px" onclick="safeFocusOnMap(${r.geo.lat}, ${r.geo.lng})">🗺️ Vedi in mappa</button>` : ''}
         </div>
       `}).join('');
     }
