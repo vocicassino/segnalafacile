@@ -67,6 +67,16 @@
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 12px; color: #a9b6db; margin-bottom: 5px; }
     .ghost-alert { color: #ff4d4f !important; font-weight: 900 !important; background: rgba(255,77,79,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;}
+
+    .photo-manager { border: 1px dashed rgba(255,255,255,0.25); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); }
+    .photo-manager-note { font-size: 12px; color: #a9b6db; margin: 6px 0 10px; line-height: 1.35; }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin-top: 10px; }
+    .photo-tile { position: relative; border-radius: 10px; overflow: hidden; background: #070c18; border: 1px solid rgba(255,255,255,0.12); min-height: 92px; }
+    .photo-tile img { width: 100%; height: 92px; object-fit: cover; display: block; }
+    .photo-tile button { position: absolute; top: 5px; right: 5px; padding: 5px 8px; margin: 0; border-radius: 999px; font-size: 12px; background: rgba(255,77,79,0.92); }
+    .mini-photos { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .mini-photos img { width:52px; height:52px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.18); }
+
   </style>
 </head>
 <body>
@@ -197,6 +207,18 @@
       <textarea id="editDescrizione"></textarea>
     </div>
 
+    <div class="form-group" id="photoGroup">
+      <label>Foto della scheda</label>
+      <div class="photo-manager">
+        <input type="file" id="editPhotoInput" accept="image/*" multiple onchange="addEditPhotosFromInput(this)" />
+        <div class="photo-manager-note">
+          Puoi aggiungere fino a 3 foto. Le nuove immagini vengono ridimensionate automaticamente per evitare blocchi del Worker.
+        </div>
+        <div id="editPhotoPreview" class="photo-grid"></div>
+      </div>
+    </div>
+
+
     <div style="display:flex; justify-content:space-between; margin-top:20px;">
       <button onclick="closeModal()" style="background:transparent; border:1px solid white;">Annulla</button>
       <button class="btn-success" onclick="saveEdit()">💾 Applica Modifiche</button>
@@ -227,6 +249,7 @@
   let editingId = null;
   let editingType = null;
   let currentEditingItem = null;
+  let editPhotos = [];
 
   // Parser robusto per le date
   function parseDateString(dStr) {
@@ -458,6 +481,141 @@
     updateListView(type); 
   }
 
+
+  function getFotoArray(item) {
+    const out = [];
+    if (!item) return out;
+
+    function pushVal(v) {
+      if (!v) return;
+      if (typeof v === "string") {
+        const s = v.trim();
+        if (!s) return;
+        if (s.startsWith("[")) {
+          try {
+            const arr = JSON.parse(s);
+            if (Array.isArray(arr)) arr.forEach(pushVal);
+            return;
+          } catch(e) {}
+        }
+        if (s.startsWith("http") || s.startsWith("data:image")) out.push(s);
+        return;
+      }
+
+      if (Array.isArray(v)) {
+        v.forEach(pushVal);
+        return;
+      }
+
+      if (typeof v === "object") {
+        pushVal(v.url || v.dataUrl || v.src || "");
+      }
+    }
+
+    pushVal(item.foto);
+    pushVal(item.photos);
+    pushVal(item.photoDataUrl);
+
+    return [...new Set(out)].filter(Boolean).slice(0, 3);
+  }
+
+  function photosPreviewHtml(item) {
+    const photos = getFotoArray(item);
+    if (!photos.length) return '<div style="margin-top:8px; font-size:12px; color:#a9b6db;">🖼️ Nessuna foto caricata</div>';
+    return `<div class="mini-photos">${photos.map(src => `<img src="${escapeAttr(src)}" alt="Foto" loading="lazy">`).join("")}</div>`;
+  }
+
+  function escapeAttr(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function renderEditPhotos() {
+    const box = document.getElementById("editPhotoPreview");
+    if (!box) return;
+
+    if (!editPhotos.length) {
+      box.innerHTML = `<div style="grid-column:1/-1; color:#a9b6db; font-size:13px;">Nessuna foto presente. Usa il pulsante sopra per aggiungerla.</div>`;
+      return;
+    }
+
+    box.innerHTML = editPhotos.map((src, index) => `
+      <div class="photo-tile">
+        <img src="${escapeAttr(src)}" alt="Foto ${index + 1}">
+        <button type="button" onclick="removeEditPhoto(${index})">✕</button>
+      </div>
+    `).join("");
+  }
+
+  function removeEditPhoto(index) {
+    editPhotos.splice(index, 1);
+    renderEditPhotos();
+  }
+
+  async function addEditPhotosFromInput(input) {
+    const files = Array.from(input.files || []);
+    input.value = "";
+
+    if (!files.length) return;
+
+    for (const file of files) {
+      if (editPhotos.length >= 3) {
+        alert("Massimo 3 foto per scheda.");
+        break;
+      }
+
+      if (!file.type || !file.type.startsWith("image/")) {
+        alert("Puoi caricare solo immagini.");
+        continue;
+      }
+
+      try {
+        const resized = await resizeImageToDataUrl(file, 1280, 0.78);
+        editPhotos.push(resized);
+      } catch (e) {
+        alert("Errore durante il caricamento della foto.");
+      }
+    }
+
+    renderEditPhotos();
+  }
+
+  function resizeImageToDataUrl(file, maxSize = 1280, quality = 0.78) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+
+          if (w > h && w > maxSize) {
+            h = Math.round(h * (maxSize / w));
+            w = maxSize;
+          } else if (h >= w && h > maxSize) {
+            w = Math.round(w * (maxSize / h));
+            h = maxSize;
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+
   function updateListView(type) {
     let items = allData[type];
     const currentFilter = type === "luoghi" ? filterLuoghi : filterSegnalazioni;
@@ -478,6 +636,7 @@
           <p style="margin-top:6px; font-size:12px; color:#a9b6db;" class="${isGhost ? 'ghost-alert' : ''}">
             📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA!' : ''}
           </p>
+          ${photosPreviewHtml(l)}
         </div>
       `});
     } else {
@@ -498,6 +657,7 @@
           <p style="margin-top:6px; font-size:12px; color:#a9b6db;" class="${isGhost ? 'ghost-alert' : ''}">
             📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA!' : ''}
           </p>
+          ${photosPreviewHtml(s)}
         </div>
       `});
     }
@@ -571,6 +731,9 @@
       document.getElementById("editDescrizione").value = currentEditingItem.recensione || "";
     }
 
+    editPhotos = getFotoArray(currentEditingItem).slice(0, 3);
+    renderEditPhotos();
+
     document.getElementById("editModalOverlay").style.display = "flex";
   }
 
@@ -579,6 +742,7 @@
     editingId = null;
     editingType = null;
     currentEditingItem = null;
+    editPhotos = [];
   }
 
   async function saveEdit() {
@@ -603,6 +767,8 @@
       payload.recensione = document.getElementById("editDescrizione").value.trim();
       payload.rating = parseInt(document.getElementById("editRating").value) || 5;
     }
+
+    payload.foto = JSON.stringify(editPhotos);
 
     try {
       const res = await fetch(`${WORKER_URL}/api/${editingType}/${editingId}`, {
