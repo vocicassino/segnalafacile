@@ -67,6 +67,13 @@
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 12px; color: #a9b6db; margin-bottom: 5px; }
     .ghost-alert { color: #ff4d4f !important; font-weight: 900 !important; background: rgba(255,77,79,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;}
+    .admin-photo-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .admin-photo-card { width:96px; background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:6px; position:relative; }
+    .admin-photo-card img { width:100%; height:72px; object-fit:cover; border-radius:8px; display:block; }
+    .admin-photo-card button { width:100%; margin:6px 0 0; padding:6px 4px; font-size:11px; background:#ff4d4f; }
+    .admin-photo-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .admin-photo-note { font-size:12px; color:#a9b6db; line-height:1.35; margin-top:6px; }
+
   </style>
 </head>
 <body>
@@ -197,6 +204,17 @@
       <textarea id="editDescrizione"></textarea>
     </div>
 
+    <div class="form-group" id="photoAdminGroup">
+      <label>Foto caricate</label>
+      <div class="admin-photo-actions">
+        <button type="button" onclick="document.getElementById('editPhotosInput').click()">➕ Aggiungi foto</button>
+        <button type="button" class="btn-danger" onclick="clearEditPhotos()">🧹 Rimuovi tutte</button>
+      </div>
+      <input type="file" id="editPhotosInput" accept="image/*" multiple style="display:none" />
+      <div class="admin-photo-note">Da qui puoi aggiungere o eliminare le foto salvate nel database. Dopo le modifiche premi “Applica Modifiche”.</div>
+      <div id="editPhotosPreview" class="admin-photo-grid"></div>
+    </div>
+
     <div style="display:flex; justify-content:space-between; margin-top:20px;">
       <button onclick="closeModal()" style="background:transparent; border:1px solid white;">Annulla</button>
       <button class="btn-success" onclick="saveEdit()">💾 Applica Modifiche</button>
@@ -227,6 +245,7 @@
   let editingId = null;
   let editingType = null;
   let currentEditingItem = null;
+  let editPhotos = [];
 
   // Parser robusto per le date
   function parseDateString(dStr) {
@@ -540,6 +559,114 @@
     } catch (e) { alert("Errore di rete."); }
   }
 
+
+  function normalizePhotosForAdmin(item) {
+    const out = [];
+    if (!item) return out;
+
+    const pushOne = (v) => {
+      if (!v) return;
+      if (typeof v === "string") out.push(v);
+      else if (typeof v === "object" && v.dataUrl) out.push(v.dataUrl);
+      else if (typeof v === "object" && v.url) out.push(v.url);
+    };
+
+    const parseMaybeArray = (value) => {
+      if (!value) return;
+      if (Array.isArray(value)) {
+        value.forEach(pushOne);
+        return;
+      }
+      if (typeof value === "string") {
+        const s = value.trim();
+        if (!s) return;
+        if (s.startsWith("[") || s.startsWith("{")) {
+          try {
+            const parsed = JSON.parse(s);
+            parseMaybeArray(parsed);
+            return;
+          } catch(e) {}
+        }
+        pushOne(s);
+      } else if (typeof value === "object") {
+        pushOne(value);
+      }
+    };
+
+    parseMaybeArray(item.foto);
+    parseMaybeArray(item.photos);
+    parseMaybeArray(item.photoDataUrl);
+
+    return [...new Set(out)].filter(Boolean).slice(0, 10);
+  }
+
+  function renderEditPhotos() {
+    const box = document.getElementById("editPhotosPreview");
+    if (!box) return;
+    if (!editPhotos.length) {
+      box.innerHTML = "<p style='color:#a9b6db; font-size:13px; margin:4px 0;'>Nessuna foto caricata.</p>";
+      return;
+    }
+
+    box.innerHTML = editPhotos.map((src, idx) => `
+      <div class="admin-photo-card">
+        <img src="${src}" alt="Foto ${idx + 1}" onclick="window.open('${src}', '_blank')">
+        <button type="button" onclick="removeEditPhoto(${idx})">Elimina</button>
+      </div>
+    `).join("");
+  }
+
+  function removeEditPhoto(index) {
+    editPhotos.splice(index, 1);
+    renderEditPhotos();
+  }
+
+  function clearEditPhotos() {
+    if (!confirm("Vuoi rimuovere tutte le foto da questa scheda?")) return;
+    editPhotos = [];
+    renderEditPhotos();
+  }
+
+  function fileToAdminDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxSide = 1400;
+        const ratio = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.naturalWidth * ratio);
+        canvas.height = Math.round(img.naturalHeight * ratio);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  document.getElementById("editPhotosInput")?.addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    for (const f of files) {
+      if (editPhotos.length >= 10) {
+        alert("Massimo 10 foto per scheda.");
+        break;
+      }
+      try {
+        const dataUrl = await fileToAdminDataUrl(f);
+        editPhotos.push(dataUrl);
+      } catch(err) {
+        alert("Impossibile leggere la foto: " + (f.name || ""));
+      }
+    }
+
+    e.target.value = "";
+    renderEditPhotos();
+  });
+
+
   function openEditModal(id, type) {
     editingId = id;
     editingType = type;
@@ -558,6 +685,8 @@
       document.getElementById("editCategoria").value = currentEditingItem.categoria || "altro";
       document.getElementById("editDescrizione").value = currentEditingItem.descrizione || "";
       document.getElementById("editStatus").value = currentEditingItem.status || "open";
+      editPhotos = normalizePhotosForAdmin(currentEditingItem);
+      renderEditPhotos();
     } else {
       document.getElementById("modalTitle").innerText = "Gestione Comando: Luogo";
       document.getElementById("labelTitoloNome").innerText = "Nome del Luogo";
@@ -569,6 +698,8 @@
       document.getElementById("editCategoria").value = currentEditingItem.categoria || "altro";
       document.getElementById("editRating").value = currentEditingItem.rating || 5;
       document.getElementById("editDescrizione").value = currentEditingItem.recensione || "";
+      editPhotos = normalizePhotosForAdmin(currentEditingItem);
+      renderEditPhotos();
     }
 
     document.getElementById("editModalOverlay").style.display = "flex";
@@ -597,11 +728,14 @@
           payload.resolvedAt = currentEditingItem.resolvedAt || null; 
       }
 
+      payload.foto = JSON.stringify(editPhotos);
+
     } else {
       payload.nome = document.getElementById("editTitolo").value.trim();
       payload.categoria = document.getElementById("editCategoria").value;
       payload.recensione = document.getElementById("editDescrizione").value.trim();
       payload.rating = parseInt(document.getElementById("editRating").value) || 5;
+      payload.foto = JSON.stringify(editPhotos);
     }
 
     try {
