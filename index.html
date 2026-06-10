@@ -470,6 +470,178 @@
       .homeLatestLine strong{white-space:normal;}
     }
 
+
+    /* HOME WOW R2 - card interattive e niente mappa doppia in home */
+    .homeStatLink{
+      color:var(--text);
+      text-decoration:none;
+      cursor:pointer;
+      transition:transform .14s ease, border-color .14s ease, background .14s ease;
+    }
+    .homeStatLink:hover{
+      transform:translateY(-2px);
+      border-color:rgba(45,125,255,.45);
+      background:linear-gradient(145deg, rgba(45,125,255,.16), rgba(0,0,0,.16));
+    }
+    .homeStatBox em{
+      color:var(--muted);
+      font-size:11px;
+      font-style:normal;
+      font-weight:900;
+      opacity:.9;
+    }
+    .homeControlPanel{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr);
+      gap:12px;
+      align-items:stretch;
+    }
+    .homeControlMain,
+    .homeRecentBox{
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.18), transparent 60%),
+        radial-gradient(260px 120px at 95% 10%, rgba(25,195,125,.13), transparent 55%),
+        rgba(0,0,0,.16);
+      border-radius:24px;
+      padding:16px;
+      box-shadow:0 14px 32px rgba(0,0,0,.24);
+    }
+    .homeControlMain{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      position:relative;
+      overflow:hidden;
+    }
+    .homeControlMain::after{
+      content:"";
+      position:absolute;
+      right:-40px;
+      bottom:-55px;
+      width:180px;
+      height:180px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      background:radial-gradient(circle, rgba(45,125,255,.16), transparent 62%);
+      pointer-events:none;
+    }
+    .homeControlIcon{
+      width:54px;
+      height:54px;
+      flex:0 0 auto;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:28px;
+      background:rgba(45,125,255,.16);
+      border:1px solid rgba(45,125,255,.28);
+      box-shadow:0 12px 24px rgba(0,0,0,.28);
+    }
+    .homeControlTitle{
+      font-size:18px;
+      line-height:1.15;
+      font-weight:980;
+      letter-spacing:-.25px;
+    }
+    .homeQuickRow{
+      display:flex;
+      gap:9px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .homeQuickRow .btn{
+      min-height:42px;
+      padding:10px 12px;
+      border-radius:16px;
+      font-size:13px;
+    }
+    .homeRecentHead{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:10px;
+    }
+    .homeRecentHead span{
+      font-weight:980;
+      font-size:14px;
+    }
+    .homeRecentHead small{
+      color:var(--muted);
+      font-size:11px;
+      text-align:right;
+    }
+    .homeRecentList{
+      display:grid;
+      gap:8px;
+    }
+    .homeRecentItem{
+      width:100%;
+      text-align:left;
+      border:1px solid rgba(255,255,255,.11);
+      background:rgba(255,255,255,.055);
+      border-radius:17px;
+      padding:10px 11px;
+      color:var(--text);
+      min-height:auto;
+      margin:0;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:9px;
+      align-items:center;
+    }
+    .homeRecentItem:hover{
+      border-color:rgba(45,125,255,.38);
+      background:rgba(45,125,255,.10);
+    }
+    .homeRecentEmoji{
+      font-size:19px;
+      width:24px;
+      text-align:center;
+    }
+    .homeRecentText{
+      min-width:0;
+    }
+    .homeRecentText strong{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:13px;
+      line-height:1.15;
+    }
+    .homeRecentText span{
+      display:block;
+      margin-top:3px;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .homeRecentGo{
+      color:#8eb9ff;
+      font-size:14px;
+      font-weight:980;
+    }
+    .homeRecentEmpty{
+      color:var(--muted);
+      font-size:13px;
+      padding:12px;
+      border-radius:16px;
+      background:rgba(0,0,0,.14);
+      border:1px dashed rgba(255,255,255,.12);
+    }
+    @media (max-width:760px){
+      .homeControlPanel{grid-template-columns:1fr;}
+      .homeControlMain{flex-direction:column;}
+      .homeQuickRow .btn{width:100%;}
+    }
+
   </style>
 </head>
 
@@ -522,18 +694,21 @@
         </div>
 
         <div class="homeStatsRow">
-          <div class="homeStatBox">
+          <a class="homeStatBox homeStatLink" href="#/map" title="Vai alla mappa delle segnalazioni">
             <span>📣 Segnalazioni</span>
             <strong id="homeStatSegnalazioni">0</strong>
-          </div>
-          <div class="homeStatBox">
+            <em>Apri sulla mappa</em>
+          </a>
+          <a class="homeStatBox homeStatLink" href="#/places" title="Vai ai luoghi consigliati">
             <span>⭐ Luoghi</span>
             <strong id="homeStatLuoghi">0</strong>
-          </div>
-          <div class="homeStatBox">
+            <em>Vedi recensioni</em>
+          </a>
+          <a class="homeStatBox homeStatLink" href="#/map" title="Vai alla mappa interattiva">
             <span>📌 Punti mappa</span>
             <strong id="homeStatPunti">0</strong>
-          </div>
+            <em>Apri mappa</em>
+          </a>
         </div>
 
         <div id="miniFeed" class="live-feed hidden">
@@ -552,14 +727,31 @@
           <strong id="homeLatestText">In aggiornamento...</strong>
         </div>
 
-        <div class="mapShell homeMapPreview" style="margin-top:14px; position: relative;">
-          <div class="mapGlassLabel">
-            <span>Punti = segnalazioni</span>
-            <span>Stelle = luoghi</span>
+        <div class="homeControlPanel">
+          <div class="homeControlMain">
+            <div class="homeControlIcon">🧭</div>
+            <div>
+              <div class="homeControlTitle">La mappa completa è nella sezione dedicata</div>
+              <div class="hint" style="margin:5px 0 0">
+                Qui trovi il riepilogo rapido. Per esplorare tutti i marker, filtrare i punti e usare il navigatore, apri la mappa interattiva.
+              </div>
+              <div class="homeQuickRow">
+                <a class="btn primary" href="#/map">🗺️ Apri mappa interattiva</a>
+                <a class="btn ghost" href="#/report">📣 Nuova segnalazione</a>
+                <a class="btn ghost" href="#/places">⭐ Scopri luoghi</a>
+              </div>
+            </div>
           </div>
-          <button id="btnHomeRadar" class="homeRadarBtn" type="button" aria-label="La mia posizione">📍</button>
 
-          <div id="mapHome" class="mapBox"></div>
+          <div class="homeRecentBox">
+            <div class="homeRecentHead">
+              <span>🕒 Ultimi aggiornamenti</span>
+              <small>Tocca una voce per aprirla</small>
+            </div>
+            <div id="homeRecentList" class="homeRecentList">
+              <div class="homeRecentEmpty">Caricamento aggiornamenti...</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1101,11 +1293,10 @@
 
       if(target === "my") renderList();
       if(target === "places") renderPublicPlaces();
-      if(target === "map" || target === "home") { 
+      if(target === "map") { 
         ensureMaps(); 
         setTimeout(() => { 
           if(mapMain) mapMain.invalidateSize(); 
-          if(mapHome) mapHome.invalidateSize(); 
           refreshPublicMaps(); 
         }, 150); 
       }
@@ -1254,8 +1445,9 @@
       const segs = Array.isArray(window.publicSegnalazioni) ? window.publicSegnalazioni : [];
       const luoghi = Array.isArray(window.publicLuoghi) ? window.publicLuoghi : [];
 
-      const activeSegs = segs.filter(s => s.status !== "resolved").length;
-      const uniquePlaces = new Set(luoghi.map(l => String(l.nome || "").trim().toLowerCase()).filter(Boolean)).size || luoghi.length;
+      const htmlSafe = (v) => String(v ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+      }[m]));
 
       const isValidPoint = (item) => {
         const lat = parseFloat(item.lat || (item.geo && item.geo.lat));
@@ -1263,11 +1455,11 @@
         return !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0);
       };
 
+      const activeSegs = segs.filter(s => s.status !== "resolved").length;
+      const uniquePlaces = new Set(luoghi.map(l => String(l.nome || "").trim().toLowerCase()).filter(Boolean)).size || luoghi.length;
       const segPoints = segs.filter(isValidPoint).length;
       const placePoints = new Set(
-        luoghi
-          .filter(isValidPoint)
-          .map(l => String(l.nome || (l.lat + "," + l.lng)).trim().toLowerCase())
+        luoghi.filter(isValidPoint).map(l => String(l.nome || (l.lat + "," + l.lng)).trim().toLowerCase())
       ).size;
       const totalPoints = segPoints + placePoints;
 
@@ -1275,12 +1467,17 @@
       const elLuoghi = document.getElementById("homeStatLuoghi");
       const elPunti = document.getElementById("homeStatPunti");
       const elLatest = document.getElementById("homeLatestText");
+      const recentList = document.getElementById("homeRecentList");
 
       if (elSeg) elSeg.textContent = activeSegs;
       if (elLuoghi) elLuoghi.textContent = uniquePlaces;
       if (elPunti) elPunti.textContent = totalPoints;
 
-      let allItems = [...segs, ...luoghi];
+      let allItems = [
+        ...segs.map(x => ({...x, __type:"segnalazione"})),
+        ...luoghi.map(x => ({...x, __type:"luogo"}))
+      ];
+
       allItems.sort((a, b) => {
         const dateA = parseDateString(a.dataStr || a.when);
         const dateB = parseDateString(b.dataStr || b.when);
@@ -1296,6 +1493,51 @@
         } else {
           elLatest.textContent = "Nessun punto ancora presente";
         }
+      }
+
+      if (recentList) {
+        const recent = allItems.slice(0, 3);
+        if (!recent.length) {
+          recentList.innerHTML = `<div class="homeRecentEmpty">Ancora nessun aggiornamento disponibile.</div>`;
+          return;
+        }
+
+        recentList.innerHTML = recent.map((item, index) => {
+          const isSeg = item.__type === "segnalazione";
+          const cat = item.categoria || "altro";
+          const info = isSeg ? (catInfo[cat] || catInfo.altro) : (placeCatInfo[cat] || placeCatInfo.altro);
+          const title = item.titolo || item.nome || "Aggiornamento";
+          const date = String(item.dataStr || item.when || "").split(",")[0] || "data non disponibile";
+          const label = isSeg ? "Segnalazione" : "Luogo";
+          return `
+            <button class="homeRecentItem" type="button" data-recent-index="${index}">
+              <span class="homeRecentEmoji">${info.emoji}</span>
+              <span class="homeRecentText">
+                <strong>${htmlSafe(title)}</strong>
+                <span>${htmlSafe(label)} • ${htmlSafe(date)}</span>
+              </span>
+              <span class="homeRecentGo">›</span>
+            </button>
+          `;
+        }).join("");
+
+        recentList.querySelectorAll("[data-recent-index]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const item = recent[Number(btn.dataset.recentIndex)];
+            if (!item) return;
+
+            if (item.__type === "luogo") {
+              const safeKey = String(item.nome || "").toLowerCase().replace(/[^a-z0-9]/g, "-");
+              if (safeKey) openPlaceCard(safeKey);
+              else location.hash = "#/places";
+              return;
+            }
+
+            const coords = getItemLatLng(item);
+            if (coords) safeFocusOnMap(coords.lat, coords.lng);
+            else location.hash = "#/map";
+          });
+        });
       }
     }
 
