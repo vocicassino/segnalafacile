@@ -10,7 +10,129 @@
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+
+  // ==========================================
+  // MODERAZIONE CHAT LIVE
+  // ==========================================
+
+  function formatChatDate(value) {
+    if (!value) return "data non disponibile";
+    try {
+      return new Date(value).toLocaleString("it-IT");
+    } catch(e) {
+      return String(value);
+    }
+  }
+
+  async function loadChatAdminData() {
+    if (!apiKey) return;
+    const list = document.getElementById("chatAdminList");
+    const stats = document.getElementById("chatAdminStats");
+    if (list) list.innerHTML = "Caricamento messaggi chat...";
+    try {
+      const res = await fetch(WORKER_URL + "/api/chat/list?t=" + Date.now(), {
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Errore caricamento chat");
+      chatAdminData = data.items || [];
+      renderChatAdminList();
+    } catch(e) {
+      if (list) list.innerHTML = `<p style="color:#ff8d8f;">Errore chat: ${escapeHtml(e.message || e)}</p>`;
+      if (stats) stats.textContent = "Errore caricamento chat.";
+    }
+  }
+
+  function renderChatAdminList() {
+    const list = document.getElementById("chatAdminList");
+    const stats = document.getElementById("chatAdminStats");
+    if (!list || !stats) return;
+
+    const total = chatAdminData.length;
+    const visible = chatAdminData.filter(m => m.visible !== false).length;
+    const hidden = total - visible;
+    stats.textContent = `Totale messaggi: ${total} • Visibili: ${visible} • Nascosti: ${hidden}`;
+
+    if (!chatAdminData.length) {
+      list.innerHTML = `<p style="color:#a9b6db;">Nessun messaggio in chat.</p>`;
+      return;
+    }
+
+    list.innerHTML = chatAdminData.map(msg => {
+      const isVisible = msg.visible !== false;
+      return `
+        <div class="chat-admin-item ${isVisible ? "" : "chat-admin-hidden"}" id="chatmsg-${msg.id}">
+          <div>
+            <div class="chat-admin-title">
+              <span>👤 ${escapeHtml(msg.nickname || "Utente")}</span>
+              <span class="chat-badge ${isVisible ? "ok" : "off"}">${isVisible ? "visibile" : "nascosto"}</span>
+            </div>
+            <div class="chat-admin-msg">${escapeHtml(msg.message || "")}</div>
+            <div class="chat-admin-meta">🕒 ${escapeHtml(formatChatDate(msg.created_at))} • ID: ${escapeHtml(msg.id)}</div>
+          </div>
+          <div class="chat-admin-actions">
+            ${isVisible
+              ? `<button class="btn-danger" onclick="setChatMessageVisibility('${msg.id}', false)">🚫 Nascondi</button>`
+              : `<button class="btn-success" onclick="setChatMessageVisibility('${msg.id}', true)">👁️ Mostra</button>`}
+            <button class="btn-danger" onclick="deleteChatMessage('${msg.id}')">🗑️ Elimina</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function setChatMessageVisibility(id, visible) {
+    try {
+      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
+        method: "PUT",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ visible })
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "Errore aggiornamento chat");
+      const item = chatAdminData.find(m => m.id === id);
+      if (item) item.visible = visible;
+      renderChatAdminList();
+    } catch(e) {
+      alert("Errore: " + (e.message || e));
+    }
+  }
+
+  async function deleteChatMessage(id) {
+    if (!confirm("Eliminare definitivamente questo messaggio dalla chat?")) return;
+    try {
+      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
+        method: "DELETE",
+        headers: { "X-Api-Key": apiKey }
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "Errore eliminazione chat");
+      chatAdminData = chatAdminData.filter(m => m.id !== id);
+      renderChatAdminList();
+    } catch(e) {
+      alert("Errore: " + (e.message || e));
+    }
+  }
+
+  async function hideAllVisibleChatMessages() {
+    const visibleMessages = chatAdminData.filter(m => m.visible !== false);
+    if (!visibleMessages.length) return alert("Non ci sono messaggi visibili da nascondere.");
+    if (!confirm(`Nascondere ${visibleMessages.length} messaggi visibili dalla chat pubblica?`)) return;
+    for (const msg of visibleMessages) {
+      try {
+        await fetch(`${WORKER_URL}/api/chat/${msg.id}`, {
+          method: "PUT",
+          headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({ visible: false })
+        });
+        msg.visible = false;
+      } catch(e) {}
+    }
+    renderChatAdminList();
+  }
+
+</script>
 
   <style>
     body { font-family: system-ui, sans-serif; background: #0b1220; color: #eaf0ff; margin: 0; padding: 20px; }
@@ -106,6 +228,24 @@
     .archive-map-actions input { flex:1; min-width:220px; margin:0; }
     .coord-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; background:rgba(25,195,125,.10); border:1px solid rgba(25,195,125,.35); color:#d9fff0; font-size:12px; font-weight:800; }
     .leaflet-container { font-family: system-ui, sans-serif; }
+
+
+
+    /* MODERAZIONE CHAT LIVE */
+    .chat-admin-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+    .chat-admin-stats { color:#a9b6db; font-size:13px; margin-bottom:10px; }
+    .chat-admin-list { display:flex; flex-direction:column; gap:10px; }
+    .chat-admin-item { background:#070c18; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px; display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start; }
+    .chat-admin-hidden { opacity:.55; border-color:rgba(255,77,79,.28); }
+    .chat-admin-title { display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-weight:900; color:#fff; margin-bottom:6px; }
+    .chat-admin-msg { color:#dce7ff; line-height:1.45; white-space:pre-wrap; word-break:break-word; }
+    .chat-admin-meta { color:#a9b6db; font-size:12px; line-height:1.45; margin-top:6px; }
+    .chat-admin-actions { display:flex; flex-direction:column; gap:6px; min-width:140px; }
+    .chat-admin-actions button { margin:0; }
+    .chat-badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:900; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:#dce7ff; }
+    .chat-badge.ok { color:#19c37d; border-color:rgba(25,195,125,.45); background:rgba(25,195,125,.12); }
+    .chat-badge.off { color:#ff8d8f; border-color:rgba(255,77,79,.45); background:rgba(255,77,79,.12); }
+    @media(max-width:720px){ .chat-admin-item{grid-template-columns:1fr;} .chat-admin-actions{flex-direction:row; flex-wrap:wrap;} }
 
   </style>
 </head>
@@ -256,6 +396,21 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="section-header" onclick="toggleSection('chatSection', 'chatIcon')">
+        <h2>Moderazione Chat Live 💬</h2>
+        <span id="chatIcon" class="section-icon">▼</span>
+      </div>
+      <div id="chatSection" class="section-content">
+        <div class="chat-admin-toolbar">
+          <button onclick="loadChatAdminData()">🔄 Aggiorna Chat</button>
+          <button class="btn-danger" onclick="hideAllVisibleChatMessages()">🚫 Nascondi tutti i visibili</button>
+        </div>
+        <div class="chat-admin-stats" id="chatAdminStats">Chat non ancora caricata.</div>
+        <div id="chatAdminList" class="chat-admin-list">Caricamento messaggi...</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -345,6 +500,9 @@
           if (archiveMap) archiveMap.invalidateSize();
         }, 250);
       }
+      if (sectionId === "chatSection") {
+        loadChatAdminData();
+      }
     }
   }
 
@@ -365,6 +523,7 @@
   let archiveManualPhotos = [];
   let archiveMap = null;
   let archiveMarker = null;
+  let chatAdminData = [];
 
   // Parser robusto per le date
   function parseDateString(dStr) {
@@ -395,6 +554,7 @@
     document.getElementById("dashboard").style.display = "block";
     loadData();
     loadArchiveData();
+    loadChatAdminData();
   }
 
   async function loadData() {
@@ -1242,6 +1402,128 @@
       await loadArchiveData();
       alert("Elemento archiviato su Supabase.");
     } catch (e) { alert("Errore: " + (e.message || e)); }
+  }
+
+
+
+  // ==========================================
+  // MODERAZIONE CHAT LIVE
+  // ==========================================
+
+  function formatChatDate(value) {
+    if (!value) return "data non disponibile";
+    try {
+      return new Date(value).toLocaleString("it-IT");
+    } catch(e) {
+      return String(value);
+    }
+  }
+
+  async function loadChatAdminData() {
+    if (!apiKey) return;
+    const list = document.getElementById("chatAdminList");
+    const stats = document.getElementById("chatAdminStats");
+    if (list) list.innerHTML = "Caricamento messaggi chat...";
+    try {
+      const res = await fetch(WORKER_URL + "/api/chat/list?t=" + Date.now(), {
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Errore caricamento chat");
+      chatAdminData = data.items || [];
+      renderChatAdminList();
+    } catch(e) {
+      if (list) list.innerHTML = `<p style="color:#ff8d8f;">Errore chat: ${escapeHtml(e.message || e)}</p>`;
+      if (stats) stats.textContent = "Errore caricamento chat.";
+    }
+  }
+
+  function renderChatAdminList() {
+    const list = document.getElementById("chatAdminList");
+    const stats = document.getElementById("chatAdminStats");
+    if (!list || !stats) return;
+
+    const total = chatAdminData.length;
+    const visible = chatAdminData.filter(m => m.visible !== false).length;
+    const hidden = total - visible;
+    stats.textContent = `Totale messaggi: ${total} • Visibili: ${visible} • Nascosti: ${hidden}`;
+
+    if (!chatAdminData.length) {
+      list.innerHTML = `<p style="color:#a9b6db;">Nessun messaggio in chat.</p>`;
+      return;
+    }
+
+    list.innerHTML = chatAdminData.map(msg => {
+      const isVisible = msg.visible !== false;
+      return `
+        <div class="chat-admin-item ${isVisible ? "" : "chat-admin-hidden"}" id="chatmsg-${msg.id}">
+          <div>
+            <div class="chat-admin-title">
+              <span>👤 ${escapeHtml(msg.nickname || "Utente")}</span>
+              <span class="chat-badge ${isVisible ? "ok" : "off"}">${isVisible ? "visibile" : "nascosto"}</span>
+            </div>
+            <div class="chat-admin-msg">${escapeHtml(msg.message || "")}</div>
+            <div class="chat-admin-meta">🕒 ${escapeHtml(formatChatDate(msg.created_at))} • ID: ${escapeHtml(msg.id)}</div>
+          </div>
+          <div class="chat-admin-actions">
+            ${isVisible
+              ? `<button class="btn-danger" onclick="setChatMessageVisibility('${msg.id}', false)">🚫 Nascondi</button>`
+              : `<button class="btn-success" onclick="setChatMessageVisibility('${msg.id}', true)">👁️ Mostra</button>`}
+            <button class="btn-danger" onclick="deleteChatMessage('${msg.id}')">🗑️ Elimina</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function setChatMessageVisibility(id, visible) {
+    try {
+      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
+        method: "PUT",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ visible })
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "Errore aggiornamento chat");
+      const item = chatAdminData.find(m => m.id === id);
+      if (item) item.visible = visible;
+      renderChatAdminList();
+    } catch(e) {
+      alert("Errore: " + (e.message || e));
+    }
+  }
+
+  async function deleteChatMessage(id) {
+    if (!confirm("Eliminare definitivamente questo messaggio dalla chat?")) return;
+    try {
+      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
+        method: "DELETE",
+        headers: { "X-Api-Key": apiKey }
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "Errore eliminazione chat");
+      chatAdminData = chatAdminData.filter(m => m.id !== id);
+      renderChatAdminList();
+    } catch(e) {
+      alert("Errore: " + (e.message || e));
+    }
+  }
+
+  async function hideAllVisibleChatMessages() {
+    const visibleMessages = chatAdminData.filter(m => m.visible !== false);
+    if (!visibleMessages.length) return alert("Non ci sono messaggi visibili da nascondere.");
+    if (!confirm(`Nascondere ${visibleMessages.length} messaggi visibili dalla chat pubblica?`)) return;
+    for (const msg of visibleMessages) {
+      try {
+        await fetch(`${WORKER_URL}/api/chat/${msg.id}`, {
+          method: "PUT",
+          headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({ visible: false })
+        });
+        msg.visible = false;
+      } catch(e) {}
+    }
+    renderChatAdminList();
   }
 
 </script>
