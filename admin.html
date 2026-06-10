@@ -69,6 +69,7 @@
               <span class="chat-badge ${isVisible ? "ok" : "off"}">${isVisible ? "visibile" : "nascosto"}</span>
             </div>
             <div class="chat-admin-msg">${escapeHtml(msg.message || "")}</div>
+            ${(msg.image_url || msg.foto_url) ? `<div class="chat-admin-photo"><img src="${escapeAttr(msg.image_url || msg.foto_url)}" alt="Foto chat" onclick="window.open('${escapeAttr(msg.image_url || msg.foto_url)}','_blank')"></div>` : ""}
             <div class="chat-admin-meta">🕒 ${escapeHtml(formatChatDate(msg.created_at))} • ID: ${escapeHtml(msg.id)}</div>
           </div>
           <div class="chat-admin-actions">
@@ -246,6 +247,18 @@
     .chat-badge.ok { color:#19c37d; border-color:rgba(25,195,125,.45); background:rgba(25,195,125,.12); }
     .chat-badge.off { color:#ff8d8f; border-color:rgba(255,77,79,.45); background:rgba(255,77,79,.12); }
     @media(max-width:720px){ .chat-admin-item{grid-template-columns:1fr;} .chat-admin-actions{flex-direction:row; flex-wrap:wrap;} }
+
+  
+    .chat-admin-photo { margin-top:8px; }
+    .chat-admin-photo img {
+      width:130px;
+      height:100px;
+      object-fit:cover;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.15);
+      box-shadow:0 8px 18px rgba(0,0,0,0.25);
+      cursor:pointer;
+    }
 
   </style>
 </head>
@@ -1463,6 +1476,7 @@
               <span class="chat-badge ${isVisible ? "ok" : "off"}">${isVisible ? "visibile" : "nascosto"}</span>
             </div>
             <div class="chat-admin-msg">${escapeHtml(msg.message || "")}</div>
+            ${(msg.image_url || msg.foto_url) ? `<div class="chat-admin-photo"><img src="${escapeAttr(msg.image_url || msg.foto_url)}" alt="Foto chat" onclick="window.open('${escapeAttr(msg.image_url || msg.foto_url)}','_blank')"></div>` : ""}
             <div class="chat-admin-meta">🕒 ${escapeHtml(formatChatDate(msg.created_at))} • ID: ${escapeHtml(msg.id)}</div>
           </div>
           <div class="chat-admin-actions">

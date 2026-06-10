@@ -794,6 +794,73 @@
       .homeChatCard .btn{width:100%;}
     }
 
+
+    /* FOTO NELLA CHAT LIVE */
+    .chatPhotoTools{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:4px;
+    }
+    .chatPhotoTools .btn{
+      min-height:40px;
+      border-radius:15px;
+      padding:9px 11px;
+      font-size:13px;
+    }
+    .chatPhotoPreview{
+      display:none;
+      margin-top:10px;
+      border:1px dashed rgba(255,255,255,.18);
+      background:rgba(0,0,0,.16);
+      border-radius:18px;
+      padding:10px;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .chatPhotoPreviewInner{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .chatPhotoPreview img{
+      width:72px;
+      height:72px;
+      object-fit:cover;
+      border-radius:15px;
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:0 10px 22px rgba(0,0,0,.22);
+      flex:0 0 auto;
+    }
+    .chatPhotoPreviewText{
+      min-width:0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .chatImage{
+      margin-top:8px;
+      max-width:100%;
+      width:min(260px, 100%);
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 12px 26px rgba(0,0,0,.28);
+      cursor:pointer;
+      display:block;
+    }
+    @media(max-width:720px){
+      .chatPhotoPreview{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .chatPhotoPreview .btn{
+        width:100%;
+      }
+    }
+
   </style>
 </head>
 
@@ -1068,7 +1135,23 @@
           <div class="chatComposer">
             <div>
               <label for="chatMessage">Messaggio</label>
-              <input id="chatMessage" type="text" maxlength="500" placeholder="Scrivi un messaggio..." />
+              <input id="chatMessage" type="text" maxlength="500" placeholder="Scrivi un messaggio o allega una foto..." />
+              <div class="chatPhotoTools">
+                <button id="btnChatCamera" class="btn ghost" type="button">📷 Scatta foto</button>
+                <button id="btnChatGallery" class="btn ghost" type="button">🖼️ Scegli foto</button>
+                <input id="chatPhotoCamera" type="file" accept="image/*" capture="environment" class="hidden" />
+                <input id="chatPhotoGallery" type="file" accept="image/*" class="hidden" />
+              </div>
+              <div id="chatPhotoPreview" class="chatPhotoPreview">
+                <div class="chatPhotoPreviewInner">
+                  <img id="chatPhotoPreviewImg" src="" alt="Anteprima foto chat">
+                  <div class="chatPhotoPreviewText">
+                    <strong style="color:var(--text)">Foto pronta</strong><br>
+                    Verrà inviata nella chat dopo la compressione.
+                  </div>
+                </div>
+                <button id="btnClearChatPhoto" class="btn danger small" type="button">🧹 Rimuovi foto</button>
+              </div>
             </div>
             <button id="btnSendChat" class="primary" type="button">📨 Invia</button>
             <button id="btnRefreshChat" class="ghost" type="button">🔄 Aggiorna</button>
@@ -1365,7 +1448,8 @@
     const CHAT_CONFIG = {
       supabaseUrl: "https://nyxhwaqqywokubsnhirj.supabase.co",
       supabaseKey: "sb_publishable_ivK812cY6bRYfHm2fKWeQQ_afyVoj2Z",
-      maxMessages: 50
+      maxMessages: 50,
+      bucket: "archivio-foto"
     };
 
     window.publicSegnalazioni = [];
@@ -1442,6 +1526,9 @@
     let chatPresenceChannel = null;
     let chatDisplayedIds = new Set();
     let chatInitialized = false;
+    let chatPhotoFile = null;
+    let chatPhotoPreviewDataUrl = "";
+
 
     function chatHtmlSafe(v) {
       return String(v ?? "").replace(/[&<>"']/g, m => ({
@@ -1493,6 +1580,11 @@
       const isMine = myNick && String(row.nickname || "").toLowerCase() === myNick;
       const date = row.created_at ? new Date(row.created_at) : new Date();
       const time = date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+      const imageUrl = row.image_url || row.foto_url || "";
+
+      const imageHtml = imageUrl
+        ? `<img class="chatImage" src="${chatHtmlSafe(imageUrl)}" alt="Foto inviata in chat" onclick="openImage(this.src)" loading="lazy">`
+        : "";
 
       const el = document.createElement("div");
       el.className = "chatMsg" + (isMine ? " mine" : "");
@@ -1501,7 +1593,8 @@
           <span>${chatHtmlSafe(row.nickname || "Utente")}</span>
           <time>${chatHtmlSafe(time)}</time>
         </div>
-        <div class="chatText">${chatHtmlSafe(row.message || "")}</div>
+        ${row.message ? `<div class="chatText">${chatHtmlSafe(row.message || "")}</div>` : ""}
+        ${imageHtml}
       `;
 
       const empty = box.querySelector(".chatEmpty");
@@ -1513,6 +1606,8 @@
       box.scrollTop = box.scrollHeight;
     }
 
+
+
     async function loadChatMessages() {
       try {
         const sb = ensureChatClient();
@@ -1522,7 +1617,7 @@
 
         const { data, error } = await sb
           .from("chat_messages")
-          .select("id,nickname,message,created_at,visible")
+          .select("id,nickname,message,image_url,image_path,created_at,visible")
           .eq("visible", true)
           .order("created_at", { ascending: false })
           .limit(CHAT_CONFIG.maxMessages);
@@ -1541,40 +1636,168 @@
       }
     }
 
+
+    function setChatPhotoPreview(dataUrl, file) {
+      chatPhotoFile = file || null;
+      chatPhotoPreviewDataUrl = dataUrl || "";
+      const box = document.getElementById("chatPhotoPreview");
+      const img = document.getElementById("chatPhotoPreviewImg");
+      if (!box || !img) return;
+      if (chatPhotoPreviewDataUrl) {
+        img.src = chatPhotoPreviewDataUrl;
+        box.style.display = "flex";
+      } else {
+        img.src = "";
+        box.style.display = "none";
+      }
+    }
+
+    function clearChatPhoto() {
+      chatPhotoFile = null;
+      chatPhotoPreviewDataUrl = "";
+      setChatPhotoPreview("", null);
+      const cam = document.getElementById("chatPhotoCamera");
+      const gal = document.getElementById("chatPhotoGallery");
+      if (cam) cam.value = "";
+      if (gal) gal.value = "";
+    }
+
+    function resizeChatImage(file, maxSize = 1200, quality = 0.80) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type || !file.type.startsWith("image/")) {
+          reject(new Error("File non valido"));
+          return;
+        }
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = reject;
+          img.onload = () => {
+            let w = img.width;
+            let h = img.height;
+            const ratio = Math.min(1, maxSize / Math.max(w, h));
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL("image/jpeg", quality);
+            resolve({ dataUrl, blob: dataUrlToBlob(dataUrl), type: "image/jpeg" });
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function dataUrlToBlob(dataUrl) {
+      const parts = String(dataUrl).split(",");
+      const mime = (parts[0].match(/data:([^;]+)/) || [])[1] || "image/jpeg";
+      const bin = atob(parts[1] || "");
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new Blob([bytes], { type: mime });
+    }
+
+    async function handleChatPhotoFile(file) {
+      if (!file) return;
+      if (!file.type || !file.type.startsWith("image/")) {
+        showBanner("error", "Puoi allegare solo immagini.");
+        return;
+      }
+      try {
+        const resized = await resizeChatImage(file, 1200, 0.80);
+        setChatPhotoPreview(resized.dataUrl, file);
+        showBanner("success", "Foto pronta per l’invio.");
+      } catch(e) {
+        showBanner("error", "Errore preparazione foto: " + (e.message || e));
+      }
+    }
+
+    async function uploadChatPhotoToSupabase() {
+      if (!chatPhotoPreviewDataUrl) return { image_url: null, image_path: null };
+
+      const sb = ensureChatClient();
+      const blob = dataUrlToBlob(chatPhotoPreviewDataUrl);
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const safeName = (chatPhotoFile?.name || "foto-chat.jpg").replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `chat/${yyyy}/${mm}/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}.jpg`;
+
+      const { error } = await sb.storage
+        .from(CHAT_CONFIG.bucket || "archivio-foto")
+        .upload(path, blob, {
+          contentType: "image/jpeg",
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data } = sb.storage.from(CHAT_CONFIG.bucket || "archivio-foto").getPublicUrl(path);
+      return { image_url: data.publicUrl, image_path: path };
+    }
+
     async function sendChatMessage() {
+      const btn = document.getElementById("btnSendChat");
       try {
         const sb = ensureChatClient();
         const nickInput = document.getElementById("chatNickname");
         const msgInput = document.getElementById("chatMessage");
         const nickname = getChatNickname();
         const message = cleanChatMessage(msgInput ? msgInput.value : "");
+        const hasPhoto = !!chatPhotoPreviewDataUrl;
 
         if (nickname.length < 2) {
           showBanner("error", "Inserisci un nickname di almeno 2 caratteri.");
           nickInput?.focus();
           return;
         }
-        if (message.length < 1) {
-          showBanner("error", "Scrivi un messaggio.");
+        if (message.length < 1 && !hasPhoto) {
+          showBanner("error", "Scrivi un messaggio oppure allega una foto.");
           msgInput?.focus();
           return;
         }
 
         localStorage.setItem("sf_chat_nickname", nickname);
         if (nickInput) nickInput.value = nickname;
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "⏳ Invio...";
+        }
+
+        let imageData = { image_url: null, image_path: null };
+        if (hasPhoto) {
+          showBanner("info", "Caricamento foto in corso...", 1800);
+          imageData = await uploadChatPhotoToSupabase();
+        }
 
         const { error } = await sb.from("chat_messages").insert({
           nickname,
-          message,
+          message: message || "📷 Foto condivisa",
+          image_url: imageData.image_url,
+          image_path: imageData.image_path,
           visible: true
         });
 
         if (error) throw error;
         if (msgInput) msgInput.value = "";
+        clearChatPhoto();
       } catch (e) {
         showBanner("error", "Errore invio chat: " + (e.message || e));
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "📨 Invia";
+        }
       }
     }
+
+
 
     function subscribeChatMessages() {
       const sb = ensureChatClient();
@@ -1637,6 +1860,11 @@
 
       document.getElementById("btnSendChat")?.addEventListener("click", sendChatMessage);
       document.getElementById("btnRefreshChat")?.addEventListener("click", loadChatMessages);
+      document.getElementById("btnChatCamera")?.addEventListener("click", () => document.getElementById("chatPhotoCamera")?.click());
+      document.getElementById("btnChatGallery")?.addEventListener("click", () => document.getElementById("chatPhotoGallery")?.click());
+      document.getElementById("btnClearChatPhoto")?.addEventListener("click", clearChatPhoto);
+      document.getElementById("chatPhotoCamera")?.addEventListener("change", e => handleChatPhotoFile((e.target.files || [])[0]));
+      document.getElementById("chatPhotoGallery")?.addEventListener("change", e => handleChatPhotoFile((e.target.files || [])[0]));
       document.getElementById("chatMessage")?.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
