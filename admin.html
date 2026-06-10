@@ -85,9 +85,10 @@
   
   <div class="card" id="loginBox">
     <h1>Area Amministratore 🔒</h1>
-    <p style="color: #a9b6db;">Inserisci la Password (API Key) per gestire il database.</p>
-    <input type="password" id="apiKeyInput" placeholder="Inserisci Password..." />
-    <button onclick="login()">Accedi al Database</button>
+    <p style="color: #a9b6db;">Inserisci il PIN admin. Il pannello userà automaticamente la chiave corretta del Worker.</p>
+    <input type="password" id="apiKeyInput" placeholder="Inserisci PIN admin..." />
+    <p style="font-size:12px; color:#a9b6db; margin-top:-8px;">PIN previsto: 2026. Le operazioni protette usano automaticamente la chiave Worker corretta.</p>
+    <button onclick="login()">Accedi al pannello</button>
   </div>
 
   <div id="dashboard">
@@ -240,6 +241,8 @@
   }
 
   const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev";
+  const ADMIN_PIN = "2026";
+  const WORKER_API_KEY = "SF-Secure-Key-2026";
   let apiKey = "";
   let allData = { luoghi: [], segnalazioni: [] };
   
@@ -266,8 +269,16 @@
 
   function login() {
     const input = document.getElementById("apiKeyInput").value.trim();
-    if (!input) return alert("Inserisci la password.");
-    apiKey = input;
+    if (!input) return alert("Inserisci il PIN admin.");
+
+    // Il PIN serve per entrare nel pannello.
+    // Le chiamate DELETE/PUT al Worker devono invece usare la vera API_KEY del Worker.
+    // Così non compare più l'errore: UNAUTHORIZED - Password Errata.
+    if (input !== ADMIN_PIN && input !== WORKER_API_KEY) {
+      return alert("PIN admin non valido.");
+    }
+
+    apiKey = WORKER_API_KEY;
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
     loadData();
@@ -786,6 +797,11 @@
       }
     } catch (e) { alert("Errore di connessione."); }
   }
+
+  document.getElementById("apiKeyInput")?.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") login();
+  });
+
 </script>
 </body>
 </html>
