@@ -9,6 +9,8 @@
   <link rel="manifest" href="admin.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     body { font-family: system-ui, sans-serif; background: #0b1220; color: #eaf0ff; margin: 0; padding: 20px; }
@@ -96,6 +98,14 @@
     .archive-badge.ok { color:#19c37d; border-color:rgba(25,195,125,.45); background:rgba(25,195,125,.12); }
     .archive-badge.off { color:#ff8d8f; border-color:rgba(255,77,79,.45); background:rgba(255,77,79,.12); }
     @media(max-width:720px){ .archive-form-grid{grid-template-columns:1fr;} .archive-item{grid-template-columns:80px 1fr;} .archive-actions{grid-column:1/-1; flex-direction:row; flex-wrap:wrap;} .archive-item img{width:80px;height:80px;} }
+
+    .archive-map-box { border:1px solid rgba(45,125,255,0.35); border-radius:12px; overflow:hidden; background:#070c18; }
+    #archiveMap { height:320px; width:100%; background:#07101f; }
+    .archive-map-help { color:#a9b6db; font-size:12px; line-height:1.45; margin:8px 0 10px; }
+    .archive-map-actions { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; align-items:center; }
+    .archive-map-actions input { flex:1; min-width:220px; margin:0; }
+    .coord-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; background:rgba(25,195,125,.10); border:1px solid rgba(25,195,125,.35); color:#d9fff0; font-size:12px; font-weight:800; }
+    .leaflet-container { font-family: system-ui, sans-serif; }
 
   </style>
 </head>
@@ -209,13 +219,25 @@
               <label>Descrizione</label>
               <textarea id="archiveDescrizione" placeholder="Descrizione o note utili..."></textarea>
             </div>
-            <div>
-              <label>Latitudine opzionale</label>
-              <input type="text" id="archiveLat" placeholder="41.49...">
-            </div>
-            <div>
-              <label>Longitudine opzionale</label>
-              <input type="text" id="archiveLng" placeholder="13.83...">
+            <div class="full">
+              <label>Posizione sulla mappa opzionale</label>
+              <div class="archive-map-help">
+                Clicca direttamente sulla mappa per scegliere il punto. Puoi anche cercare un indirizzo o usare la posizione attuale del dispositivo.
+              </div>
+              <div class="archive-map-actions">
+                <input type="text" id="archiveAddressSearch" placeholder="Cerca indirizzo o luogo, es. Piazza De Gasperi Cassino..." onkeydown="if(event.key==='Enter'){event.preventDefault(); searchArchiveAddress();}">
+                <button type="button" onclick="searchArchiveAddress()">🔎 Cerca</button>
+                <button type="button" onclick="useCurrentPositionForArchive()">📍 Usa posizione attuale</button>
+                <button type="button" class="btn-danger" onclick="clearArchiveMapPoint()">🧹 Cancella punto</button>
+              </div>
+              <div class="archive-map-box">
+                <div id="archiveMap"></div>
+              </div>
+              <div style="margin-top:10px;">
+                <span id="archiveCoordLabel" class="coord-pill">📍 Nessun punto selezionato</span>
+              </div>
+              <input type="hidden" id="archiveLat">
+              <input type="hidden" id="archiveLng">
             </div>
             <div class="full">
               <label>Foto archivio</label>
@@ -317,6 +339,12 @@
     } else {
       section.style.display = "block";
       icon.style.transform = "rotate(180deg)";
+      if (sectionId === "archivioSection") {
+        setTimeout(() => {
+          initArchiveMap();
+          if (archiveMap) archiveMap.invalidateSize();
+        }, 250);
+      }
     }
   }
 
@@ -335,6 +363,8 @@
   let editPhotos = [];
   let archiveData = [];
   let archiveManualPhotos = [];
+  let archiveMap = null;
+  let archiveMarker = null;
 
   // Parser robusto per le date
   function parseDateString(dStr) {
@@ -898,6 +928,123 @@
 
 
   // ==========================================
+  // MAPPA ARCHIVIO: selezione punto senza scrivere coordinate
+  // ==========================================
+
+  function initArchiveMap() {
+    const mapEl = document.getElementById("archiveMap");
+    if (!mapEl || typeof L === "undefined") return;
+
+    if (archiveMap) {
+      setTimeout(() => archiveMap.invalidateSize(), 120);
+      return;
+    }
+
+    const defaultLat = 41.4925;
+    const defaultLng = 13.8338;
+
+    archiveMap = L.map("archiveMap", {
+      zoomControl: true,
+      scrollWheelZoom: true
+    }).setView([defaultLat, defaultLng], 14);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(archiveMap);
+
+    archiveMap.on("click", function(e) {
+      setArchiveMapPoint(e.latlng.lat, e.latlng.lng, archiveMap.getZoom());
+    });
+
+    updateArchiveCoordLabel();
+    setTimeout(() => archiveMap.invalidateSize(), 250);
+  }
+
+  function setArchiveMapPoint(lat, lng, zoom = 17) {
+    const la = Number(lat);
+    const ln = Number(lng);
+    if (!Number.isFinite(la) || !Number.isFinite(ln)) return;
+
+    document.getElementById("archiveLat").value = la.toFixed(7);
+    document.getElementById("archiveLng").value = ln.toFixed(7);
+
+    if (!archiveMap) initArchiveMap();
+    if (archiveMap) {
+      archiveMap.setView([la, ln], zoom);
+      if (!archiveMarker) {
+        archiveMarker = L.marker([la, ln], { draggable: true }).addTo(archiveMap);
+        archiveMarker.on("dragend", function() {
+          const pos = archiveMarker.getLatLng();
+          setArchiveMapPoint(pos.lat, pos.lng, archiveMap.getZoom());
+        });
+      } else {
+        archiveMarker.setLatLng([la, ln]);
+      }
+    }
+
+    updateArchiveCoordLabel();
+  }
+
+  function clearArchiveMapPoint() {
+    document.getElementById("archiveLat").value = "";
+    document.getElementById("archiveLng").value = "";
+    if (archiveMarker && archiveMap) {
+      archiveMap.removeLayer(archiveMarker);
+      archiveMarker = null;
+    }
+    updateArchiveCoordLabel();
+  }
+
+  function updateArchiveCoordLabel() {
+    const label = document.getElementById("archiveCoordLabel");
+    if (!label) return;
+    const lat = document.getElementById("archiveLat")?.value || "";
+    const lng = document.getElementById("archiveLng")?.value || "";
+    if (!lat || !lng) {
+      label.textContent = "📍 Nessun punto selezionato";
+    } else {
+      label.textContent = `📍 Punto selezionato: ${lat}, ${lng}`;
+    }
+  }
+
+  function useCurrentPositionForArchive() {
+    if (!navigator.geolocation) {
+      alert("Geolocalizzazione non supportata da questo dispositivo.");
+      return;
+    }
+    initArchiveMap();
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setArchiveMapPoint(pos.coords.latitude, pos.coords.longitude, 17);
+      },
+      err => {
+        alert("Non riesco a leggere la posizione attuale. Controlla i permessi del browser.");
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  }
+
+  async function searchArchiveAddress() {
+    const q = document.getElementById("archiveAddressSearch")?.value.trim();
+    if (!q) return alert("Scrivi un indirizzo o un luogo da cercare.");
+    initArchiveMap();
+
+    try {
+      const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&q=" + encodeURIComponent(q);
+      const res = await fetch(url, { headers: { "Accept": "application/json" } });
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        alert("Indirizzo non trovato. Prova a scrivere anche 'Cassino' o il nome della via.");
+        return;
+      }
+      setArchiveMapPoint(Number(data[0].lat), Number(data[0].lon), 17);
+    } catch (e) {
+      alert("Errore durante la ricerca dell'indirizzo. Puoi comunque cliccare manualmente sulla mappa.");
+    }
+  }
+
+  // ==========================================
   // ARCHIVIO SUPABASE INTEGRATO NELL'ADMIN
   // ==========================================
 
@@ -1003,11 +1150,13 @@
               <br>Fonte: ${escapeHtml(item.fonte || "")}
               ${item.origin_type ? `<br>Origine: ${escapeHtml(item.origin_type)} / ${escapeHtml(item.origin_id || "")}` : ""}
               ${created ? `<br>Creato: ${escapeHtml(created)}` : ""}
+              ${(item.lat && item.lng) ? `<br>Coordinate: ${escapeHtml(item.lat)}, ${escapeHtml(item.lng)}` : ""}
               ${item.note_admin ? `<br>Note: ${escapeHtml(item.note_admin)}` : ""}
             </div>
           </div>
           <div class="archive-actions">
             <a href="${escapeAttr(item.foto_url)}" target="_blank" style="text-decoration:none;"><button type="button">🔎 Apri foto</button></a>
+            ${(item.lat && item.lng) ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.lat + ',' + item.lng)}" target="_blank" style="text-decoration:none;"><button type="button">🧭 Raggiungi</button></a>` : ""}
             <button type="button" onclick="markArchiveChecked('${item.id}')">✅ Controllata</button>
             <button type="button" onclick="toggleArchiveVisibility('${item.id}', ${visibile ? "false" : "true"})">${visibile ? "🚫 Nascondi" : "👁️ Mostra"}</button>
             <button type="button" class="btn-danger" onclick="deleteArchiveItem('${item.id}')">🗑️ Elimina scheda</button>
@@ -1086,8 +1235,8 @@
       document.getElementById("archiveTitolo").value = "";
       document.getElementById("archiveCategoria").value = "";
       document.getElementById("archiveDescrizione").value = "";
-      document.getElementById("archiveLat").value = "";
-      document.getElementById("archiveLng").value = "";
+      clearArchiveMapPoint();
+      document.getElementById("archiveAddressSearch").value = "";
       archiveManualPhotos = [];
       renderArchiveManualPhotos();
       await loadArchiveData();
