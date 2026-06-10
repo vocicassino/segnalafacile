@@ -77,6 +77,26 @@
     .mini-photos { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
     .mini-photos img { width:52px; height:52px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.18); }
 
+
+    /* ARCHIVIO SUPABASE INTEGRATO */
+    .archive-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+    .archive-manual-box { background: rgba(45,125,255,0.08); border:1px solid rgba(45,125,255,0.25); border-radius:12px; padding:14px; margin-bottom:16px; }
+    .archive-form-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
+    .archive-form-grid .full { grid-column: 1 / -1; }
+    .archive-list { display:flex; flex-direction:column; gap:12px; }
+    .archive-item { background:#070c18; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px; display:grid; grid-template-columns:96px 1fr auto; gap:12px; align-items:start; }
+    .archive-item img { width:96px; height:96px; border-radius:10px; object-fit:cover; border:1px solid rgba(255,255,255,0.14); background:#050912; }
+    .archive-title { font-weight:900; color:#ffffff; margin-bottom:4px; }
+    .archive-meta { color:#a9b6db; font-size:12px; line-height:1.45; }
+    .archive-actions { display:flex; flex-direction:column; gap:6px; min-width:145px; }
+    .archive-actions button, .archive-actions a { margin:0; text-align:center; justify-content:center; }
+    .archive-hidden { opacity:.55; border-color: rgba(255,77,79,0.28); }
+    .archive-badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:900; margin:2px 4px 2px 0; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#dce7ff; }
+    .archive-badge.warn { color:#f39c12; border-color:rgba(243,156,18,.45); background:rgba(243,156,18,.12); }
+    .archive-badge.ok { color:#19c37d; border-color:rgba(25,195,125,.45); background:rgba(25,195,125,.12); }
+    .archive-badge.off { color:#ff8d8f; border-color:rgba(255,77,79,.45); background:rgba(255,77,79,.12); }
+    @media(max-width:720px){ .archive-form-grid{grid-template-columns:1fr;} .archive-item{grid-template-columns:80px 1fr;} .archive-actions{grid-column:1/-1; flex-direction:row; flex-wrap:wrap;} .archive-item img{width:80px;height:80px;} }
+
   </style>
 </head>
 <body>
@@ -154,6 +174,66 @@
         <div id="luoghiList">Caricamento...</div>
       </div>
     </div>
+
+    <div class="card">
+      <div class="section-header" onclick="toggleSection('archivioSection', 'archivioIcon')">
+        <h2>Archivio Supabase 🗂️</h2>
+        <span id="archivioIcon" class="section-icon">▼</span>
+      </div>
+      <div id="archivioSection" class="section-content">
+        <div class="archive-toolbar">
+          <button onclick="loadArchiveData()">🔄 Aggiorna Archivio</button>
+          <a href="https://vocicassino.github.io/archivio-segnalafacile/" target="_blank" style="text-decoration:none;"><button type="button">🌐 Apri Archivio Pubblico</button></a>
+        </div>
+
+        <div class="archive-manual-box">
+          <h3 style="margin-top:0;">➕ Nuovo elemento archivio</h3>
+          <div class="archive-form-grid">
+            <div>
+              <label>Tipo</label>
+              <select id="archiveTipo">
+                <option value="segnalazione">Segnalazione</option>
+                <option value="luogo">Luogo</option>
+                <option value="altro">Altro</option>
+              </select>
+            </div>
+            <div>
+              <label>Categoria</label>
+              <input type="text" id="archiveCategoria" placeholder="es. verde, rifiuti, monumento...">
+            </div>
+            <div class="full">
+              <label>Titolo</label>
+              <input type="text" id="archiveTitolo" placeholder="Titolo della scheda archivio">
+            </div>
+            <div class="full">
+              <label>Descrizione</label>
+              <textarea id="archiveDescrizione" placeholder="Descrizione o note utili..."></textarea>
+            </div>
+            <div>
+              <label>Latitudine opzionale</label>
+              <input type="text" id="archiveLat" placeholder="41.49...">
+            </div>
+            <div>
+              <label>Longitudine opzionale</label>
+              <input type="text" id="archiveLng" placeholder="13.83...">
+            </div>
+            <div class="full">
+              <label>Foto archivio</label>
+              <div class="photo-manager">
+                <input type="file" id="archivePhotoInput" accept="image/*" multiple onchange="addArchiveManualPhotosFromInput(this)">
+                <div class="photo-manager-note">Puoi caricare fino a 3 foto. Verranno salvate su Supabase, non su R2.</div>
+                <div id="archiveManualPreview" class="photo-grid"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-success" onclick="createManualArchiveItem()">💾 Salva nuovo elemento in archivio</button>
+        </div>
+
+        <div id="archiveStats" style="color:#a9b6db; font-size:13px; margin-bottom:10px;">Archivio non ancora caricato.</div>
+        <div id="archiveList" class="archive-list">Caricamento archivio...</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -253,6 +333,8 @@
   let editingType = null;
   let currentEditingItem = null;
   let editPhotos = [];
+  let archiveData = [];
+  let archiveManualPhotos = [];
 
   // Parser robusto per le date
   function parseDateString(dStr) {
@@ -282,6 +364,7 @@
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
     loadData();
+    loadArchiveData();
   }
 
   async function loadData() {
@@ -544,6 +627,17 @@
       .replace(/>/g, "&gt;");
   }
 
+
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   function renderEditPhotos() {
     const box = document.getElementById("editPhotoPreview");
     if (!box) return;
@@ -801,6 +895,205 @@
   document.getElementById("apiKeyInput")?.addEventListener("keydown", function(e) {
     if (e.key === "Enter") login();
   });
+
+
+  // ==========================================
+  // ARCHIVIO SUPABASE INTEGRATO NELL'ADMIN
+  // ==========================================
+
+  function renderArchiveManualPhotos() {
+    const box = document.getElementById("archiveManualPreview");
+    if (!box) return;
+    if (!archiveManualPhotos.length) {
+      box.innerHTML = `<div style="grid-column:1/-1; color:#a9b6db; font-size:13px;">Nessuna foto selezionata.</div>`;
+      return;
+    }
+    box.innerHTML = archiveManualPhotos.map((src, index) => `
+      <div class="photo-tile">
+        <img src="${escapeAttr(src)}" alt="Foto archivio ${index + 1}">
+        <button type="button" onclick="removeArchiveManualPhoto(${index})">✕</button>
+      </div>
+    `).join("");
+  }
+
+  function removeArchiveManualPhoto(index) {
+    archiveManualPhotos.splice(index, 1);
+    renderArchiveManualPhotos();
+  }
+
+  async function addArchiveManualPhotosFromInput(input) {
+    const files = Array.from(input.files || []);
+    input.value = "";
+    if (!files.length) return;
+
+    for (const file of files) {
+      if (archiveManualPhotos.length >= 3) {
+        alert("Massimo 3 foto per elemento archivio.");
+        break;
+      }
+      if (!file.type || !file.type.startsWith("image/")) {
+        alert("Puoi caricare solo immagini.");
+        continue;
+      }
+      try {
+        const resized = await resizeImageToDataUrl(file, 1280, 0.78);
+        archiveManualPhotos.push(resized);
+      } catch (e) {
+        alert("Errore durante il caricamento della foto archivio.");
+      }
+    }
+    renderArchiveManualPhotos();
+  }
+
+  async function loadArchiveData() {
+    if (!apiKey) return;
+    const list = document.getElementById("archiveList");
+    const stats = document.getElementById("archiveStats");
+    if (!list) return;
+    list.innerHTML = "Caricamento archivio Supabase...";
+    if (stats) stats.innerText = "Sincronizzazione archivio...";
+
+    try {
+      const res = await fetch(WORKER_URL + "/api/archive/list?t=" + Date.now(), {
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Errore archivio");
+      archiveData = data.items || [];
+      renderArchiveData();
+    } catch (e) {
+      list.innerHTML = `<p style="color:#ff8d8f;">Errore caricamento archivio: ${escapeHtml(e.message || e)}</p>`;
+      if (stats) stats.innerText = "Archivio non disponibile.";
+    }
+  }
+
+  function renderArchiveData() {
+    const list = document.getElementById("archiveList");
+    const stats = document.getElementById("archiveStats");
+    if (!list) return;
+
+    const total = archiveData.length;
+    const visible = archiveData.filter(i => i.visibile !== false).length;
+    const pending = archiveData.filter(i => (i.stato_controllo || "") === "da_controllare").length;
+    if (stats) stats.innerHTML = `Totale: <b>${total}</b> • Visibili: <b>${visible}</b> • Da controllare: <b>${pending}</b>`;
+
+    if (!archiveData.length) {
+      list.innerHTML = `<p style="color:#a9b6db;">Archivio Supabase vuoto.</p>`;
+      return;
+    }
+
+    list.innerHTML = archiveData.map(item => {
+      const visibile = item.visibile !== false;
+      const stato = item.stato_controllo || "da_controllare";
+      const badgeStato = stato === "approvato" ? "ok" : "warn";
+      const created = item.created_at ? new Date(item.created_at).toLocaleString("it-IT") : "";
+      return `
+        <div class="archive-item ${visibile ? "" : "archive-hidden"}" id="archive-${item.id}">
+          <img src="${escapeAttr(item.foto_url)}" alt="${escapeAttr(item.titolo)}" loading="lazy" onclick="window.open('${escapeAttr(item.foto_url)}','_blank')">
+          <div>
+            <div class="archive-title">${escapeHtml(item.titolo || "Senza titolo")}</div>
+            <div>
+              <span class="archive-badge ${badgeStato}">${escapeHtml(stato)}</span>
+              <span class="archive-badge ${visibile ? "ok" : "off"}">${visibile ? "visibile" : "nascosto"}</span>
+              <span class="archive-badge">${escapeHtml(item.tipo || "archivio")}</span>
+              <span class="archive-badge">${escapeHtml(item.categoria || "senza categoria")}</span>
+            </div>
+            <div class="archive-meta">
+              ${escapeHtml(item.descrizione || "")}
+              <br>Fonte: ${escapeHtml(item.fonte || "")}
+              ${item.origin_type ? `<br>Origine: ${escapeHtml(item.origin_type)} / ${escapeHtml(item.origin_id || "")}` : ""}
+              ${created ? `<br>Creato: ${escapeHtml(created)}` : ""}
+              ${item.note_admin ? `<br>Note: ${escapeHtml(item.note_admin)}` : ""}
+            </div>
+          </div>
+          <div class="archive-actions">
+            <a href="${escapeAttr(item.foto_url)}" target="_blank" style="text-decoration:none;"><button type="button">🔎 Apri foto</button></a>
+            <button type="button" onclick="markArchiveChecked('${item.id}')">✅ Controllata</button>
+            <button type="button" onclick="toggleArchiveVisibility('${item.id}', ${visibile ? "false" : "true"})">${visibile ? "🚫 Nascondi" : "👁️ Mostra"}</button>
+            <button type="button" class="btn-danger" onclick="deleteArchiveItem('${item.id}')">🗑️ Elimina scheda</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function updateArchiveItem(id, patch) {
+    const res = await fetch(`${WORKER_URL}/api/archive/${id}`, {
+      method: "PUT",
+      headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify(patch)
+    });
+    const result = await res.json();
+    if (!result.ok) throw new Error(result.error || "Errore aggiornamento archivio");
+  }
+
+  async function markArchiveChecked(id) {
+    try {
+      await updateArchiveItem(id, { stato_controllo: "approvato", note_admin: "Controllata da admin Segnala Facile" });
+      await loadArchiveData();
+    } catch (e) { alert("Errore: " + (e.message || e)); }
+  }
+
+  async function toggleArchiveVisibility(id, visible) {
+    try {
+      await updateArchiveItem(id, { visibile: visible });
+      await loadArchiveData();
+    } catch (e) { alert("Errore: " + (e.message || e)); }
+  }
+
+  async function deleteArchiveItem(id) {
+    if (!confirm("Eliminare questa scheda dall'archivio Supabase? La foto resterà eventualmente nello Storage come copia tecnica.")) return;
+    try {
+      const res = await fetch(`${WORKER_URL}/api/archive/${id}`, {
+        method: "DELETE",
+        headers: { "X-Api-Key": apiKey }
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "Errore eliminazione archivio");
+      archiveData = archiveData.filter(i => i.id !== id);
+      renderArchiveData();
+    } catch (e) { alert("Errore: " + (e.message || e)); }
+  }
+
+  async function createManualArchiveItem() {
+    const titolo = document.getElementById("archiveTitolo").value.trim();
+    const categoria = document.getElementById("archiveCategoria").value.trim() || "altro";
+    const descrizione = document.getElementById("archiveDescrizione").value.trim();
+    const tipo = document.getElementById("archiveTipo").value;
+    const latTxt = document.getElementById("archiveLat").value.trim().replace(",", ".");
+    const lngTxt = document.getElementById("archiveLng").value.trim().replace(",", ".");
+
+    if (!titolo) return alert("Inserisci un titolo.");
+    if (!archiveManualPhotos.length) return alert("Inserisci almeno una foto.");
+
+    const payload = {
+      tipo, titolo, categoria, descrizione,
+      lat: latTxt ? Number(latTxt) : null,
+      lng: lngTxt ? Number(lngTxt) : null,
+      data_evento: new Date().toLocaleString("it-IT"),
+      photos: archiveManualPhotos.map((dataUrl, idx) => ({ dataUrl, name: `archivio-admin-${idx+1}.jpg`, type: "image/jpeg" }))
+    };
+
+    try {
+      const res = await fetch(WORKER_URL + "/api/archive/manual", {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "Errore salvataggio archivio");
+
+      document.getElementById("archiveTitolo").value = "";
+      document.getElementById("archiveCategoria").value = "";
+      document.getElementById("archiveDescrizione").value = "";
+      document.getElementById("archiveLat").value = "";
+      document.getElementById("archiveLng").value = "";
+      archiveManualPhotos = [];
+      renderArchiveManualPhotos();
+      await loadArchiveData();
+      alert("Elemento archiviato su Supabase.");
+    } catch (e) { alert("Errore: " + (e.message || e)); }
+  }
 
 </script>
 </body>
