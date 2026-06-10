@@ -2,25 +2,47 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b1220" />
-  <title>Segnala Facile</title>
+  <title>SegnalaFacile</title>
 
-  <link rel="manifest" href="manifest.webmanifest?v=2" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- Leaflet (mappa) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+  ></script>
 
   <style>
     :root{
-      --bg:#0b1220; --bg2:#070c18; --text:#eaf0ff; --muted:#a9b6db;
-      --accent:#2d7dff; --accent2:#19c37d; --danger:#ff4d4f;
-      --stroke:rgba(255,255,255,.10); --stroke2:rgba(255,255,255,.16);
-      --r:22px; --r2:28px;
-      --shadow: 0 18px 45px rgba(0,0,0,.40); --shadow2: 0 10px 25px rgba(0,0,0,.35);
-      --glass1: rgba(255,255,255,.08); --glass2: rgba(255,255,255,.04);
+      --bg:#0b1220;
+      --bg2:#070c18;
+      --text:#eaf0ff;
+      --muted:#a9b6db;
+
+      --accent:#2d7dff;
+      --accent2:#19c37d;
+      --danger:#ff4d4f;
+
+      --stroke:rgba(255,255,255,.10);
+      --stroke2:rgba(255,255,255,.16);
+
+      --r:22px;
+      --r2:28px;
+
+      --shadow: 0 18px 45px rgba(0,0,0,.40);
+      --shadow2: 0 10px 25px rgba(0,0,0,.35);
+
+      --glass1: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.04);
     }
 
     *{box-sizing:border-box}
@@ -34,93 +56,170 @@
         radial-gradient(1100px 700px at 85% 5%, rgba(25,195,125,.20), transparent 60%),
         radial-gradient(900px 650px at 50% 120%, rgba(45,125,255,.12), transparent 60%),
         linear-gradient(180deg, var(--bg), var(--bg2));
-      background-attachment: fixed;
     }
 
     .wrap{
-      max-width: 920px; margin: 0 auto;
-      padding: 18px 16px calc(132px + env(safe-area-inset-bottom));
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 18px 16px 132px;
     }
 
-    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 10px 0 12px; }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 10px 0 12px;
+    }
+
     .brand{display:flex; align-items:center; gap:14px;}
     .logo{
       width:70px; height:70px; border-radius:22px;
-      background: url("icons/icon-192.png") center/cover no-repeat, linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
-      box-shadow: 0 18px 40px rgba(0,0,0,.45); outline: 1px solid rgba(255,255,255,.10); flex:0 0 auto;
+      background:
+        url("icons/icon-192.png") center/cover no-repeat,
+        linear-gradient(135deg, rgba(45,125,255,.95), rgba(25,195,125,.90));
+      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+      outline: 1px solid rgba(255,255,255,.10);
+      flex:0 0 auto;
     }
-    .title{ font-size: 28px; font-weight: 980; letter-spacing: -.35px; line-height: 1.05; }
+    .title{
+      font-size: 28px;
+      font-weight: 980;
+      letter-spacing: -.35px;
+      line-height: 1.05;
+    }
 
     .grid{display:grid; gap:14px; position:relative;}
 
     .card{
       position:relative;
       background: linear-gradient(145deg, rgba(38,86,108,.85), rgba(12,25,45,.85));
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
       border: 1px solid rgba(255,255,255,.12);
-      border-radius: 28px; padding: 24px;
+      border-radius: 28px;
+      padding: 24px;
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
-      margin-bottom: 28px; min-height: 60vh;
-      display: flex; flex-direction: column; justify-content: space-between;
+      margin-bottom: 28px;
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .card::before{
-      content:""; position:absolute; inset:-1px;
+      content:"";
+      position:absolute;
+      inset:-1px;
       background: radial-gradient(740px 160px at 20% 0%, rgba(45,125,255,.22), transparent 55%),
                   radial-gradient(740px 160px at 85% 0%, rgba(25,195,125,.18), transparent 55%);
-      pointer-events:none; opacity:.95; border-radius: 28px;
+      pointer-events:none;
+      opacity:.95;
+      border-radius: 28px;
     }
     .card > *{position:relative}
 
-    .heroTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .heroCover{
-      width: 100%; 
-      height: auto; 
-      max-height: 350px; 
-      object-fit: contain; 
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,.12); 
-      box-shadow: 0 18px 45px rgba(0,0,0,.38);
-      display: block; 
-      margin: 14px 0 16px; 
-      filter: saturate(1.05) contrast(1.02);
-      background: rgba(0,0,0,0.2);
+    .heroTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
     }
-    .hero h1{ margin:0 0 10px; font-size: 34px; line-height: 1.08; letter-spacing: -.7px; }
-    .hero p{ margin:0; color: var(--muted); font-size: 15px; line-height: 1.55; max-width: 62ch; }
+    .heroCover{
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 45px rgba(0,0,0,.38);
+      display: block;
+      margin: 14px 0 16px;
+      filter: saturate(1.05) contrast(1.02);
+    }
+    @media (min-width: 520px){
+      .heroCover{ height: 210px; }
+    }
+    .hero h1{
+      margin:0 0 10px;
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: -.7px;
+    }
+    .hero p{
+      margin:0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+      max-width: 62ch;
+    }
 
     .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+
     button, .btn{
-      cursor:pointer; border:0; border-radius: 18px; padding: 12px 14px; font-weight: 900; font-size: 14px;
-      display:inline-flex; align-items:center; justify-content:center; gap:10px; text-decoration:none;
-      color: var(--text); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+      cursor:pointer;
+      border:0;
+      border-radius: 18px;
+      padding: 12px 14px;
+      font-weight: 900;
+      font-size: 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      text-decoration:none;
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
       transition: transform .12s ease, filter .12s ease, background .12s ease, border-color .12s ease;
-      user-select:none; min-height: 46px;
+      user-select:none;
+      min-height: 46px;
     }
     button:active, .btn:active{transform: translateY(1px) scale(.99)}
     button:disabled{opacity:.65; cursor:not-allowed; transform:none !important}
 
-    .primary{ background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.70)); box-shadow: 0 18px 36px rgba(45,125,255,.18); }
+    .primary{
+      background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.70));
+      box-shadow: 0 18px 36px rgba(45,125,255,.18);
+    }
     .primary:hover{filter: brightness(1.06)}
-    .ghost{ background: rgba(255,255,255,.055); border:1px solid var(--stroke); }
+    .ghost{
+      background: rgba(255,255,255,.055);
+      border:1px solid var(--stroke);
+    }
     .ghost:hover{border-color: var(--stroke2)}
-    .danger{ background: rgba(255,77,79,.14); border:1px solid rgba(255,77,79,.35); color: var(--danger); }
+    .danger{
+      background: rgba(255,77,79,.14);
+      border:1px solid rgba(255,77,79,.35);
+    }
     .danger:hover{border-color: rgba(255,77,79,.55)}
     .small{padding:10px 12px; border-radius:16px; font-size:13px; min-height:42px}
 
     .ctaBig{
-      width:100%; padding: 16px 16px; border-radius: 22px; font-size: 16px; font-weight: 980; min-height: 56px;
+      width:100%;
+      padding: 16px 16px;
+      border-radius: 22px;
+      font-size: 16px;
+      font-weight: 980;
+      min-height: 56px;
       background: linear-gradient(135deg, rgba(45,125,255,1), rgba(45,125,255,.62));
-      box-shadow: 0 22px 44px rgba(45,125,255,.20); position:relative; overflow:hidden;
+      box-shadow: 0 22px 44px rgba(45,125,255,.20);
+      position:relative;
+      overflow:hidden;
     }
     .ctaBig::after{
-      content:""; position:absolute; inset:-40%;
+      content:"";
+      position:absolute;
+      inset:-40%;
       background: radial-gradient(circle at 20% 40%, rgba(255,255,255,.22), transparent 42%),
                   radial-gradient(circle at 80% 60%, rgba(25,195,125,.16), transparent 46%);
-      transform: rotate(12deg); opacity:.8; pointer-events:none;
+      transform: rotate(12deg);
+      opacity:.8;
+      pointer-events:none;
     }
     .ctaBig .dot{
-      width: 10px; height: 10px; border-radius: 999px; background: rgba(255,255,255,.9);
-      box-shadow: 0 0 0 6px rgba(255,255,255,.12); z-index:1;
+      width: 10px; height: 10px; border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 0 0 6px rgba(255,255,255,.12);
+      z-index:1;
     }
     .ctaBig span, .ctaBig .dot{position:relative}
     .ctaBig:hover{filter: brightness(1.06)}
@@ -128,199 +227,751 @@
     .row{display:flex; gap:12px; flex-wrap:wrap}
     .row > *{flex:1 1 220px}
 
-    label{ display:block; font-size: 12px; color: var(--muted); margin: 12px 0 7px; font-weight: 850; letter-spacing: .25px; }
-
-    input[type="text"], input[type="email"], input[type="tel"], textarea, select{
-      width:100%; padding: 12px 12px; border-radius: 18px; border: 1px solid var(--stroke);
-      background: rgba(0,0,0,.22); color: var(--text); outline:none; transition: border-color .12s ease, box-shadow .12s ease;
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 12px 0 7px;
+      font-weight: 850;
+      letter-spacing: .25px;
     }
-    input:focus, textarea:focus, select:focus{ border-color: rgba(45,125,255,.55); box-shadow: 0 0 0 3px rgba(45,125,255,.16); }
-    input[readonly], select:disabled { opacity: 0.6; cursor: not-allowed; }
-    textarea{min-height:120px; resize:vertical}
-    select option { background: var(--bg2); color: var(--text); }
 
-    .hint{ font-size:12.5px; color: var(--muted); margin-top:10px; line-height:1.5; }
+    input[type="text"], input[type="email"], input[type="tel"], textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      outline:none;
+      transition: border-color .12s ease, box-shadow .12s ease;
+    }
+    input:focus, textarea:focus{
+      border-color: rgba(45,125,255,.55);
+      box-shadow: 0 0 0 3px rgba(45,125,255,.16);
+    }
+    textarea{min-height:120px; resize:vertical}
+
+    .hint{
+      font-size:12.5px;
+      color: var(--muted);
+      margin-top:10px;
+      line-height:1.5;
+    }
 
     .toggle{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding: 12px 12px; border-radius: 20px; border:1px solid var(--stroke);
-      background: rgba(0,0,0,.18); margin-top: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 12px;
+      border-radius: 20px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      margin-top: 12px;
     }
     .toggle span{color:var(--muted); font-size:13px}
     .toggle strong{font-size:13px; font-weight:980}
     .toggle input{transform: scale(1.15)}
 
-    .contactBox{ margin-top: 12px; padding: 12px; border-radius: 22px; border: 1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.16); }
-    .contactTitle{ font-weight: 980; letter-spacing: .2px; margin: 0 0 6px; display:flex; align-items:center; gap:10px; }
-    .contactGrid{ display:grid; gap:10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    @media (max-width: 640px){ .contactGrid{grid-template-columns: 1fr;} }
+    .contactBox{
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.16);
+    }
+    .contactTitle{
+      font-weight: 980;
+      letter-spacing: .2px;
+      margin: 0 0 6px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .contactGrid{
+      display:grid;
+      gap:10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (max-width: 640px){
+      .contactGrid{grid-template-columns: 1fr;}
+    }
 
     .preview{
-      margin-top: 12px; display:none; gap: 12px; align-items:flex-start; padding: 12px;
-      border-radius: 22px; border:1px dashed rgba(255,255,255,.18); background: rgba(0,0,0,.16);
+      margin-top: 12px;
+      display:none;
+      gap: 12px;
+      align-items:flex-start;
+      padding: 12px;
+      border-radius: 22px;
+      border:1px dashed rgba(255,255,255,.18);
+      background: rgba(0,0,0,.16);
     }
-    .thumbs{ display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start; padding:2px; }
+
+    .thumbs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:flex-start;
+      padding:2px;
+    }
     .thumbs img{
-      width:76px; height:76px; object-fit:cover; border-radius:18px;
-      border:1px solid var(--stroke); background:rgba(255,255,255,.05); box-shadow: 0 10px 18px rgba(0,0,0,.30); cursor: pointer;
+      width:76px;
+      height:76px;
+      object-fit:cover;
+      border-radius:18px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.05);
+      box-shadow: 0 10px 18px rgba(0,0,0,.30);
     }
 
     .pill{
-      display:inline-flex; align-items:center; gap:8px; padding: 8px 12px; border-radius: 999px;
-      background: rgba(255,255,255,.06); border: 1px solid var(--stroke); color: var(--text);
-      font-size: 12px; font-weight: 900; box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
     }
 
     .list{display:grid; gap:10px; margin-top:12px}
     .item{
-      padding: 14px; border-radius: 22px; background: rgba(0,0,0,.18); border: 1px solid var(--stroke);
-      display:flex; flex-direction:column; gap:12px; transition: border-color .12s ease, transform .12s ease, box-shadow 0.3s ease;
+      padding: 12px;
+      border-radius: 22px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid var(--stroke);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      transition: border-color .12s ease, transform .12s ease;
     }
-    .item.highlight { border-color: var(--accent); box-shadow: 0 0 20px rgba(45,125,255,0.4); transform: scale(1.02); }
-    .item-top { display:flex; gap:12px; align-items:flex-start; }
     .item:hover{border-color: var(--stroke2)}
-    
-    .cat-verde { border-left: 5px solid #19c37d; }
-    .cat-strade { border-left: 5px solid #95a5a6; }
-    .cat-rifiuti { border-left: 5px solid #f39c12; }
-    .cat-luce { border-left: 5px solid #f1c40f; }
-    .cat-altro, .cat-ristorante, .cat-pasticceria, .cat-negozio, .cat-cultura, .cat-natura, .cat-bar, .cat-monumento, .cat-parco { border-left: 5px solid #2d7dff; }
-
-    .gallery-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .gallery-img { height: 80px; width: 80px; object-fit: cover; border-radius: 12px; border: 1px solid var(--stroke); cursor: pointer; }
-    .place-img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; margin-top: 10px; margin-right: 5px; border: 1px solid var(--stroke); cursor: pointer; }
+    .thumb{
+      width: 78px; height: 78px;
+      border-radius: 22px;
+      border: 1px solid var(--stroke);
+      object-fit: cover;
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 10px 18px rgba(0,0,0,.28);
+    }
+    .item h3{margin:0; font-size:14px; font-weight:950}
+    .item p{margin:6px 0 0; color:var(--muted); font-size:12.5px; line-height:1.45}
+    .metaRow{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
 
     .hidden{display:none !important}
-    section{display:none} section:not(.hidden){display:block}
+    section{display:none}
+    section:not(.hidden){display:block}
 
-    .ok{ display:flex; align-items:center; gap:12px; padding: 14px; border-radius: 22px; border: 1px solid rgba(25,195,125,.35); background: rgba(25,195,125,.12); }
+    .ok{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding: 14px;
+      border-radius: 22px;
+      border: 1px solid rgba(25,195,125,.35);
+      background: rgba(25,195,125,.12);
+    }
+
     .banner{
-      position: sticky; top: 10px; z-index: 2000; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-      padding: 12px 12px; border-radius: 22px; border:1px solid var(--stroke); background: rgba(255,255,255,.06);
-      backdrop-filter: blur(12px); box-shadow: var(--shadow2); margin: 0 0 12px;
+      position: sticky;
+      top: 10px;
+      z-index: 2000;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 12px;
+      border-radius: 22px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow2);
+      margin: 0 0 12px;
     }
     .banner .text{font-size:13px; line-height:1.35; color:var(--text)}
-    .banner .close{ flex:0 0 auto; border:1px solid var(--stroke); background: rgba(0,0,0,.20); color: var(--text); border-radius: 16px; padding: 8px 10px; font-weight: 950; }
+    .banner .close{
+      flex:0 0 auto;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 8px 10px;
+      font-weight: 950;
+    }
     .banner.info{border-color: rgba(45,125,255,.35); background: rgba(45,125,255,.10)}
     .banner.success{border-color: rgba(25,195,125,.35); background: rgba(25,195,125,.12)}
     .banner.error{border-color: rgba(255,77,79,.35); background: rgba(255,77,79,.12)}
 
-    .progressWrap{ margin-top: 12px; padding: 12px; border-radius: 22px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.16); display:none; }
-    .progressTop{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom: 10px; }
-    .progressTitle{ font-weight: 980; letter-spacing: .2px; display:flex; align-items:center; gap:10px; }
-    .stepPill{ font-size: 12px; font-weight: 950; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--text); white-space: nowrap; }
-    .bar{ height: 10px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); overflow:hidden; }
-    .bar > span{ display:block; height:100%; width: 0%; background: linear-gradient(90deg, rgba(45,125,255,1), rgba(25,195,125,1)); transition: width .25s ease; }
-    .progressHint{ margin-top: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
-
-    .emptyState{ text-align:center; opacity:.85; margin-top:40px; }
-    .emptyIcon{ font-size:48px; margin-bottom:10px; }
-    .contactInfo{ margin: 8px 2px 0; opacity:.75; font-size:14px; text-align:left; }
-
-    .star-rating {
-      display: flex; flex-direction: row-reverse; justify-content: flex-end;
-      gap: 4px; font-size: 32px; margin-bottom: 12px; margin-top: 4px;
+    .progressWrap{
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.16);
+      display:none;
     }
-    .star-rating input { display: none; }
-    .star-rating label { cursor: pointer; color: rgba(255,255,255,0.15); transition: 0.2s; }
-    .star-rating input:checked ~ label,
-    .star-rating label:hover,
-    .star-rating label:hover ~ label { color: #ff9f43; }
+    .progressTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .progressTitle{
+      font-weight: 980;
+      letter-spacing: .2px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .stepPill{
+      font-size: 12px;
+      font-weight: 950;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .bar{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+    }
+    .bar > span{
+      display:block;
+      height:100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(45,125,255,1), rgba(25,195,125,1));
+      transition: width .25s ease;
+    }
+    .progressHint{
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
 
+    .emptyState{
+      text-align:center;
+      opacity:.85;
+      margin-top:40px;
+    }
+    .emptyIcon{
+      font-size:48px;
+      margin-bottom:10px;
+    }
+
+    .contactInfo{
+      margin: 8px 2px 0;
+      opacity:.75;
+      font-size:14px;
+      text-align:left;
+    }
+
+    /* ============== MAP UI ============== */
     .mapShell{
-      margin-top: 14px; border-radius: 24px; border: 1px solid rgba(255,255,255,.12); overflow:hidden;
-      background: rgba(0,0,0,.16); box-shadow: 0 18px 45px rgba(0,0,0,.32);
+      margin-top: 14px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      background: rgba(0,0,0,.16);
+      box-shadow: 0 18px 45px rgba(0,0,0,.32);
     }
     .mapTopBar{
-      display:flex; justify-content:space-between; align-items:center; gap:10px; padding: 12px 12px;
-      border-bottom: 1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
     }
-    .mapTitle{ font-weight: 980; letter-spacing: .2px; }
-    .mapHint{ font-size:12.5px; color: var(--muted); margin: 6px 0 0; line-height: 1.35; }
-    .mapBox{ width:100%; height: 320px; }
-    .mapBox.big{ height: 520px; }
-    @media (max-width: 420px){ .mapBox.big{ height: 460px; } }
+    .mapTitle{
+      font-weight: 980;
+      letter-spacing: .2px;
+    }
+    .mapHint{
+      font-size:12.5px;
+      color: var(--muted);
+      margin: 6px 0 0;
+      line-height: 1.35;
+    }
+    .mapBox{
+      width:100%;
+      height: 320px;
+    }
+    .mapBox.big{
+      height: 520px;
+    }
+    @media (max-width: 420px){
+      .mapBox.big{ height: 460px; }
+    }
 
+    /* ============== HOME WOW OVERVIEW ============== */
+    .homePulseCard{
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(520px 220px at 10% 0%, rgba(45,125,255,.22), transparent 60%),
+        radial-gradient(500px 260px at 100% 20%, rgba(25,195,125,.18), transparent 58%),
+        linear-gradient(145deg, rgba(38,86,108,.78), rgba(12,25,45,.92));
+    }
+    .homePulseCard:before{
+      content:"";
+      position:absolute;
+      inset:-80px -120px auto auto;
+      width:240px;
+      height:240px;
+      background: rgba(45,125,255,.16);
+      border-radius:999px;
+      filter: blur(4px);
+      pointer-events:none;
+    }
+    .pulseHeader{
+      position:relative;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .pulseEyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      font-weight:980;
+      letter-spacing:.9px;
+      color:#9ec3ff;
+      background: rgba(45,125,255,.14);
+      border:1px solid rgba(45,125,255,.24);
+      border-radius:999px;
+      padding:6px 10px;
+      margin-bottom:8px;
+    }
+    .pulseTitle{
+      font-size:22px;
+      font-weight:980;
+      letter-spacing:.1px;
+      line-height:1.1;
+    }
+    .pulseMapBtn{
+      white-space:nowrap;
+      box-shadow:0 10px 24px rgba(0,0,0,.22);
+    }
+    .quickStats{
+      position:relative;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      margin:12px 0 12px;
+    }
+    .quickStat{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(7,12,24,.42);
+      border-radius:18px;
+      padding:12px 10px;
+      min-width:0;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .quickStat strong{
+      display:block;
+      font-size:23px;
+      line-height:1;
+      font-weight:1000;
+      color:#fff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:100%;
+    }
+    .quickStat span{
+      display:block;
+      margin-top:6px;
+      font-size:11.5px;
+      color:var(--muted);
+      font-weight:850;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .latestMini strong{
+      font-size:16px;
+      padding-top:3px;
+    }
+    .latestPanel{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      margin: 0 0 12px;
+    }
+    .latestIcon{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(135deg, rgba(45,125,255,.35), rgba(25,195,125,.24));
+      box-shadow: 0 10px 24px rgba(0,0,0,.24);
+      font-size:22px;
+      flex:0 0 auto;
+    }
+    .latestLabel{
+      font-weight:980;
+      color:#fff;
+      margin-bottom:3px;
+    }
+    .latestText{
+      font-size:12.5px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .homeMapShell{
+      position:relative;
+      margin-top:0;
+      border-radius:22px;
+      overflow:hidden;
+    }
+    .homeMapBox{
+      height:210px;
+      filter:saturate(1.08) contrast(1.02);
+    }
+    .homeMapOverlay{
+      position:absolute;
+      z-index:500;
+      top:12px;
+      left:12px;
+      right:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      pointer-events:none;
+      padding:9px 11px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(7,12,24,.70);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+      font-size:12px;
+      font-weight:980;
+    }
+    .homeMapOverlay span{
+      color:var(--muted);
+      font-size:11.5px;
+      font-weight:850;
+    }
+    .homeActionRow{
+      display:grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    .ctaSmall{
+      background: linear-gradient(135deg, #2d7dff, #19c37d);
+      box-shadow:0 12px 28px rgba(45,125,255,.20);
+    }
+    @media (max-width: 560px){
+      .quickStats{ grid-template-columns: 1fr; }
+      .homeActionRow{ grid-template-columns: 1fr; }
+      .pulseTitle{ font-size:20px; }
+      .homeMapBox{ height:190px; }
+    }
+
+    /* Modal dettagli segnalazione (da PIN) */
     .modalOverlay{
-      position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(8px);
-      display:none; align-items:center; justify-content:center; z-index: 99999; padding: 14px;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index: 99999;
+      padding: 14px;
     }
     .modal{
-      width: min(920px, 100%); background: linear-gradient(145deg, rgba(38,86,108,.92), rgba(12,25,45,.92));
-      border: 1px solid rgba(255,255,255,.14); border-radius: 28px; box-shadow: 0 28px 80px rgba(0,0,0,.55);
-      padding: 16px; position:relative; overflow:hidden;
+      width: min(920px, 100%);
+      background: linear-gradient(145deg, rgba(38,86,108,.92), rgba(12,25,45,.92));
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 28px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+      padding: 16px;
+      position:relative;
+      overflow:hidden;
     }
-    .modalHeader{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom: 10px; }
-    .modalHeader h3{ margin:0; font-size:16px; font-weight: 980; letter-spacing: -.2px; }
+    .modalHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .modalHeader h3{
+      margin:0;
+      font-size:16px;
+      font-weight: 980;
+      letter-spacing: -.2px;
+    }
     .modalClose{
-      border:1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.20); color: var(--text);
-      border-radius: 16px; padding: 8px 10px; font-weight: 950; min-height: 40px; cursor:pointer;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 8px 10px;
+      font-weight: 950;
+      min-height: 40px;
     }
-    .mapPickerBox{ width:100%; height: 380px; border-radius: 22px; overflow:hidden; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.16); margin-top: 10px; }
+    .modalBody{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .modalThumb{
+      width: 96px;
+      height: 96px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.12);
+      object-fit: cover;
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 12px 28px rgba(0,0,0,.32);
+      flex: 0 0 auto;
+    }
+    .modalText{
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+    .modalText p{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      max-height: 8.8em;
+      overflow:auto;
+    }
 
-    .leaflet-container{ background: rgba(0,0,0,.18); font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial; }
-    .leaflet-control-zoom a{ background: rgba(10,16,32,.75) !important; color: var(--text) !important; border: 1px solid rgba(255,255,255,.12) !important; backdrop-filter: blur(10px); }
-    .leaflet-popup-content-wrapper{ background: rgba(10,16,32,.92); color: var(--text); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 50px rgba(0,0,0,.55); border-radius: 18px; backdrop-filter: blur(10px); }
-    .leaflet-popup-tip{ background: rgba(10,16,32,.92); }
+    /* MODAL MAP PICKER */
+    .mapPickerBox{
+      width:100%;
+      height: 380px;
+      border-radius: 22px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.16);
+      margin-top: 10px;
+    }
 
-    nav.bottom{ position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; padding: 10px 12px 12px; background: transparent; }
+    /* Leaflet stile */
+    .leaflet-container{
+      background: rgba(0,0,0,.18);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    }
+    .leaflet-control-zoom a{
+      background: rgba(10,16,32,.75) !important;
+      color: var(--text) !important;
+      border: 1px solid rgba(255,255,255,.12) !important;
+      backdrop-filter: blur(10px);
+    }
+    .leaflet-popup-content-wrapper{
+      background: rgba(10,16,32,.92);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+    }
+    .leaflet-popup-tip{
+      background: rgba(10,16,32,.92);
+    }
+
+    /* =========================
+       DOCK PREMIUM
+       ========================= */
+    nav.bottom{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 9999;
+      padding: 10px 12px 12px;
+      background: transparent;
+    }
+
     nav .inner{
-      max-width: 560px; margin: 0 auto; display:flex; justify-content:space-between; gap: 5px;
-      padding: 10px; border-radius: 28px;
-      background: radial-gradient(240px 120px at 20% 10%, rgba(45,125,255,.22), transparent 60%), radial-gradient(240px 120px at 80% 10%, rgba(25,195,125,.18), transparent 60%), rgba(9,14,28,.85);
-      border: 1px solid rgba(255,255,255,.12); box-shadow: 0 18px 50px rgba(0,0,0,.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); position:relative; overflow:hidden;
+      max-width: 560px;
+      margin: 0 auto;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+
+      padding: 10px 10px;
+      border-radius: 28px;
+
+      background:
+        radial-gradient(240px 120px at 20% 10%, rgba(45,125,255,.22), transparent 60%),
+        radial-gradient(240px 120px at 80% 10%, rgba(25,195,125,.18), transparent 60%),
+        rgba(9,14,28,.72);
+
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position:relative;
+      overflow:hidden;
     }
+
     nav .inner::before{
-      content:""; position:absolute; inset:-1px; border-radius: 28px; pointer-events:none;
+      content:"";
+      position:absolute;
+      inset:-1px;
+      border-radius: 28px;
+      pointer-events:none;
       background: linear-gradient(135deg, rgba(45,125,255,.30), rgba(25,195,125,.22), rgba(255,255,255,.06));
-      opacity:.55; mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000); -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000); padding:1px;
+      opacity:.55;
+      mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+      -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+      padding:1px;
     }
+
     nav a{
-      flex: 1; text-align:center; text-decoration:none; color: rgba(169,182,219,.92); font-size: 11px;
-      padding: 10px 2px; border-radius: 22px; border: 1px solid transparent; transition: background .16s ease, border-color .16s ease, transform .16s ease, color .16s ease;
-      display:flex; flex-direction:column; align-items:center; gap:6px; font-weight: 950; position:relative; overflow:hidden; min-height: 62px;
+      flex: 1;
+      text-align:center;
+      text-decoration:none;
+      color: rgba(169,182,219,.92);
+      font-size: 12px;
+      padding: 10px 6px;
+      border-radius: 22px;
+      border: 1px solid transparent;
+      transition: background .16s ease, border-color .16s ease, transform .16s ease, color .16s ease;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      font-weight: 950;
+      position:relative;
+      overflow:hidden;
+      min-height: 62px;
     }
-    .navIco{ width: 26px; height: 26px; display:block; fill: currentColor; opacity: .98; transform: translateZ(0); }
+
+    .navIco{
+      width: 28px;
+      height: 28px;
+      display:block;
+      fill: currentColor;
+      opacity: .98;
+      transform: translateZ(0);
+    }
+
     nav a:active{transform: translateY(1px)}
-    nav a.active{ color: var(--text); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); }
+
+    nav a.active{
+      color: var(--text);
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.14);
+    }
     nav a.active::before{
-      content:""; position:absolute; inset:-30%;
-      background: radial-gradient(circle at 50% 35%, rgba(45,125,255,.40), transparent 45%), radial-gradient(circle at 50% 80%, rgba(25,195,125,.22), transparent 55%);
-      opacity:.65; pointer-events:none; transform: translateY(-6px);
+      content:"";
+      position:absolute;
+      inset:-30%;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(45,125,255,.40), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(25,195,125,.22), transparent 55%);
+      opacity:.65;
+      pointer-events:none;
+      transform: translateY(-6px);
     }
     nav a.active::after{
-      content:""; position:absolute; bottom:8px; width: 6px; height: 6px; border-radius: 999px;
-      background: rgba(255,255,255,.92); box-shadow: 0 0 0 6px rgba(45,125,255,.14); opacity:.95;
+      content:"";
+      position:absolute;
+      bottom:8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 0 0 6px rgba(45,125,255,.14);
+      opacity:.95;
     }
 
-    .docsList{ display:grid; gap:8px; margin-top:10px; }
-    .docItem{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 10px 12px; border-radius: 18px; border:1px solid var(--stroke); background: rgba(0,0,0,.14); }
-
-    /* EFFETTI MAPPA E BADGE */
-    .user-dot {
-      width: 16px; height: 16px; background: #2d7dff; border-radius: 50%;
-      border: 2px solid #fff; box-shadow: 0 0 15px rgba(45,125,255,0.9); position: relative;
+    @media (prefers-reduced-motion: no-preference){
+      nav a.active .navIco{
+        animation: navPulse 1.9s ease-in-out infinite;
+      }
+      @keyframes navPulse{
+        0%   { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(45,125,255,0)); }
+        45%  { transform: translateY(-1px) scale(1.05); filter: drop-shadow(0 10px 18px rgba(45,125,255,.18)); }
+        100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 0 rgba(45,125,255,0)); }
+      }
+      .card{animation: pop .18s ease both}
+      @keyframes pop{
+        from{transform: translateY(8px); opacity:0}
+        to{transform: translateY(0); opacity:1}
+      }
     }
-    .user-dot::after {
-      content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      border-radius: 50%; border: 2px solid #2d7dff;
-      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-    }
-    @keyframes pulse-ring { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-
-    .live-feed {
-      background: rgba(10, 16, 32, 0.85); border: 1px solid rgba(45,125,255,0.3);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4); margin-top: 14px;
-      cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-    .live-feed:hover { border-color: #2d7dff; transform: translateY(-2px); }
-    .feed-icon { font-size: 24px; flex-shrink: 0; }
-    .feed-text { font-size: 13px; line-height: 1.3; color: #eaf0ff; display:flex; flex-direction:column; overflow:hidden; width:100%;}
-    .feed-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 980;}
-    .feed-time { font-size: 11px; color: #a9b6db; margin-top: 3px; display:flex; justify-content:space-between; align-items:center;}
-    .feed-time span.arrow { color: #2d7dff; font-weight: bold; font-size: 14px;}
+  
+/* docs preview */
+.docsList{
+  display:grid;
+  gap:8px;
+  margin-top:10px;
+}
+.docItem{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border:1px solid var(--stroke);
+  background: rgba(0,0,0,.14);
+}
+.docItem .left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.docBadge{
+  width: 42px; height: 42px;
+  border-radius: 16px;
+  display:grid;
+  place-items:center;
+  font-weight: 980;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  flex:0 0 auto;
+}
+.docMeta{min-width:0}
+.docName{
+  font-weight: 950;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 54vw;
+}
+.docSize{
+  font-size: 12px;
+  color: var(--muted);
+  margin-top:2px;
+}
   </style>
 </head>
 
@@ -329,7 +980,9 @@
     <header>
       <div class="brand">
         <div class="logo"></div>
-        <div><div class="title">Segnala Facile</div></div>
+        <div>
+          <div class="title">SegnalaFacile</div>
+        </div>
       </div>
       <button class="pill" id="installPill" style="display:none; cursor:pointer;" type="button">⬇️ Installa</button>
     </header>
@@ -339,16 +992,15 @@
       <button class="close" id="bannerClose" type="button">✕</button>
     </div>
 
+    <!-- HOME -->
     <section id="view-home" class="grid">
       <div class="card hero">
         <div class="heroTop">
           <div>
-            <h1>La tua Città.</h1>
-            <p>Segnala problemi, scopri luoghi e leggi le recensioni della community.</p>
+            <h1>Segnala subito.</h1>
+            <p>Descrivi cosa succede, aggiungi le foto e invia. Il tuo storico resta sul dispositivo.</p>
           </div>
-          <video class="heroCover" autoplay loop muted playsinline poster="icons/hero.jpg">
-            <source src="vocidicassino.mp4" type="video/mp4">
-          </video>
+          <img class="heroCover" src="icons/hero.jpg" alt="SegnalaFacile" loading="lazy">
         </div>
 
         <div class="btnRow">
@@ -356,40 +1008,61 @@
         </div>
 
         <div class="btnRow">
-          <a class="btn ghost" href="#/places">⭐ Scopri Luoghi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
+          <a class="btn ghost" href="#/map">🗺️ Mappa</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti</a>
         </div>
       </div>
 
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+      <div class="card homePulseCard">
+        <div class="pulseHeader">
           <div>
-            <div style="font-weight:980;margin-bottom:4px">Mappa in tempo reale</div>
-            <div class="hint" style="margin:0">Punti = Segnalazioni | Stelle = Luoghi</div>
+            <div class="pulseEyebrow">LIVE DALLA CITTÀ</div>
+            <div class="pulseTitle">📍 Cosa succede vicino a te</div>
+            <div class="hint" style="margin:6px 0 0">Segnalazioni recenti, punti attivi e situazione aggiornata in modo semplice.</div>
           </div>
-          <a class="btn small ghost" href="#/map">Mappa →</a>
+          <a class="btn small ghost pulseMapBtn" href="#/map">🗺️ Apri mappa</a>
         </div>
 
-        <div id="miniFeed" class="live-feed hidden">
-          <div class="feed-icon" id="feedIcon">🔔</div>
-          <div class="feed-text">
-            <span class="feed-title" id="feedTitle">Ricerca attività...</span>
-            <div class="feed-time">
-              <span id="feedTime">In aggiornamento</span>
-              <span class="arrow">Vedi ➔</span>
-            </div>
+        <div class="quickStats">
+          <div class="quickStat">
+            <strong id="homeActiveCount">0</strong>
+            <span>Segnalazioni</span>
+          </div>
+          <div class="quickStat">
+            <strong id="homeGeoCount">0</strong>
+            <span>In mappa</span>
+          </div>
+          <div class="quickStat latestMini">
+            <strong id="homeLatestMini">—</strong>
+            <span>Ultima novità</span>
           </div>
         </div>
 
-        <div class="mapShell" style="margin-top:14px; position: relative;">
-          <button id="btnHomeRadar" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: rgba(10,16,32,0.8); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); color: white;" type="button" aria-label="La mia posizione">📍</button>
-          
-          <div id="mapHome" class="mapBox"></div>
+        <div class="latestPanel" id="homeLatestPanel">
+          <div class="latestIcon">✨</div>
+          <div>
+            <div class="latestLabel">Pronto per nuove segnalazioni</div>
+            <div class="latestText">Quando inserisci una segnalazione con posizione, la vedrai qui e nella mappa.</div>
+          </div>
+        </div>
+
+        <div class="mapShell homeMapShell">
+          <div class="homeMapOverlay">
+            <div>Anteprima rapida</div>
+            <span>ultimi punti salvati</span>
+          </div>
+          <div id="mapHome" class="mapBox homeMapBox"></div>
+        </div>
+
+        <div class="homeActionRow">
+          <a class="btn ghost" href="#/my">🗂️ Vedi storico</a>
+          <a class="btn ctaSmall" href="#/map">🗺️ Apri la mappa interattiva</a>
         </div>
       </div>
     </section>
 
+    <!-- REPORT -->
     <section id="view-report" class="grid hidden">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
@@ -403,15 +1076,6 @@
         <label for="titolo">Titolo</label>
         <input id="titolo" type="text" maxlength="80" placeholder="Es. Lampione spento in via…" />
 
-        <label for="categoria">Categoria</label>
-        <select id="categoria">
-          <option value="verde">🌳 Verde Pubblico</option>
-          <option value="strade">🛣️ Strade e Marciapiedi</option>
-          <option value="rifiuti">🗑️ Rifiuti/Decoro</option>
-          <option value="luce">💡 Illuminazione</option>
-          <option value="altro">❓ Altro</option>
-        </select>
-
         <label for="descrizione">Descrizione</label>
         <textarea id="descrizione" maxlength="700" placeholder="Spiega cosa succede, dove e quando…"></textarea>
 
@@ -424,61 +1088,55 @@
         </div>
         <div id="geoLine" class="hint" style="margin-top:10px; display:none;"></div>
 
-        <label>Foto (Massimo 3)</label>
+        <label>Foto (opzionale)</label>
         <div class="row">
           <button class="ghost" id="btnPickCamera" type="button">📷 Scatta foto</button>
           <button class="ghost" id="btnPickGallery" type="button">🖼️ Scegli dalla galleria</button>
-          <input id="fotoCamera" type="file" accept="image/*" capture="environment" multiple class="hidden" />
+
+          <input id="fotoCamera" type="file" accept="image/*" capture="environment" class="hidden" />
           <input id="fotoGallery" type="file" accept="image/*" multiple class="hidden" />
+
           <button class="danger" id="btnClearPhoto" type="button">🧹 Rimuovi</button>
         </div>
 
         <div id="photoPreview" class="preview">
-          <div class="metaCol">
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
             <div style="font-weight:980;color:var(--text)">Anteprima foto</div>
             <div id="photoMeta" class="hint" style="margin:0"></div>
           </div>
           <div class="thumbs" id="thumbs"></div>
-        </div>
         
-        <label>Documenti (PDF/Word - opzionale)</label>
-        <div class="row">
-          <button class="ghost" id="btnPickDocs" type="button">📎 Aggiungi documenti</button>
-          <input id="docsInput" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden" />
-          <button class="danger" id="btnClearDocs" type="button">🧹 Rimuovi documenti</button>
-        </div>
+<label>Documenti (PDF/Word - opzionale)</label>
+<div class="row">
+  <button class="ghost" id="btnPickDocs" type="button">📎 Aggiungi documenti</button>
+  <input id="docsInput" type="file"
+         accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+         multiple class="hidden" />
+  <button class="danger" id="btnClearDocs" type="button">🧹 Rimuovi documenti</button>
+</div>
 
-        <div id="docsPreview" class="preview">
-          <div class="metaCol">
-            <div style="font-weight:980;color:var(--text)">Allegati</div>
-            <div id="docsMeta" class="hint" style="margin:0"></div>
-          </div>
-          <div class="docsList" id="docsList"></div>
-        </div>
+<div id="docsPreview" class="preview">
+  <div style="display:flex;flex-direction:column;gap:8px;min-width:170px">
+    <div style="font-weight:980;color:var(--text)">Allegati</div>
+    <div id="docsMeta" class="hint" style="margin:0"></div>
+  </div>
+  <div class="docsList" id="docsList"></div>
+</div>
 
-        <label>Messaggio Vocale (Opzionale)</label>
-        <div class="row" id="audioControls">
-          <button class="ghost" id="btnRecordAudio" type="button">🎤 Registra Vocale</button>
-          <button class="danger hidden" id="btnStopAudio" type="button">⏹️ Ferma Registrazione</button>
-        </div>
-
-        <div id="audioPreview" class="preview" style="flex-direction:column;">
-          <div style="font-weight:980;color:var(--text); margin-bottom:8px;">Anteprima Vocale</div>
-          <audio id="audioPlayback" controls style="width:100%; height:40px; outline:none; border-radius:20px;"></audio>
-          <button class="ghost small" id="btnClearAudio" type="button" style="margin-top:10px; align-self:flex-start;">🧹 Rimuovi Vocale</button>
-        </div>
+</div>
 
         <div class="toggle">
           <div>
             <strong>Invia anche in forma anonima</strong><br>
             <span>Se disattivi, puoi lasciare un contatto per essere richiamato</span>
           </div>
-          <input id="anonimo" type="checkbox" checked />
+          <input id="anonimo" type="checkbox" />
         </div>
 
         <div id="contactBox" class="contactBox hidden">
           <div class="contactTitle">📌 Dati per essere contattato</div>
           <div class="hint" style="margin:0 0 10px">Inserisci almeno <b>Email</b> o <b>Telefono</b>.</div>
+
           <div class="contactGrid">
             <div>
               <label for="contactName">Nome e Cognome (opzionale)</label>
@@ -505,104 +1163,49 @@
         </div>
 
         <div class="btnRow">
-          <button class="primary" id="btnSend" type="button">✅ Invia Segnalazione</button>
+          <button class="primary" id="btnSend" type="button">✅ Invia</button>
           <a class="btn ghost" href="#/my">🗂️ Vedi storico</a>
         </div>
-        <div class="hint">La segnalazione viene inviata al server e salvata sul dispositivo.</div>
+
+        <div class="hint">
+          La segnalazione viene salvata sul dispositivo.
+        </div>
       </div>
     </section>
 
+    <!-- SUCCESS -->
     <section id="view-success" class="grid hidden">
       <div class="card">
         <div class="ok">
           <div style="font-size:22px">✅</div>
           <div>
             <div style="font-weight:980;font-size:18px">Segnalazione inviata correttamente</div>
-            <div class="hint" style="margin:6px 0 0">Grazie per il tuo contributo.</div>
+            <div class="hint" style="margin:6px 0 0">Salvata in locale. Grazie.</div>
           </div>
         </div>
+
         <div class="btnRow" style="margin-top:14px">
           <a class="btn primary" href="#/">🏠 Torna alla Home</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
+          <a class="btn ghost" href="#/report">➕ Nuova segnalazione</a>
+          <a class="btn ghost" href="#/map">🗺️ Mappa</a>
         </div>
+
+        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
 
-    <section id="view-places" class="grid hidden">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px;">
-          <div>
-            <div style="font-weight:980;font-size:18px">Luoghi e Recensioni</div>
-            <div class="hint" style="margin:0">Scopri i posti suggeriti.</div>
-          </div>
-          <button class="btn primary small" onclick="resetAddPlace(); location.hash='#/add-place'">➕ Nuova Scheda</button>
-        </div>
-        <div id="public-places-list" class="list">
-           <div class="hint" style="text-align:center;">Caricamento dati dal cloud...</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="view-add-place" class="grid hidden">
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h2 style="margin:0">Nuova Recensione</h2>
-          <a class="btn small ghost" href="#/places">← Indietro</a>
-        </div>
-        
-        <label>Nome del Locale o Posto</label>
-        <input id="placeName" type="text" placeholder="Es. Pizzeria Da Mario, Parco Naturale...">
-
-        <label>Categoria</label>
-        <select id="placeCategory">
-          <option value="ristorante">🍕 Ristorante</option>
-          <option value="pasticceria">🧁 Pasticceria</option>
-          <option value="bar">🍺 Bar</option>
-          <option value="negozio">🛍️ Negozio</option>
-          <option value="cultura">📚 Cultura</option>
-          <option value="monumento">🏛️ Monumento</option>
-          <option value="parco">🌲 Parco</option>
-          <option value="natura">☘️ Natura</option>
-        </select>
-
-        <label>Valutazione</label>
-        <div class="star-rating" id="starRating">
-          <input type="radio" id="star5" name="rating" value="5" checked><label for="star5">★</label>
-          <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
-          <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
-          <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-          <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
-        </div>
-
-        <label>La tua recensione</label>
-        <textarea id="placeReview" placeholder="Come ti sei trovato? Cosa consigli?"></textarea>
-
-        <label>Il tuo Nome (Opzionale)</label>
-        <input id="placeAuthor" type="text" placeholder="Es. Mario Rossi o Il tuo nickname">
-
-        <label>Posizione e Foto (Massimo 3)</label>
-        <div class="row">
-          <button class="ghost" id="btnPlaceGeoPick" type="button">📍 Posizione sulla mappa (Obbligatoria)</button>
-          <button class="ghost" onclick="document.getElementById('placePhotoInput').click()" type="button">📷 Aggiungi Foto</button>
-          <input type="file" id="placePhotoInput" accept="image/*" multiple class="hidden" />
-        </div>
-        <div id="placeGeoLine" class="hint" style="margin-top:10px; color:var(--accent2); font-weight:bold;"></div>
-        <div id="placePhotoPreview" style="display:flex; flex-wrap:wrap; margin-top:10px;"></div>
-
-        <button class="btn primary" id="btnSendPlace" type="button" style="width:100%; margin-top:20px;">⭐ Pubblica Recensione</button>
-      </div>
-    </section>
-
+    <!-- MY REPORTS -->
     <section id="view-my" class="grid hidden">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
             <div style="font-weight:980;font-size:18px">Le mie segnalazioni</div>
-            <div class="hint" style="margin:6px 0 0">Il tuo archivio locale.</div>
+            <div class="hint" style="margin:6px 0 0">Salvate in locale sul dispositivo.</div>
           </div>
           <div class="row" style="flex:0 0 auto">
             <a class="btn small ghost" href="#/report">➕ Nuova</a>
-            <button class="btn small danger" id="btnClearAll" type="button">🗑️ Svuota Tutto</button>
+            <button class="btn small danger" id="btnClearAll" type="button">🗑️ Svuota</button>
           </div>
         </div>
 
@@ -615,154 +1218,122 @@
         </div>
 
         <div id="list" class="list"></div>
+        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
 
+    <!-- MAP -->
     <section id="view-map" class="grid hidden">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:980;font-size:18px">Mappa segnalazioni e luoghi</div>
-            <div class="hint" style="margin:6px 0 0">Dati condivisi dalla community.</div>
-          </div>
-          <button class="btn small ghost" onclick="fetchPublicData()" type="button">🔄 Sincronizza</button>
-        </div>
-        <div class="mapShell" style="margin-top:14px; position:relative;">
-          <div class="mapTopBar" style="flex-wrap:wrap;">
-            <select id="mapCategoryFilter" style="flex:1; min-width:160px; padding:8px 12px; font-size:13px; border-radius:14px; margin:0; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.5); color:white;">
-              <option value="all">🌍 Tutti i punti</option>
-              <optgroup label="📍 Segnalazioni">
-                <option value="verde">🌳 Verde Pubblico</option>
-                <option value="strade">🛣️ Strade / Buche</option>
-                <option value="rifiuti">🗑️ Rifiuti / Decoro</option>
-                <option value="luce">💡 Illuminazione</option>
-              </optgroup>
-              <optgroup label="⭐ Luoghi e Recensioni">
-                <option value="ristorante">🍕 Ristoranti</option>
-                <option value="pasticceria">🧁 Pasticceria</option>
-                <option value="bar">🍺 Bar</option>
-                <option value="negozio">🛍️ Negozi</option>
-                <option value="cultura">📚 Cultura</option>
-                <option value="monumento">🏛️ Monumenti</option>
-                <option value="parco">🌳 Parchi</option>
-                <option value="natura">☘️ Natura</option>
-              </optgroup>
-              <option value="altro">❓ Altro</option>
-            </select>
-            <button class="btn small ghost" id="btnMapFit" type="button" style="flex:0 0 auto;">🎯 Inquadra</button>
-          </div>
-
-          <button id="btnMainRadar" style="position: absolute; bottom: 30px; right: 15px; z-index: 1000; background: rgba(10,16,32,0.8); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px); border-radius: 50%; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); color: white;" type="button" aria-label="La mia posizione">📍</button>
-
-          <div id="mapMain" class="mapBox big"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="view-contacts" class="grid hidden">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <div>
-            <div style="font-weight:980;font-size:18px">Hub Contatti e Triage</div>
-            <div class="hint" style="margin:6px 0 0">Usa i canali ufficiali in base alla necessità.</div>
+            <div style="font-weight:980;font-size:18px">Mappa segnalazioni</div>
+            <div class="hint" style="margin:6px 0 0">PIN cliccabili: apri la scheda della segnalazione.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
 
-        <h3 style="margin:20px 0 10px; font-size:14px; color:#ff4d4f; display:flex; align-items:center; gap:8px;">
-          <span style="font-size:18px">🚨</span> Emergenze e Intervento Rapido
-        </h3>
-        <div style="display:grid; gap:10px;">
-          <a href="tel:112" class="item" style="border-color:rgba(255,77,79,0.3); background:rgba(255,77,79,0.05); text-decoration:none; transition:0.2s;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <h4 style="margin:0; color:#eaf0ff;">Numero Unico Emergenze</h4>
-                <div class="hint" style="margin:2px 0 0;">Ambulanza, Carabinieri, Vigili del Fuoco</div>
-              </div>
-              <div class="btn danger small" style="pointer-events:none; margin:0;">📞 112</div>
+        <div class="mapShell" style="margin-top:14px">
+          <div class="mapTopBar">
+            <div>
+              <div class="mapTitle">Tutti i punti</div>
+              <div class="mapHint">Visibili solo le segnalazioni con posizione salvata.</div>
             </div>
-          </a>
-          <a href="tel:0776298432" class="item" style="border-color:rgba(255,77,79,0.3); background:rgba(255,77,79,0.05); text-decoration:none; transition:0.2s;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <h4 style="margin:0; color:#eaf0ff;">Polizia Locale Cassino</h4>
-                <div class="hint" style="margin:2px 0 0;">Pronto intervento, viabilità e sicurezza</div>
-              </div>
-              <div class="btn danger small" style="pointer-events:none; margin:0;">📞 0776 298432</div>
+            <div class="row" style="flex:0 0 auto">
+              <button class="btn small ghost" id="btnMapFit" type="button">🎯 Inquadra</button>
             </div>
-          </a>
-        </div>
-
-        <h3 style="margin:24px 0 10px; font-size:14px; color:#2d7dff; display:flex; align-items:center; gap:8px;">
-          <span style="font-size:18px">🏛️</span> Uffici Comunali
-        </h3>
-        <div style="display:grid; gap:10px;">
-          <a href="tel:07762981" class="item" style="text-decoration:none; transition:0.2s;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <h4 style="margin:0; color:#eaf0ff;">Centralino Comune</h4>
-                <div class="hint" style="margin:2px 0 0;">Smistamento verso tutti gli uffici interni</div>
-              </div>
-              <div class="btn primary small" style="pointer-events:none; margin:0;">📞 0776 2981</div>
-            </div>
-          </a>
-          
-          <div class="item">
-            <h4 style="margin:0; color:#eaf0ff;">Protocollo Generale (PEC)</h4>
-            <div class="hint" style="margin:2px 0 10px;">Per l'invio di documenti ufficiali e istanze formali.</div>
-            <a href="mailto:servizio.protocollo@comunecassino.telecompost.it" class="btn ghost small" style="width:100%; justify-content:center; text-transform:none;">✉️ servizio.protocollo@comunecassino.telecompost.it</a>
           </div>
+          <div id="mapMain" class="mapBox big"></div>
+        </div>
 
-          <a href="tel:0776298304" class="item" style="text-decoration:none; transition:0.2s;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <h4 style="margin:0; color:#eaf0ff;">Politiche Sociali</h4>
-                <div class="hint" style="margin:2px 0 0;">Assistenza, sportello sociale e minori</div>
-              </div>
-              <div class="btn ghost small" style="pointer-events:none; margin:0;">📞 0776 298304</div>
+        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
+      </div>
+    </section>
+
+    <!-- CONTACTS -->
+    <section id="view-contacts" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:980;font-size:18px">Contatti</div>
+            <div class="hint" style="margin:6px 0 0">Per comunicazioni generali.</div>
+          </div>
+          <a class="btn small ghost" href="#/">← Home</a>
+        </div>
+
+        <div class="btnRow" style="margin-top:14px">
+          <a class="btn ghost" id="mailLink" href="#">✉️ Email</a>
+          <a class="btn ghost" id="mapLink" href="#" target="_blank" rel="noreferrer">📍 Posizione</a>
+          <a class="btn ghost" href="#/map">🗺️ Apri Mappa</a>
+        </div>
+
+        <div class="mapShell" style="margin-top:14px">
+          <div class="mapTopBar">
+            <div>
+              <div class="mapTitle">Ultime segnalazioni sulla mappa</div>
+              <div class="mapHint">Tocca un PIN per vedere il dettaglio.</div>
             </div>
-          </a>
+          </div>
+          <div id="mapContacts" class="mapBox"></div>
         </div>
 
-        <h3 style="margin:24px 0 10px; font-size:14px; color:#19c37d; display:flex; align-items:center; gap:8px;">
-          <span style="font-size:18px">📱</span> Ecosistema Digitale
-        </h3>
-        <div class="row" style="margin-top:0;">
-          <a class="btn ghost" href="https://www.comune.cassino.fr.it/" target="_blank" rel="noreferrer" style="flex:1;">🌐 Sito Istituzionale</a>
-          <a class="btn ghost" href="https://www.facebook.com/comunedicassino" target="_blank" rel="noreferrer" style="flex:1;">📘 Pagina Facebook</a>
-        </div>
-
+        <div class="contactInfo">Risposta garantita nel minor tempo possibile.</div>
       </div>
     </section>
   </div>
 
+  <!-- MODAL DETTAGLIO -->
+  <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modalHeader">
+        <h3 id="modalTitle">Dettaglio segnalazione</h3>
+        <button class="modalClose" id="modalClose" type="button">✕</button>
+      </div>
+      <div class="modalBody">
+        <img id="modalThumb" class="modalThumb" alt="Foto segnalazione" style="display:none" />
+        <div class="modalText">
+          <div id="modalMeta" class="hint" style="margin:0"></div>
+          <p id="modalDesc"></p>
+          <div class="btnRow" style="margin-top:12px">
+            <a class="btn primary" id="modalGoMy" href="#/my">🗂️ Apri nello storico</a>
+            <button class="btn ghost" id="modalCopy" type="button">📋 Copia titolo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MAP PICKER (inserimento manuale) -->
   <div class="modalOverlay" id="mapPickerOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mapPickerTitle">
       <div class="modalHeader">
         <h3 id="mapPickerTitle">Inserisci la posizione a mano</h3>
         <button class="modalClose" id="mapPickerClose" type="button">✕</button>
       </div>
-      <div class="hint" style="margin:0">Tocca sulla mappa per piazzare il PIN. Poi premi “Usa questa posizione”.</div>
+
+      <div class="hint" style="margin:0">
+        Tocca sulla mappa per piazzare il PIN. Poi premi “Usa questa posizione”.
+      </div>
+
       <div id="mapPicker" class="mapPickerBox"></div>
+
       <div class="btnRow" style="margin-top:12px">
         <button class="btn primary" id="btnUsePicked" type="button">✅ Usa questa posizione</button>
         <button class="btn ghost" id="btnCenterCassino" type="button">🎯 Centro Cassino</button>
       </div>
+
       <div class="hint" id="pickedLine" style="margin-top:10px">Nessun punto selezionato.</div>
     </div>
   </div>
 
-  <div class="modalOverlay" id="imageViewer" style="z-index: 999999; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.9);">
-    <button class="modalClose" onclick="document.getElementById('imageViewer').style.display='none'" style="align-self: flex-end; margin-right: 10px; margin-top: 10px; font-size: 16px;">✕ Chiudi</button>
-    <img id="imageViewerImg" src="" style="max-width: 95%; max-height: 80vh; border-radius: 12px; object-fit: contain;" />
-  </div>
-
+  <!-- DOCK -->
   <nav class="bottom" aria-label="Navigazione">
     <div class="inner">
       <a href="#/" data-nav="home" class="active" aria-label="Home">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 8h-2v10a1 1 0 0 1-1 1h-5v-6H11v6H6a1 1 0 0 1-1-1V11H3l9-8z"/></svg>
         <span>Home</span>
       </a>
+
       <a href="#/report" data-nav="report" aria-label="Segnala">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V4zm4 4h8v2H8V8zm0 4h8v2H8v-2zm0 4h6v2H8v-2z"/>
@@ -770,1074 +1341,1147 @@
         </svg>
         <span>Segnala</span>
       </a>
-      <a href="#/places" data-nav="places" aria-label="Luoghi">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-        </svg>
-        <span>Luoghi</span>
-      </a>
+
       <a href="#/my" data-nav="my" aria-label="Storico">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 4h6v2H9V8zm0 4h6v2H9v-2zm0 4h4v2H9v-2z"/></svg>
         <span>Storico</span>
       </a>
+
       <a href="#/map" data-nav="map" aria-label="Mappa">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M15 5l-6 2-6-2v15l6 2 6-2 6 2V7l-6-2zm0 2.1l4 1.3v11.4l-4-1.3V7.1zM9 7.1l4-1.3v11.4l-4 1.3V7.1zM3 8.4l4 1.3v11.4l-4-1.3V8.4z"/>
         </svg>
         <span>Mappa</span>
       </a>
+
+      <a href="#/contacts" data-nav="contacts" aria-label="Contatti">
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4.4 0-8 2-8 4.5V21h16v-2.5C20 16 16.4 14 12 14z"/></svg>
+        <span>Contatti</span>
+      </a>
     </div>
   </nav>
 
   <script>
+    // =========================
+    // CONFIG
+    // =========================
     const CONFIG = {
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
       telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
-      telegramApiKey: "SF-Secure-Key-2026" 
+      telegramApiKey: "Marco-Admin-2026",
+
+      // affidabilità: inviamo SOLO la prima foto al Worker (le altre restano in locale)
+      sendOnlyFirstPhotoToServer: true
     };
 
-    window.publicSegnalazioni = [];
-    window.publicLuoghi = [];
+    // =========================
+    // Banner helper
+    // =========================
+    const banner = document.getElementById("banner");
+    const bannerText = document.getElementById("bannerText");
+    const bannerClose = document.getElementById("bannerClose");
+    let bannerTimer = null;
 
-    const catInfo = { 
-      verde:   { color: '#19c37d', emoji: '🌳' }, 
-      strade:  { color: '#95a5a6', emoji: '🛣️' }, 
-      rifiuti: { color: '#f39c12', emoji: '🗑️' }, 
-      luce:    { color: '#f1c40f', emoji: '💡' }, 
-      altro:   { color: '#2d7dff', emoji: '❓' } 
-    };
+    function showBanner(type, text, autoHideMs = 0){
+      if (bannerTimer) { clearTimeout(bannerTimer); bannerTimer = null; }
+      banner.classList.remove("hidden","info","success","error");
+      banner.classList.add(type || "info");
+      bannerText.textContent = text || "";
+      if (autoHideMs && autoHideMs > 0){
+        bannerTimer = setTimeout(() => hideBanner(), autoHideMs);
+      }
+    }
+    function hideBanner(){
+      if (bannerTimer) { clearTimeout(bannerTimer); bannerTimer = null; }
+      banner.classList.add("hidden");
+      banner.classList.remove("info","success","error");
+      bannerText.textContent = "";
+    }
+    bannerClose.addEventListener("click", hideBanner);
 
-    const placeCatInfo = {
-      ristorante: { color: '#e74c3c', emoji: '🍕' },
-      pasticceria:{ color: '#e74c3c', emoji: '🧁' },
-      bar:        { color: '#e74c3c', emoji: '🍺' },
-      negozio:    { color: '#9b59b6', emoji: '🛍️' },
-      cultura:    { color: '#f39c12', emoji: '📚' },
-      monumento:  { color: '#f39c12', emoji: '🏛️' },
-      natura:     { color: '#2ecc71', emoji: '☘️' },
-      parco:      { color: '#2ecc71', emoji: '🌳' },
-      altro:      { color: '#ff9f43', emoji: '⭐' }
-    };
-
+    // =========================
+    // PWA install prompt
+    // =========================
     let deferredPrompt = null;
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
       const pill = document.getElementById("installPill");
-      if(pill) {
-        pill.style.display = "inline-flex";
-        pill.addEventListener("click", async () => {
-          try {
-            deferredPrompt.prompt();
-            await deferredPrompt.userChoice;
-            deferredPrompt = null;
-            pill.style.display = "none";
-          } catch(err) { console.log("Installazione annullata"); }
-        }, { once:true });
-      }
+      pill.style.display = "inline-flex";
+      pill.addEventListener("click", async () => {
+        try{
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          pill.style.display = "none";
+        }catch{}
+      }, { once:true });
     });
 
-    // --- MOTORE DI TELEMETRIA INVISIBILE ---
-    
-    // 1. Tracciamento Visitatori Unici (Eseguito in background dopo 2 secondi per non rallentare l'app)
-    setTimeout(() => {
-      if (!localStorage.getItem('sf_visited')) {
-        fetch(CONFIG.telegramWorkerUrl + '/api/track', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'visitor' })
-        }).then(() => localStorage.setItem('sf_visited', 'true')).catch(e => console.log("Telemetria offline"));
-      }
-    }, 2000);
+    // =========================
+    // Router
+    // =========================
+    const views = {
+      home: document.getElementById("view-home"),
+      report: document.getElementById("view-report"),
+      success: document.getElementById("view-success"),
+      my: document.getElementById("view-my"),
+      contacts: document.getElementById("view-contacts"),
+      map: document.getElementById("view-map")
+    };
 
-    // 2. Tracciamento Installazioni Effettive (Scatta solo se il sistema operativo conferma l'installazione)
-    window.addEventListener('appinstalled', () => {
-      if (!localStorage.getItem('sf_installed')) {
-        fetch(CONFIG.telegramWorkerUrl + '/api/track', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'install' })
-        }).then(() => localStorage.setItem('sf_installed', 'true')).catch(e => console.log("Telemetria offline"));
-      }
-    });
-
-    let db;
-    let localReportsCache = [];
-
-    function initStorage() {
-      return new Promise((resolve) => {
-        const req = indexedDB.open("SegnalaFacile_v8", 1);
-        req.onupgradeneeded = (e) => {
-          e.target.result.createObjectStore("reports", { keyPath: "id" });
-        };
-        req.onsuccess = (e) => {
-          db = e.target.result;
-          const tx = db.transaction("reports", "readonly");
-          const getReq = tx.objectStore("reports").getAll();
-          getReq.onsuccess = () => { localReportsCache = getReq.result || []; resolve(); };
-          getReq.onerror = () => { localReportsCache = []; resolve(); };
-        };
-        req.onerror = () => {
-          try { localReportsCache = JSON.parse(localStorage.getItem("segnalafacile_reports_v7") || "[]"); } 
-          catch { localReportsCache = []; }
-          resolve();
-        };
-      });
+    const navLinks = Array.from(document.querySelectorAll("nav a[data-nav]"));
+    function setActiveNav(key){
+      navLinks.forEach(a => a.classList.toggle("active", a.dataset.nav === key));
     }
 
-    function loadReports() { return localReportsCache; }
-    function saveReports(arr) {
-      localReportsCache = arr;
-      if (db) {
-        const tx = db.transaction("reports", "readwrite");
-        const store = tx.objectStore("reports");
-        store.clear();
-        arr.forEach(i => store.put(i));
-      } else {
-        localStorage.setItem("segnalafacile_reports_v7", JSON.stringify(arr));
+    function showView(key){
+      Object.values(views).forEach(v => v.classList.add("hidden"));
+      views[key].classList.remove("hidden");
+      setActiveNav(key);
+
+      if(key === "my") renderList();
+      if(key === "map") {
+        ensureMaps();
+        refreshAllMaps();
+        setTimeout(() => { try{ mapMain?.invalidateSize(); }catch{} }, 60);
       }
+      if(key === "home" || key === "contacts"){
+        ensureMaps();
+        refreshAllMaps();
+        setTimeout(() => { try{ mapHome?.invalidateSize(); }catch{} }, 60);
+        setTimeout(() => { try{ mapContacts?.invalidateSize(); }catch{} }, 60);
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    const banner = document.getElementById("banner");
-    const bannerText = document.getElementById("bannerText");
-    let bannerTimer = null;
-    function showBanner(type, text, autoHideMs = 4000){
-      if (bannerTimer) clearTimeout(bannerTimer);
-      banner.classList.remove("hidden","info","success","error");
-      banner.classList.add(type || "info");
-      bannerText.textContent = text || "";
-      if (autoHideMs) bannerTimer = setTimeout(() => banner.classList.add("hidden"), autoHideMs);
-    }
-    document.getElementById("bannerClose").addEventListener("click", () => banner.classList.add("hidden"));
-
-    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place'];
     function route(){
       const hash = (location.hash || "#/").replace("#/", "");
-      const target = views.includes(hash) ? hash : 'home';
-      
-      views.forEach(v => {
-        const el = document.getElementById("view-" + v);
-        if(el) { if(v === target) el.classList.remove("hidden"); else el.classList.add("hidden"); }
-      });
-      
-      document.querySelectorAll("nav a[data-nav]").forEach(a => {
-        a.classList.toggle("active", a.dataset.nav === target || (target==='add-place' && a.dataset.nav==='places'));
-      });
-
-      if(target === "my") renderList();
-      if(target === "places") renderPublicPlaces();
-      if(target === "map" || target === "home") { 
-        ensureMaps(); 
-        setTimeout(() => { 
-          if(mapMain) mapMain.invalidateSize(); 
-          if(mapHome) mapHome.invalidateSize(); 
-          refreshPublicMaps(); 
-        }, 150); 
-      }
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const key = hash || "";
+      if(key === "" ) return showView("home");
+      if(key === "report") return showView("report");
+      if(key === "success") return showView("success");
+      if(key === "my") return showView("my");
+      if(key === "contacts") return showView("contacts");
+      if(key === "map") return showView("map");
+      showView("home");
     }
     window.addEventListener("hashchange", route);
 
-    window.openImage = function(src) {
-      document.getElementById('imageViewerImg').src = src;
-      document.getElementById('imageViewer').style.display = 'flex';
-    };
+    // =========================
+    // Contacts (Email + Mappa)
+    // =========================
+    const mail = document.getElementById("mailLink");
+    const map = document.getElementById("mapLink");
 
+    function applyContacts(){
+      const subject = "Messaggio da SegnalaFacile";
+      const body = "Ciao,%0D%0A%0D%0AScrivo da SegnalaFacile:%0D%0A";
+      mail.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(subject)}&body=${body}`;
+      map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.mapsQuery)}`;
+    }
+    applyContacts();
 
-    function toSafeNumber(value) {
-      if (value === null || value === undefined || value === "") return NaN;
-      const n = Number(value);
-      return Number.isFinite(n) ? n : NaN;
+    // =========================
+    // Storage
+    // =========================
+    const STORAGE_KEY = "segnalafacile_reports_v7";
+
+    function loadReports(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+      catch{ return []; }
+    }
+    function saveReports(arr){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
     }
 
-    function isValidLatLng(lat, lng) {
-      const a = toSafeNumber(lat);
-      const b = toSafeNumber(lng);
-      return Number.isFinite(a) && Number.isFinite(b) && a >= -90 && a <= 90 && b >= -180 && b <= 180 && !(a === 0 && b === 0);
-    }
-
-    function getItemLatLng(item) {
-      if (!item) return null;
-      const lat = toSafeNumber(item.lat ?? (item.geo && item.geo.lat));
-      const lng = toSafeNumber(item.lng ?? (item.geo && item.geo.lng));
-      if (!isValidLatLng(lat, lng)) return null;
-      return { lat, lng };
-    }
-
-    function getMapsDirectionsUrl(lat, lng) {
-      const a = toSafeNumber(lat);
-      const b = toSafeNumber(lng);
-      if (!isValidLatLng(a, b)) return "https://www.google.com/maps";
-      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(a + "," + b)}`;
-    }
-
-    function safeFocusOnMap(lat, lng) {
-      const a = toSafeNumber(lat);
-      const b = toSafeNumber(lng);
-      if (!isValidLatLng(a, b)) {
-        showBanner("error", "Coordinate non disponibili per questo punto.");
-        return;
-      }
-      focusOnMap(a, b);
-    }
-
-
-    const estraiTutteLeFoto = (item) => {
-      if(!item) return [];
-      let arr = [];
-      
-      if (item.foto) {
-        try {
-          const parsed = JSON.parse(item.foto);
-          if (Array.isArray(parsed)) arr.push(...parsed);
-          else arr.push(item.foto);
-        } catch(e) {
-          arr.push(item.foto);
-        }
-      }
-      if (item.photoDataUrl) arr.push(item.photoDataUrl);
-      if (item.photos) {
-        try {
-          const parsed = typeof item.photos === 'string' ? JSON.parse(item.photos) : item.photos;
-          if (Array.isArray(parsed)) {
-            parsed.forEach(p => { if(p.dataUrl) arr.push(p.dataUrl); else if(typeof p === 'string') arr.push(p); });
-          }
-        } catch(e) {}
-      }
-      return [...new Set(arr)].filter(Boolean).slice(0, 3);
-    };
-
-    async function fetchPublicData() {
-      try {
-        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/public-data?t=" + Date.now());
-        const data = await res.json();
-        if(data.ok) {
-          window.publicSegnalazioni = data.segnalazioni || [];
-          window.publicLuoghi = data.luoghi || [];
-
-          const localReps = loadReports();
-          let cacheChanged = false;
-          
-          const validLocalReps = localReps.filter(lr => {
-            const serverMatch = window.publicSegnalazioni.find(s => 
-               s.id === lr.id || (s.titolo === lr.titolo && s.dataStr === lr.when)
-            );
-
-            if (serverMatch) {
-              if (lr.id !== serverMatch.id) {
-                 lr.id = serverMatch.id;
-                 cacheChanged = true;
-              }
-              if (serverMatch.status && serverMatch.status !== lr.status) {
-                 lr.status = serverMatch.status;
-                 lr.resolvedAt = serverMatch.resolvedAt;
-                 cacheChanged = true;
-              }
-              return true; 
-            } else {
-              if (String(lr.id).includes('-')) {
-                 cacheChanged = true;
-                 return false; 
-              }
-              
-              const ageMs = Date.now() - parseInt(lr.id);
-              if (ageMs > 15 * 60 * 1000) {
-                 cacheChanged = true;
-                 return false; 
-              }
-              
-              return true; 
-            }
-          });
-
-          if(cacheChanged) saveReports(validLocalReps);
-
-          refreshPublicMaps();
-          if(location.hash === '#/places') renderPublicPlaces();
-          if(location.hash === '#/my') renderList();
-          updateMiniFeed(); 
-        }
-      } catch (e) { console.log("Offline mode - visualizzo solo dati locali."); }
-    }
-    
-    function parseDateString(dStr) {
-       if(!dStr) return 0;
-       try {
-         const parts = dStr.split(/[ ,]+/); 
-         const datePart = parts[0];
-         const timePart = parts[1] || '00:00:00';
-         const [d, m, y] = datePart.split('/');
-         const [hr, min, sec] = timePart.split(':');
-         return new Date(y, m-1, d, hr, min, sec).getTime();
-       } catch(e) { return 0; }
-    }
-
-    function updateMiniFeed() {
-      const feed = document.getElementById("miniFeed");
-      if (!feed) return;
-      
-      let allItems = [...window.publicSegnalazioni, ...window.publicLuoghi];
-      if (allItems.length === 0) return;
-      
-      allItems.sort((a, b) => {
-        const dateA = parseDateString(a.dataStr || a.when);
-        const dateB = parseDateString(b.dataStr || b.when);
-        return dateB - dateA;
-      });
-      
-      const latest = allItems[0]; 
-      const isSegnalazione = latest.titolo !== undefined;
-      const titolo = isSegnalazione ? latest.titolo : latest.nome;
-      const cat = latest.categoria || "altro";
-      
-      let emoji = "🔔";
-      if (isSegnalazione) emoji = (catInfo[cat] || catInfo.altro).emoji;
-      else emoji = (placeCatInfo[cat] || placeCatInfo.altro).emoji;
-
-      document.getElementById("feedIcon").innerText = emoji;
-      document.getElementById("feedTitle").innerText = titolo;
-      document.getElementById("feedTime").innerText = "Ultima novità: " + (latest.dataStr || latest.when).split(",")[0];
-      
-      feed.classList.remove("hidden");
-
-      feed.onclick = () => {
-         if(isSegnalazione) {
-            const coords = getItemLatLng(latest);
-            if(coords) safeFocusOnMap(coords.lat, coords.lng);
-            else showBanner("error", "Coordinate non disponibili per questo punto.");
-         } else {
-            const safeKey = latest.nome.toLowerCase().replace(/[^a-z0-9]/g, '-');
-            openPlaceCard(safeKey);
-         }
-      };
-    }
-
-    let homeUserMarker = null;
-    let homeWatchId = null;
-
-    document.getElementById("btnHomeRadar")?.addEventListener("click", () => {
-      if(!navigator.geolocation) return showBanner("error", "GPS non supportato dal dispositivo.");
-      
-      const btn = document.getElementById("btnHomeRadar");
-      
-      if (homeWatchId) {
-         navigator.geolocation.clearWatch(homeWatchId);
-         homeWatchId = null;
-         if(homeUserMarker) { homeUserMarker.remove(); homeUserMarker = null; }
-         btn.style.background = "rgba(10,16,32,0.8)";
-         showBanner("info", "Radar disattivato.");
-         return;
-      }
-
-      showBanner("info", "Ricerca satellite in corso...");
-      btn.style.background = "rgba(45,125,255,0.9)";
-      
-      homeWatchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          
-          const iconHtml = `<div class="user-dot"></div>`;
-          const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[16,16], iconAnchor:[8,8] });
-          
-          if(!homeUserMarker) {
-             homeUserMarker = L.marker([lat, lng], {icon, zIndexOffset: 1000}).addTo(mapHome);
-             mapHome.flyTo([lat, lng], 14, { duration: 1.5 });
-          } else {
-             homeUserMarker.setLatLng([lat, lng]);
-          }
-        },
-        (err) => { showBanner("error", "Devi attivare il GPS per usare il Radar."); btn.style.background = "rgba(10,16,32,0.8)"; }, 
-        { enableHighAccuracy: true, maximumAge: 10000 }
-      );
-    });
-
-    let mainUserMarker = null;
-    let mainWatchId = null;
-
-    document.getElementById("btnMainRadar")?.addEventListener("click", () => {
-      if(!navigator.geolocation) return showBanner("error", "GPS non supportato dal dispositivo.");
-      
-      const btn = document.getElementById("btnMainRadar");
-      
-      if (mainWatchId) {
-         navigator.geolocation.clearWatch(mainWatchId);
-         mainWatchId = null;
-         if(mainUserMarker) { mainUserMarker.remove(); mainUserMarker = null; }
-         btn.style.background = "rgba(10,16,32,0.8)";
-         showBanner("info", "Radar disattivato.");
-         return;
-      }
-
-      showBanner("info", "Ricerca satellite in corso...");
-      btn.style.background = "rgba(45,125,255,0.9)";
-      
-      mainWatchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          
-          const iconHtml = `<div class="user-dot"></div>`;
-          const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[16,16], iconAnchor:[8,8] });
-          
-          if(!mainUserMarker) {
-             mainUserMarker = L.marker([lat, lng], {icon, zIndexOffset: 1000}).addTo(mapMain);
-             mapMain.flyTo([lat, lng], 15, { duration: 1.5 });
-          } else {
-             mainUserMarker.setLatLng([lat, lng]);
-          }
-        },
-        (err) => { showBanner("error", "Devi attivare il GPS per usare il Radar."); btn.style.background = "rgba(10,16,32,0.8)"; }, 
-        { enableHighAccuracy: true, maximumAge: 10000 }
-      );
-    });
-
-    function renderPublicPlaces() {
-      const container = document.getElementById("public-places-list");
-      if(!window.publicLuoghi.length) { 
-        container.innerHTML = "<p class='hint' style='text-align:center;'>Nessun luogo recensito ancora.</p>"; 
-        return; 
-      }
-
-      const groupedPlaces = {};
-      window.publicLuoghi.forEach(l => {
-        const nome = l.nome ? l.nome.trim() : 'Sconosciuto';
-        const key = nome.toLowerCase();
-        const safeKey = key.replace(/[^a-z0-9]/g, '-');
-        
-        if(!groupedPlaces[key]) {
-           groupedPlaces[key] = { safeKey: safeKey, name: nome, categoria: l.categoria, lat: l.lat, lng: l.lng, reviews: [] };
-        }
-        groupedPlaces[key].reviews.push(l);
-      });
-
-      const html = Object.keys(groupedPlaces).map((key) => {
-        const group = groupedPlaces[key];
-        const avgRating = Math.round(group.reviews.reduce((acc, r) => acc + (r.rating||5), 0) / group.reviews.length);
-        const stars = '⭐'.repeat(avgRating);
-        const info = placeCatInfo[group.categoria] || placeCatInfo.altro;
-        const uniqueId = group.safeKey;
-        
-        const reviewsHtml = group.reviews.map(r => {
-           const immagini = estraiTutteLeFoto(r);
-           const imagesHtml = immagini.length > 0 
-             ? `<div style="display:flex; gap:5px; margin-top:8px; flex-wrap:wrap;">` + 
-               immagini.map(img => `<img src="${img}" style="width:70px; height:70px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="openImage(this.src)">`).join('') + 
-               `</div>`
-             : '';
-
-           return `
-             <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:10px;">
-               <div style="font-size:11px; color:#a9b6db; margin-bottom:4px;">${'⭐'.repeat(r.rating||5)} • ${r.dataStr || ''}</div>
-               <p style="margin:0; font-size:13px; line-height:1.4; white-space:pre-wrap;">${r.recensione}</p>
-               ${imagesHtml}
-             </div>
-           `;
-        }).join('');
-
-        return `
-          <div class="item cat-altro" id="card-${uniqueId}" style="cursor:pointer; transition:all 0.3s ease;" onclick="togglePlace('${uniqueId}')">
-            
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div>
-                <h3 style="margin:0">${info.emoji} ${group.name}</h3>
-                <div style="font-size:12px; color:#a9b6db; margin-top:4px;">${stars} (${group.reviews.length} recensioni)</div>
-              </div>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <span class="pill" style="border-color:${info.color}; color:${info.color};">${group.categoria}</span>
-                <span id="icon-${uniqueId}" style="font-size:14px; opacity:0.7; transition:0.3s;">▼</span>
-              </div>
-            </div>
-            
-            <div id="desc-${uniqueId}" class="hidden" style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; cursor:default;" onclick="event.stopPropagation()">
-              
-              <div style="margin-bottom:15px;">${reviewsHtml}</div>
-              
-              <div class="row" style="margin-top:10px;">
-                <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
-                <button class="btn ghost small" onclick="safeFocusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
-                <a class="btn ghost small" href="${getMapsDirectionsUrl(group.lat, group.lng)}" target="_blank" rel="noreferrer" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
-              </div>
-            </div>
-
-          </div>
-        `;
-      }).join('');
-      
-      container.innerHTML = html;
-    }
-
-    window.togglePlace = function(id) {
-      const desc = document.getElementById('desc-' + id);
-      const icon = document.getElementById('icon-' + id);
-      if(!desc) return;
-      if(desc.classList.contains('hidden')) {
-        desc.classList.remove('hidden');
-        if(icon) icon.style.transform = "rotate(180deg)";
-      } else {
-        desc.classList.add('hidden');
-        if(icon) icon.style.transform = "rotate(0deg)";
-      }
-    };
-
-    window.openPlaceCard = function(safeKey) {
-       location.hash = "#/places";
-       setTimeout(() => {
-          const card = document.getElementById('card-' + safeKey);
-          if(card) {
-              card.scrollIntoView({behavior: "smooth", block: "center"});
-              card.classList.add("highlight"); 
-              setTimeout(() => card.classList.remove("highlight"), 1500);
-              
-              const desc = card.querySelector('.hidden');
-              if(desc) card.click(); 
-          }
-       }, 400); 
-    };
-
-    window.addReviewToPlace = function(keyToFind) {
-       const place = window.publicLuoghi.find(l => (l.nome||'').trim().toLowerCase() === keyToFind);
-       if(place) {
-          location.hash = "#/add-place";
-          setTimeout(() => {
-             const nameInput = document.getElementById("placeName");
-             nameInput.value = place.nome;
-             nameInput.readOnly = true; 
-             
-             const catInput = document.getElementById("placeCategory");
-             catInput.value = place.categoria;
-             catInput.disabled = true; 
-             
-             const coords = getItemLatLng(place);
-             if (coords) {
-               placeGeo = coords;
-               document.getElementById("placeGeoLine").textContent = `📍 Posizione Bloccata (Collegato a: ${place.nome})`;
-               document.getElementById("btnPlaceGeoPick").style.display = "none";
-             } else {
-               placeGeo = null;
-               document.getElementById("placeGeoLine").textContent = "⚠️ Questo luogo non ha coordinate salvate: seleziona la posizione sulla mappa.";
-               document.getElementById("btnPlaceGeoPick").style.display = "inline-flex";
-             } 
-          }, 100);
-       }
-    };
-
-    window.resetAddPlace = function() {
-       document.getElementById("placeName").value = "";
-       document.getElementById("placeName").readOnly = false;
-       document.getElementById("placeCategory").disabled = false;
-       document.getElementById("btnPlaceGeoPick").style.display = "inline-flex";
-       placeGeo = null;
-       document.getElementById("placeGeoLine").textContent = "";
-       document.getElementById("placeReview").value = "";
-       document.getElementById("placeAuthor").value = "";
-       placePhotos = [];
-       document.getElementById("placePhotoPreview").innerHTML = "";
-    };
-
-    let mapHome = null, mapMain = null;
-    let layerHome = null, layerMain = null;
-
-    function ensureMaps(){
-      if(!mapHome && document.getElementById("mapHome")){ 
-        mapHome = L.map("mapHome", { zoomControl: false, dragging: false }).setView([45.0, 12.0], 5); 
-        
-        const streetHome = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { maxZoom: 20 });
-        const hybridHome = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { maxZoom: 20 });
-        streetHome.addTo(mapHome); 
-        L.control.layers({ "🗺️ Strade": streetHome, "🛰️ Satellite": hybridHome }, null, {position: 'bottomleft'}).addTo(mapHome);
-        
-        layerHome = L.layerGroup().addTo(mapHome); 
-        setTimeout(() => mapHome.flyTo([41.492, 13.831], 13, { duration: 2.8, easeLinearity: 0.25 }), 800);
-      }
-      
-      if(!mapMain && document.getElementById("mapMain")){ 
-        mapMain = L.map("mapMain").setView([41.492, 13.831], 13); 
-        
-        const streetMain = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { maxZoom: 20 });
-        const hybridMain = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { maxZoom: 20 });
-        streetMain.addTo(mapMain); 
-        L.control.layers({ "🗺️ Strade": streetMain, "🛰️ Satellite": hybridMain }, null, {position: 'bottomleft'}).addTo(mapMain);
-        
-        layerMain = L.layerGroup().addTo(mapMain); 
-      }
-    }
-
-    function refreshPublicMaps() {
-      if(layerMain) layerMain.clearLayers();
-      if(layerHome) layerHome.clearLayers();
-      const bounds = [];
-
-      const mapFilter = document.getElementById("mapCategoryFilter") ? document.getElementById("mapCategoryFilter").value : "all";
-
-      const mixSegnalazioni = JSON.parse(JSON.stringify(window.publicSegnalazioni));
-      const localReps = loadReports(); 
-
-      mixSegnalazioni.forEach(serverItem => {
-        if(estraiTutteLeFoto(serverItem).length === 0) {
-          const match = localReps.find(lr => lr.geo && lr.geo.lat === serverItem.lat);
-          if(match) serverItem.photos = match.photos || match.photoDataUrl;
-        }
-      });
-
-      localReps.filter(r => r.geo).forEach(lr => {
-        if(!mixSegnalazioni.find(ps => ps.lat === lr.geo.lat)) {
-           mixSegnalazioni.push(lr);
-        }
-      });
-
-      mixSegnalazioni.forEach(r => {
-        const lat = parseFloat(r.lat || (r.geo && r.geo.lat));
-        const lng = parseFloat(r.lng || (r.geo && r.geo.lng));
-        
-        if(isNaN(lat) || isNaN(lng)) return;
-
-        if (r.status === 'resolved' && r.resolvedAt) {
-          const resolvedTime = new Date(r.resolvedAt).getTime();
-          const now = Date.now();
-          const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
-          if (now - resolvedTime > sevenDaysInMs) {
-             return; 
-          }
-        }
-
-        const cat = r.categoria || "altro";
-        if(mapFilter !== "all" && cat !== mapFilter) return;
-
-        let info = catInfo[cat] || catInfo.altro;
-        let pinColor = info.color;
-        let pinEmoji = info.emoji;
-        let statusBadgePopup = '';
-
-        if (r.status === 'resolved') {
-           pinColor = '#19c37d'; 
-           pinEmoji = '✅';
-           statusBadgePopup = '<div style="margin-bottom:6px;"><span style="background: rgba(25,195,125,0.2); color: #19c37d; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(25,195,125,0.4); font-weight: bold;">✅ Problema Risolto</span></div>';
-        } else if (r.status === 'in_progress') {
-           pinColor = '#f39c12'; 
-           pinEmoji = '🚧';
-           statusBadgePopup = '<div style="margin-bottom:6px;"><span style="background: rgba(243,156,18,0.2); color: #f39c12; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(243,156,18,0.4); font-weight: bold;">🚧 In Lavorazione</span></div>';
-        }
-
-        const iconHtml = `<div style="background:rgba(10,16,32,.9); border:2px solid ${pinColor}; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6); backdrop-filter:blur(4px);">${pinEmoji}</div>`;
-        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
-        
-        const immagini = estraiTutteLeFoto(r);
-        const imagesHtml = immagini.length > 0 
-          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` + 
-            immagini.map(img => `<img src="${img}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') + 
-            `</div>`
-          : '';
-
-        const title = r.titolo || 'Segnalazione';
-        const dateStr = r.dataStr || r.when || '';
-
-        const popupHtml = `
-          <div style="min-width:200px; max-width:260px; max-height:300px; overflow-y:auto; padding-right:5px;">
-            ${statusBadgePopup}
-            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${title}</b>
-            <small style="color:#a9b6db;">${dateStr}</small>
-            ${imagesHtml}
-            <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="${getMapsDirectionsUrl(lat, lng)}" target="_blank" rel="noreferrer" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
-          </div>`;
-        
-        if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
-        if(layerHome) L.marker([lat, lng], {icon}).addTo(layerHome);
-        bounds.push([lat, lng]);
-      });
-
-      const mapPlacesGroups = {};
-      window.publicLuoghi.forEach(l => {
-        const lat = parseFloat(l.lat || (l.geo && l.geo.lat));
-        const lng = parseFloat(l.lng || (l.geo && l.geo.lng));
-        
-        if(isNaN(lat) || isNaN(lng)) return;
-
-        const nome = l.nome ? l.nome.trim() : 'Sconosciuto';
-        const key = nome.toLowerCase();
-        const safeKey = key.replace(/[^a-z0-9]/g, '-');
-        
-        if(!mapPlacesGroups[key]) {
-           mapPlacesGroups[key] = { safeKey: safeKey, name: nome, categoria: l.categoria, lat: lat, lng: lng, count: 1, fotoObj: l };
-        } else {
-           mapPlacesGroups[key].count++;
-           if(estraiTutteLeFoto(mapPlacesGroups[key].fotoObj).length === 0 && estraiTutteLeFoto(l).length > 0) {
-              mapPlacesGroups[key].fotoObj = l;
-           }
-        }
-      });
-
-      Object.keys(mapPlacesGroups).forEach(key => {
-        const group = mapPlacesGroups[key];
-        const cat = group.categoria || "altro";
-        if(mapFilter !== "all" && cat !== mapFilter) return;
-
-        const info = placeCatInfo[cat] || placeCatInfo.altro; 
-        
-        const iconHtml = `<div style="background:${info.color}; border:2px solid #fff; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">${info.emoji}</div>`;
-        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
-        
-        const immagini = estraiTutteLeFoto(group.fotoObj);
-        const imagesHtml = immagini.length > 0 
-          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` + 
-            immagini.map(img => `<img src="${img}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') + 
-            `</div>`
-          : '';
-
-        const popupHtml = `
-          <div style="min-width:200px; max-width:260px; padding-right:5px;">
-            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${group.name}</b>
-            <i style="color:#a9b6db; font-size:12px;">${group.categoria}</i>
-            ${imagesHtml}
-            <div style="margin-top:10px;">
-               <button class="btn primary small" style="width:100%; justify-content:center;" onclick="openPlaceCard('${group.safeKey}')">📝 Vedi ${group.count} recensioni</button>
-            </div>
-          </div>`;
-        
-        if(layerMain) L.marker([group.lat, group.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
-        if(layerHome) L.marker([group.lat, group.lng], {icon}).addTo(layerHome);
-        bounds.push([group.lat, group.lng]);
-      });
-
-      const validBounds = bounds.filter(b => {
-        const lat = parseFloat(b[0]);
-        const lng = parseFloat(b[1]);
-        return !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0);
-      });
-      
-      if (validBounds.length === 1 && mapMain) {
-        mapMain.setView(validBounds[0], 16);
-      } else if (validBounds.length > 1 && mapMain) {
-        mapMain.fitBounds(L.latLngBounds(validBounds).pad(0.2), { maxZoom: 16 });
-      } else if (validBounds.length === 0 && mapMain) {
-        mapMain.setView([41.492, 13.831], 13);
-      }
-    }
-
-    function focusOnMap(lat, lng) {
-      const a = toSafeNumber(lat);
-      const b = toSafeNumber(lng);
-      if (!isValidLatLng(a, b)) {
-        showBanner("error", "Coordinate non disponibili per questo punto.");
-        return;
-      }
-      location.hash = "#/map";
-      setTimeout(() => {
-        ensureMaps();
-        if (mapMain) {
-          mapMain.invalidateSize();
-          mapMain.setView([a, b], 18);
-        }
-      }, 300);
-    }
-
-    document.getElementById("btnMapFit")?.addEventListener("click", () => { refreshPublicMaps(); });
-    document.getElementById("mapCategoryFilter")?.addEventListener("change", () => { refreshPublicMaps(); });
-
-    document.getElementById("btnPickCamera").addEventListener("click", () => document.getElementById("fotoCamera").click());
-    document.getElementById("btnPickGallery").addEventListener("click", () => document.getElementById("fotoGallery").click());
-    document.getElementById("btnPickDocs").addEventListener("click", () => document.getElementById("docsInput").click());
-
-    async function fileToDataUrl(file){
-      return new Promise((resolve) => {
-        const i = new Image(); i.onload = () => {
-          const cvs = document.createElement("canvas");
-          const r = Math.min(1, 1400 / Math.max(i.width, i.height));
-          cvs.width = i.width*r; cvs.height = i.height*r;
-          cvs.getContext("2d").drawImage(i, 0, 0, cvs.width, cvs.height);
-          resolve(cvs.toDataURL("image/jpeg", 0.8));
-        };
-        i.src = URL.createObjectURL(file);
-      });
-    }
-
-    async function handlePhotoUpload(e) {
-      if(!e.target.files.length) return;
-      for(const f of e.target.files) { 
-        if(photos.length >= 3) {
-           showBanner("error", "Massimo 3 foto consentite.");
-           break;
-        }
-        const d = await fileToDataUrl(f); 
-        photos.push({ dataUrl: d, name: f.name, type: "image/jpeg" }); 
-      }
-      document.getElementById("photoPreview").style.display = "flex";
-      document.getElementById("thumbs").innerHTML = photos.map(p => `<img src="${p.dataUrl}" onclick="openImage(this.src)">`).join('');
-    }
-    document.getElementById("fotoGallery").addEventListener("change", handlePhotoUpload);
-    document.getElementById("fotoCamera").addEventListener("change", handlePhotoUpload);
-
-    document.getElementById("btnClearPhoto").addEventListener("click", () => { 
-      photos = []; 
-      document.getElementById("photoPreview").style.display = "none"; 
-      document.getElementById("fotoGallery").value = "";
-      document.getElementById("fotoCamera").value = "";
-    });
-
-    document.getElementById("docsInput").addEventListener("change", (e) => {
-      if(!e.target.files.length) return;
-      for(const f of e.target.files) {
-        if(f.size > 6 * 1024 * 1024) { showBanner("error", "Documento troppo grande: " + f.name); continue; }
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          documents.push({ dataUrl: ev.target.result, name: f.name, type: f.type });
-          document.getElementById("docsPreview").style.display = "flex";
-          document.getElementById("docsList").innerHTML = documents.map(d => `<div class="docItem" style="padding:8px; background:rgba(255,255,255,0.1); border-radius:12px; margin-top:5px;">📄 ${d.name}</div>`).join('');
-        };
-        reader.readAsDataURL(f);
-      }
-    });
-
-    document.getElementById("btnClearDocs").addEventListener("click", () => {
-      documents = [];
-      document.getElementById("docsPreview").style.display = "none";
-      document.getElementById("docsInput").value = "";
-    });
-
-    let geo = null; let geoWatchId = null; let geoLiveOn = false;
-    let photos = []; let documents = []; 
-
-    let audioDataUrl = null;
-    let mediaRecorder;
-    let audioChunks = [];
-
-    const btnRecord = document.getElementById('btnRecordAudio');
-    const btnStopRecord = document.getElementById('btnStopAudio');
-    const audioPreview = document.getElementById('audioPreview');
-    const audioPlayback = document.getElementById('audioPlayback');
-
-    btnRecord?.addEventListener('click', async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-
-            mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) audioChunks.push(e.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    audioDataUrl = reader.result;
-                    audioPlayback.src = audioDataUrl;
-                    audioPreview.style.display = 'flex';
-                };
-                reader.readAsDataURL(audioBlob);
-                stream.getTracks().forEach(t => t.stop());
-            };
-
-            mediaRecorder.start();
-            btnRecord.classList.add('hidden');
-            btnStopRecord.classList.remove('hidden');
-            showBanner("info", "🔴 Registrazione in corso...", null);
-        } catch (err) {
-            showBanner("error", "Accesso al microfono negato o non supportato.");
-        }
-    });
-
-    btnStopRecord?.addEventListener('click', () => {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-            btnStopRecord.classList.add('hidden');
-            btnRecord.classList.remove('hidden');
-            btnRecord.textContent = '🎤 Registra di nuovo';
-            showBanner("success", "Vocale registrato!");
-        }
-    });
-
-    document.getElementById('btnClearAudio')?.addEventListener('click', () => {
-        audioDataUrl = null;
-        audioPlayback.src = "";
-        audioPreview.style.display = 'none';
-        btnRecord.textContent = '🎤 Registra Vocale';
-    });
+    // =========================
+    // Form + multi-photo + GEO
+    // =========================
+    const elTitolo = document.getElementById("titolo");
+    const elDescrizione = document.getElementById("descrizione");
+    const elAnonimo = document.getElementById("anonimo");
+
+    const elContactBox = document.getElementById("contactBox");
+    const elContactName = document.getElementById("contactName");
+    const elContactPhone = document.getElementById("contactPhone");
+    const elContactEmail = document.getElementById("contactEmail");
+
+    const elFotoCamera = document.getElementById("fotoCamera");
+    const elFotoGallery = document.getElementById("fotoGallery");
+
+// documents (PDF/Word)
+const elDocsInput = document.getElementById("docsInput");
+const btnPickDocs = document.getElementById("btnPickDocs");
+const btnClearDocs = document.getElementById("btnClearDocs");
+const docsPreview = document.getElementById("docsPreview");
+const docsMeta = document.getElementById("docsMeta");
+const docsList = document.getElementById("docsList");
+
+let documents = []; // [{dataUrl,name,type,blobSize}]
+
+    const btnPickCamera = document.getElementById("btnPickCamera");
+    const btnPickGallery = document.getElementById("btnPickGallery");
+
+    const btnClearPhoto = document.getElementById("btnClearPhoto");
+    const btnSend = document.getElementById("btnSend");
+
+    const preview = document.getElementById("photoPreview");
+    const photoMeta = document.getElementById("photoMeta");
+    const thumbs = document.getElementById("thumbs");
+
+    // GEO UI
+    const btnGeoOnce = document.getElementById("btnGeoOnce");
+    const btnGeoLive = document.getElementById("btnGeoLive");
+    const btnGeoPick = document.getElementById("btnGeoPick");
+    const btnGeoClear = document.getElementById("btnGeoClear");
+    const geoLine = document.getElementById("geoLine");
+
+    let geo = null;             // {lat,lng,acc,mode}
+    let geoWatchId = null;      // watchPosition id
+    let geoLiveOn = false;
 
     function renderGeo(){
-      const geoLine = document.getElementById("geoLine");
-      if(!geo){ geoLine.style.display = "none"; geoLine.textContent = ""; return; }
+      if(!geo){
+        geoLine.style.display = "none";
+        geoLine.textContent = "";
+        return;
+      }
+      const modeLabel =
+        geo.mode === "live" ? "LIVE" :
+        geo.mode === "pick" ? "MAPPA" :
+        "GPS";
       geoLine.style.display = "block";
-      geoLine.textContent = `📍 Posizione: ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)}`;
+      geoLine.textContent = `📍 Posizione (${modeLabel}): ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)} (±${Math.round(geo.acc || 0)}m)`;
     }
 
-    document.getElementById("btnGeoOnce")?.addEventListener("click", () => {
-      if(!navigator.geolocation) return showBanner("error", "GPS non supportato.");
+    function setGeoFromPosition(pos, mode){
+      geo = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        acc: pos.coords.accuracy || 0,
+        mode: mode || "gps"
+      };
+      renderGeo();
+      refreshAllMaps();
+    }
+
+    function stopLive(){
+      if(geoWatchId !== null){
+        try{ navigator.geolocation.clearWatch(geoWatchId); }catch{}
+      }
+      geoWatchId = null;
+      geoLiveOn = false;
+      btnGeoLive.textContent = "🛰️ Posizione in tempo reale: OFF";
+    }
+
+    btnGeoOnce?.addEventListener("click", async () => {
+      if(!navigator.geolocation){
+        showBanner("error", "Geolocalizzazione non supportata su questo dispositivo.", 4500);
+        return;
+      }
       showBanner("info", "Recupero posizione…");
       navigator.geolocation.getCurrentPosition(
-        (pos) => { geo = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy, mode: "gps" }; renderGeo(); showBanner("success", "Posizione acquisita."); },
-        (err) => { showBanner("error", "Errore GPS."); }, { enableHighAccuracy: true, timeout: 10000 }
+        (pos) => {
+          setGeoFromPosition(pos, "gps");
+          hideBanner();
+          showBanner("success", "Posizione acquisita ✅", 2200);
+        },
+        (err) => {
+          console.warn(err);
+          showBanner("error", "Posizione non disponibile (permesso negato o GPS spento).", 5500);
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 }
       );
     });
 
-    document.getElementById("btnGeoClear")?.addEventListener("click", () => { geo = null; renderGeo(); showBanner("info", "Posizione rimossa."); });
-    document.getElementById("anonimo").addEventListener("change", (e) => document.getElementById("contactBox").classList.toggle("hidden", e.target.checked));
+    btnGeoLive?.addEventListener("click", async () => {
+      if(!navigator.geolocation){
+        showBanner("error", "Geolocalizzazione non supportata su questo dispositivo.", 4500);
+        return;
+      }
 
-    document.getElementById("btnSend").addEventListener("click", async () => {
-      const titolo = document.getElementById("titolo").value.trim(); 
-      const descrizione = document.getElementById("descrizione").value.trim();
-      if(titolo.length < 4 || descrizione.length < 10) return showBanner("error", "Compila bene Titolo e Descrizione.");
-      
-      const isAnon = document.getElementById("anonimo").checked;
-      const payload = {
-        titolo, descrizione, anonimo: isAnon, categoria: document.getElementById("categoria").value,
-        when: new Date().toLocaleString("it-IT"), geo: geo,
-        photos: photos, documents: documents, 
-        audio: audioDataUrl,
-        sender_contact: isAnon ? "Anonimo" : `👤 ${document.getElementById("contactName").value} 📞 ${document.getElementById("contactPhone").value} ✉️ ${document.getElementById("contactEmail").value}`,
-        status: 'open' // Di default nasce Aperta
-      };
+      if(!geoLiveOn){
+        // avvia LIVE
+        showBanner("info", "Attivo posizione in tempo reale…");
+        geoLiveOn = true;
+        btnGeoLive.textContent = "🛰️ Posizione in tempo reale: ON";
 
-      document.getElementById("btnSend").disabled = true;
-      showBanner("info", "Invio in corso...");
-      
-      const arr = loadReports(); arr.push({ id: String(Date.now()), ...payload }); saveReports(arr);
+        geoWatchId = navigator.geolocation.watchPosition(
+          (pos) => {
+            setGeoFromPosition(pos, "live");
+            hideBanner();
+          },
+          (err) => {
+            console.warn(err);
+            showBanner("error", "LIVE non disponibile (permesso negato o GPS spento).", 5500);
+            stopLive();
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
 
-      try{
-        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
-        if(!res.ok) throw new Error();
-        document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null; document.getElementById("photoPreview").style.display="none";
-        document.getElementById("btnClearAudio")?.click(); 
-        location.hash = "#/success"; fetchPublicData(); 
-      }catch(e){
-        showBanner("error", "Offline: Segnalazione salvata sul dispositivo."); location.hash = "#/my";
-      }finally{ document.getElementById("btnSend").disabled = false; }
-    });
-
-    let placeGeo = null; let placePhotos = [];
-    
-    document.getElementById("placePhotoInput").addEventListener("change", async (e) => {
-      if(e.target.files.length) { 
-        for(const f of e.target.files) {
-          if (placePhotos.length >= 3) {
-             showBanner("error", "Massimo 3 foto consentite.");
-             break;
-          }
-          const d = await fileToDataUrl(f); 
-          placePhotos.push({dataUrl: d}); 
-        }
-        document.getElementById("placePhotoPreview").innerHTML = placePhotos.map(p => `<img src="${p.dataUrl}" class="place-img-preview" onclick="openImage(this.src)">`).join(''); 
+      }else{
+        // spegni LIVE
+        stopLive();
+        showBanner("info", "Posizione in tempo reale disattivata.", 2200);
       }
     });
 
-    document.getElementById("btnSendPlace").addEventListener("click", async () => {
-      const nome = document.getElementById("placeName").value.trim();
-      if(!nome || !placeGeo) return showBanner("error", "Nome e Posizione sono obbligatori!");
-
-      const ratingInput = document.querySelector('input[name="rating"]:checked');
-      const rating = ratingInput ? parseInt(ratingInput.value) : 5;
-      const category = document.getElementById("placeCategory").value;
-
-      const payload = {
-        nome, categoria: category, 
-        recensione: document.getElementById("placeReview").value,
-        autore: document.getElementById("placeAuthor").value.trim(),
-        geo: placeGeo, photos: placePhotos, when: new Date().toLocaleString("it-IT"),
-        rating: rating
-      };
-
-      document.getElementById("btnSendPlace").disabled = true;
-      try{
-        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/luoghi", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
-        if(res.ok) { 
-          showBanner("success", "Recensione pubblicata!"); 
-          resetAddPlace(); 
-          setTimeout(() => { fetchPublicData(); location.hash = "#/places"; }, 1000);
-        } else throw new Error();
-      }catch(e){ showBanner("error", "Errore di connessione."); }
-      finally{ document.getElementById("btnSendPlace").disabled = false; }
+    btnGeoClear?.addEventListener("click", () => {
+      stopLive();
+      geo = null;
+      renderGeo();
+      showBanner("info", "Posizione rimossa.", 2000);
+      refreshAllMaps();
     });
 
-    let mapPicker = null, picked = null, pickedMarker = null, activePickerTarget = null;
+    // MAP PICKER modal
+    const mapPickerOverlay = document.getElementById("mapPickerOverlay");
+    const mapPickerClose = document.getElementById("mapPickerClose");
+    const btnUsePicked = document.getElementById("btnUsePicked");
+    const btnCenterCassino = document.getElementById("btnCenterCassino");
+    const pickedLine = document.getElementById("pickedLine");
 
-    function openMapPicker(target){
-      activePickerTarget = target;
-      document.getElementById("mapPickerOverlay").style.display = "flex";
+    let mapPicker = null;
+    let picked = null;     // {lat,lng}
+    let pickedMarker = null;
+
+    function openMapPicker(){
+      mapPickerOverlay.style.display = "flex";
+      mapPickerOverlay.setAttribute("aria-hidden","false");
+
+      // init map solo la prima volta
       if(!mapPicker){
-        mapPicker = L.map("mapPicker").setView([41.492, 13.831], 13);
-        
-        const streetPicker = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { maxZoom: 20 });
-        const hybridPicker = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { maxZoom: 20 });
-        streetPicker.addTo(mapPicker);
-        L.control.layers({ "🗺️ Strade": streetPicker, "🛰️ Satellite": hybridPicker }, null, {position: 'bottomleft'}).addTo(mapPicker);
-        
+        mapPicker = L.map("mapPicker", { zoomControl:true, attributionControl:true }).setView([41.492, 13.831], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(mapPicker);
+
         mapPicker.on("click", (e) => {
           picked = { lat: e.latlng.lat, lng: e.latlng.lng };
-          document.getElementById("pickedLine").textContent = `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
+          pickedLine.textContent = `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
           if(pickedMarker) pickedMarker.remove();
-          pickedMarker = L.marker([picked.lat, picked.lng]).addTo(mapPicker);
+          pickedMarker = L.marker([picked.lat, picked.lng], { riseOnHover:true }).addTo(mapPicker);
+          pickedMarker.bindPopup("Posizione selezionata").openPopup();
         });
       }
-      setTimeout(() => mapPicker.invalidateSize(), 100);
+
+      setTimeout(() => { try{ mapPicker.invalidateSize(); }catch{} }, 80);
+      pickedLine.textContent = picked ? `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}` : "Nessun punto selezionato.";
     }
 
-    document.getElementById("btnGeoPick")?.addEventListener("click", () => openMapPicker("report"));
-    document.getElementById("btnPlaceGeoPick")?.addEventListener("click", () => openMapPicker("place"));
-    document.getElementById("mapPickerClose")?.addEventListener("click", () => document.getElementById("mapPickerOverlay").style.display="none");
-    document.getElementById("btnCenterCassino")?.addEventListener("click", () => mapPicker?.setView([41.492, 13.831], 13));
+    function closeMapPicker(){
+      mapPickerOverlay.style.display = "none";
+      mapPickerOverlay.setAttribute("aria-hidden","true");
+    }
 
-    document.getElementById("btnUsePicked")?.addEventListener("click", () => {
-      if(!picked) return showBanner("error", "Seleziona un punto sulla mappa.");
-      if(activePickerTarget === "report") { geo = { ...picked, mode: "pick" }; renderGeo(); }
-      if(activePickerTarget === "place") { placeGeo = { ...picked }; document.getElementById("placeGeoLine").textContent = `📍 Posizione: ${placeGeo.lat.toFixed(5)}, ${placeGeo.lng.toFixed(5)}`; }
-      document.getElementById("mapPickerOverlay").style.display="none";
+    btnGeoPick?.addEventListener("click", () => openMapPicker());
+    mapPickerClose?.addEventListener("click", closeMapPicker);
+    mapPickerOverlay.addEventListener("click", (e) => {
+      if(e.target === mapPickerOverlay) closeMapPicker();
     });
+
+    btnCenterCassino?.addEventListener("click", () => {
+      if(!mapPicker) return;
+      mapPicker.setView([41.492, 13.831], 13);
+    });
+
+    btnUsePicked?.addEventListener("click", () => {
+      if(!picked){
+        showBanner("error", "Prima seleziona un punto sulla mappa.", 3500);
+        return;
+      }
+      stopLive();
+      geo = { lat: picked.lat, lng: picked.lng, acc: 0, mode: "pick" };
+      renderGeo();
+      refreshAllMaps();
+      showBanner("success", "Posizione inserita dalla mappa ✅", 2500);
+      closeMapPicker();
+    });
+
+    // progress UI
+    const progressWrap = document.getElementById("progressWrap");
+    const progressStep = document.getElementById("progressStep");
+    const progressBar = document.getElementById("progressBar");
+    const progressHint = document.getElementById("progressHint");
+
+    let photos = []; // [{dataUrl, name, type, blobSize}]
+
+    function toggleContactBox(){
+      const isAnon = !!elAnonimo.checked;
+      elContactBox.classList.toggle("hidden", isAnon);
+    }
+    elAnonimo.addEventListener("change", toggleContactBox);
+    toggleContactBox();
+
+    btnPickCamera.addEventListener("click", () => elFotoCamera.click());
+    btnPickGallery.addEventListener("click", () => elFotoGallery.click());
+
+// documents handlers
+btnPickDocs.addEventListener("click", () => elDocsInput.click());
+
+btnClearDocs.addEventListener("click", () => {
+  elDocsInput.value = "";
+  documents = [];
+  renderDocsPreview();
+  showBanner("info", "Documenti rimossi.", 1800);
+});
+
+
+    btnClearPhoto.addEventListener("click", () => {
+      elFotoCamera.value = "";
+      elFotoGallery.value = "";
+      photos = [];
+      renderPhotoPreview();
+    renderDocsPreview();
+      showBanner("info", "Foto rimosse.", 1800);
+    });
+
+    function formatBytes(bytes){
+      if (!bytes && bytes !== 0) return "";
+      const units = ["B","KB","MB","GB"];
+      let i = 0, n = bytes;
+      while(n >= 1024 && i < units.length-1){ n /= 1024; i++; }
+      return `${n.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+    }
+
+    async function fileToCompressedJpegDataUrl(file){
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = URL.createObjectURL(file);
+      });
+
+      const maxSide = 1400;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const ratio = Math.min(1, maxSide / Math.max(w,h));
+      w = Math.round(w * ratio);
+      h = Math.round(h * ratio);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const quality = 0.82;
+      const dataUrl = canvas.toDataURL("image/jpeg", quality);
+      const blob = await (await fetch(dataUrl)).blob();
+      return { dataUrl, blob };
+    }
+
+    function renderPhotoPreview(){
+      thumbs.innerHTML = "";
+
+      if(!photos.length){
+        preview.style.display = "none";
+        photoMeta.textContent = "";
+        return;
+      }
+
+      preview.style.display = "flex";
+      const totalBytes = photos.reduce((s,p) => s + (p.blobSize || 0), 0);
+      photoMeta.textContent = `${photos.length} foto selezionate • ${formatBytes(totalBytes)}`;
+
+      photos.forEach(p => {
+        const im = document.createElement("img");
+        im.src = p.dataUrl;
+        im.alt = p.name || "foto";
+        thumbs.appendChild(im);
+      });
+    }
+
+    async function addFiles(fileList, replace = false){
+      const files = Array.from(fileList || []).filter(Boolean);
+      if(!files.length) return;
+
+      if(replace) photos = [];
+
+      const MAX = 6;
+      const space = MAX - photos.length;
+      const pickedFiles = files.slice(0, Math.max(0, space));
+
+      if(files.length > pickedFiles.length){
+        showBanner("info", `Massimo ${MAX} foto. Selezionate le prime ${pickedFiles.length}.`, 4500);
+      }
+
+      for(const f of pickedFiles){
+        const name = f.name || "foto.jpg";
+        const type = f.type || "image/jpeg";
+        const { dataUrl, blob } = await fileToCompressedJpegDataUrl(f);
+        photos.push({ dataUrl, name, type, blobSize: blob.size });
+      }
+
+      renderPhotoPreview();
+    }
+
+    elFotoCamera.addEventListener("change", async (e) => {
+      await addFiles(e.target.files, true);
+    });
+
+    elFotoGallery.addEventListener("change", async (e) => {
+      await addFiles(e.target.files, false);
+    });
+
+
+function docKindBadge(type, name){
+  const n = (name || "").toLowerCase();
+  const t = (type || "").toLowerCase();
+  if (t.includes("pdf") || n.endsWith(".pdf")) return "PDF";
+  if (t.includes("word") || n.endsWith(".doc") || n.endsWith(".docx")) return "DOC";
+  return "FILE";
+}
+
+function renderDocsPreview(){
+  docsList.innerHTML = "";
+
+  if(!documents.length){
+    docsPreview.style.display = "none";
+    docsMeta.textContent = "";
+    return;
+  }
+
+  docsPreview.style.display = "flex";
+  const totalBytes = documents.reduce((s,d) => s + (d.blobSize || 0), 0);
+  docsMeta.textContent = `${documents.length} documento/i • ${formatBytes(totalBytes)}`;
+
+  documents.forEach(d => {
+    const item = document.createElement("div");
+    item.className = "docItem";
+
+    const left = document.createElement("div");
+    left.className = "left";
+
+    const b = document.createElement("div");
+    b.className = "docBadge";
+    b.textContent = docKindBadge(d.type, d.name);
+
+    const meta = document.createElement("div");
+    meta.className = "docMeta";
+
+    const name = document.createElement("div");
+    name.className = "docName";
+    name.textContent = d.name || "documento";
+
+    const size = document.createElement("div");
+    size.className = "docSize";
+    size.textContent = formatBytes(d.blobSize || 0);
+
+    meta.append(name, size);
+    left.append(b, meta);
+
+    item.append(left);
+    docsList.append(item);
+  });
+}
+
+function fileToDataUrl(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result || ""));
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+async function addDocs(fileList, replace=false){
+  const files = Array.from(fileList || []).filter(Boolean);
+  if(!files.length) return;
+
+  if(replace) documents = [];
+
+  const MAX_DOCS = 3;
+  const space = MAX_DOCS - documents.length;
+  const picked = files.slice(0, Math.max(0, space));
+
+  if(files.length > picked.length){
+    showBanner("info", `Massimo ${MAX_DOCS} documenti. Selezionati i primi ${picked.length}.`, 4500);
+  }
+
+  const MAX_MB = 6; // per file
+  for(const f of picked){
+    const sizeMb = (f.size || 0) / (1024*1024);
+    if(sizeMb > MAX_MB){
+      showBanner("error", `Documento troppo grande: ${f.name}. Max ${MAX_MB} MB.`, 5500);
+      continue;
+    }
+    const dataUrl = await fileToDataUrl(f);
+    documents.push({
+      dataUrl,
+      name: f.name || "documento",
+      type: f.type || "application/octet-stream",
+      blobSize: f.size || 0,
+    });
+  }
+
+  renderDocsPreview();
+}
+
+elDocsInput.addEventListener("change", async (e) => {
+  await addDocs(e.target.files, false);
+});
+
+    // =========================
+    // Reports list UI
+    // =========================
+    const listEl = document.getElementById("list");
+    const emptyState = document.getElementById("emptyState");
+    const btnClearAll = document.getElementById("btnClearAll");
 
     function renderList(){
       const arr = loadReports();
-      const listEl = document.getElementById("list");
-      document.getElementById("emptyState").style.display = arr.length ? "none" : "block";
-      listEl.innerHTML = arr.slice().reverse().map(r => {
-        const isResolved = r.status === 'resolved';
-        let badgeHTML = '';
-        
-        if (isResolved) {
-           badgeHTML = `<span style="background: rgba(25,195,125,0.2); color: #19c37d; border: 1px solid rgba(25,195,125,0.4); padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-right: 8px;">✅ Risolta</span>`;
-        } else if (r.status === 'in_progress') {
-           badgeHTML = `<span style="background: rgba(243,156,18,0.2); color: #f39c12; border: 1px solid rgba(243,156,18,0.4); padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; margin-right: 8px;">🚧 In Lavorazione</span>`;
-        }
+      listEl.innerHTML = "";
+      emptyState.style.display = arr.length ? "none" : "block";
 
-        return `
-        <div class="item cat-${r.categoria || 'altro'}" style="${isResolved ? 'border-color: rgba(25,195,125,0.5); opacity: 0.85;' : ''}">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>${badgeHTML}<span class="pill">${r.categoria || 'Altro'}</span></div>
-            <span class="hint" style="margin:0">${r.when}</span>
-          </div>
-          <h3 style="margin:8px 0">${r.titolo}</h3><p style="margin:0 0 10px">${r.descrizione}</p>
-          
-          ${r.audio ? `<audio controls src="${r.audio}" style="width:100%; height:40px; margin-top:5px; margin-bottom:10px; border-radius:20px; outline:none; background: rgba(0,0,0,0.2);"></audio>` : ''}
+      arr.slice().reverse().forEach((r) => {
+        const item = document.createElement("div");
+        item.className = "item";
 
-          ${(r.photos && r.photos.length) ? `<div class="gallery-grid">${r.photos.map(p=>`<img src="${p.dataUrl || p}" class="gallery-img" onclick="openImage(this.src)">`).join('')}</div>` : (r.photoDataUrl ? `<div class="gallery-grid"><img src="${r.photoDataUrl}" class="gallery-img" onclick="openImage(this.src)"></div>` : '')}
-          
-          ${(r.documents && r.documents.length) ? `<div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">${r.documents.map(d=>`<a href="${d.dataUrl}" download="${d.name}" class="btn ghost small" style="justify-content:flex-start; text-transform:none; border-color:rgba(255,255,255,0.2);">📄 ${d.name}</a>`).join('')}</div>` : ''}
+        const img = document.createElement("img");
+        img.className = "thumb";
+        img.alt = "Foto";
+        img.src = r.photoDataUrl || "";
+        if(!r.photoDataUrl) img.style.display = "none";
 
-          ${r.geo ? `<button class="btn ghost small" style="margin-top:10px" onclick="safeFocusOnMap(${r.geo.lat}, ${r.geo.lng})">🗺️ Vedi in mappa</button>` : ''}
-        </div>
-      `}).join('');
+        const body = document.createElement("div");
+        body.style.flex = "1";
+
+        const h3 = document.createElement("h3");
+        h3.textContent = r.titolo || "(senza titolo)";
+
+        const p = document.createElement("p");
+        p.textContent = r.descrizione || "";
+
+        const meta = document.createElement("div");
+        meta.className = "metaRow";
+
+        const pill1 = document.createElement("span");
+        pill1.className = "pill";
+        pill1.textContent = "🕒 " + (r.when || "");
+
+        const pill2 = document.createElement("span");
+        pill2.className = "pill";
+        pill2.textContent = r.anonimo ? "🕶️ Anonimo" : "📌 Contatto";
+
+        const pill3 = document.createElement("span");
+        pill3.className = "pill";
+        pill3.textContent = r.photoDataUrl ? "📷 Foto" : "📷 Nessuna foto";
+
+        const pill4 = document.createElement("span");
+        pill4.className = "pill";
+        pill4.textContent = (r.geo && typeof r.geo.lat === "number") ? "📍 In mappa" : "📍 Nessuna posizione";
+
+        meta.append(pill1,pill2,pill3,pill4);
+        body.append(h3,p,meta);
+        item.append(img, body);
+
+        item.addEventListener("click", () => openReportModal(r));
+
+        listEl.append(item);
+      });
     }
 
-    document.getElementById("btnClearAll")?.addEventListener("click", () => {
-      if(!confirm("Cancellare tutto il tuo archivio locale?")) return;
-      saveReports([]); renderList(); refreshPublicMaps();
+    btnClearAll.addEventListener("click", () => {
+      if(!confirm("Vuoi svuotare lo storico locale?")) return;
+      saveReports([]);
+      renderList();
+      refreshAllMaps();
+      showBanner("info", "Storico svuotato.", 2500);
     });
 
-    initStorage().then(() => {
-      ensureMaps();
-      fetchPublicData();
-      route();
-      
-      setInterval(() => {
-         if(document.visibilityState === 'visible') {
-             fetchPublicData();
-         }
-      }, 45000);
-      
-      document.addEventListener("visibilitychange", () => {
-         if(document.visibilityState === 'visible') fetchPublicData();
-      });
+    // =========================
+    // Modal dettaglio
+    // =========================
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalClose = document.getElementById("modalClose");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMeta = document.getElementById("modalMeta");
+    const modalDesc = document.getElementById("modalDesc");
+    const modalThumb = document.getElementById("modalThumb");
+    const modalCopy = document.getElementById("modalCopy");
+
+    function openReportModal(r){
+      modalTitle.textContent = r.titolo || "Dettaglio segnalazione";
+      modalMeta.textContent = `${r.when || ""} • ${r.anonimo ? "Anonimo" : "Con contatto"}${(r.geo && r.geo.lat) ? ` • ${r.geo.lat.toFixed(5)}, ${r.geo.lng.toFixed(5)}` : ""}`;
+      modalDesc.textContent = r.descrizione || "";
+
+      if(r.photoDataUrl){
+        modalThumb.src = r.photoDataUrl;
+        modalThumb.style.display = "block";
+      }else{
+        modalThumb.style.display = "none";
+        modalThumb.removeAttribute("src");
+      }
+
+      modalCopy.onclick = async () => {
+        try{
+          await navigator.clipboard.writeText(r.titolo || "");
+          showBanner("success", "Titolo copiato ✅", 1800);
+        }catch{
+          showBanner("error", "Impossibile copiare (permessi browser).", 2500);
+        }
+      };
+
+      modalOverlay.style.display = "flex";
+      modalOverlay.setAttribute("aria-hidden","false");
+    }
+
+    function closeReportModal(){
+      modalOverlay.style.display = "none";
+      modalOverlay.setAttribute("aria-hidden","true");
+    }
+
+    modalClose.addEventListener("click", closeReportModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if(e.target === modalOverlay) closeReportModal();
     });
+
+    // =========================
+    // Send (compatibilità TELEGRAM WORKER)
+    // =========================
+    async function sendToWorker(payload){
+      const url = new URL(CONFIG.telegramWorkerUrl);
+
+      let res;
+      try{
+        res = await fetch(url.toString(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Api-Key": CONFIG.telegramApiKey || ""
+          },
+          body: JSON.stringify(payload)
+        });
+      }catch(e){
+        throw new Error("NETWORK_ERROR (offline / CORS / blocco rete)");
+      }
+
+      const status = res.status;
+      const ct = (res.headers.get("content-type") || "").toLowerCase();
+
+      let data = null;
+      let text = "";
+      try{
+        if(ct.includes("application/json")){
+          data = await res.json();
+        }else{
+          text = await res.text();
+        }
+      }catch{}
+
+      if(res.ok && data && data.ok === true) return data;
+
+      const serverMsg =
+        (data && (data.error || data.message)) ? String(data.error || data.message) :
+        (text ? text.slice(0, 160) : "");
+
+      const msg = serverMsg ? `${serverMsg}` : `HTTP_${status}`;
+      throw new Error(msg);
+    }
+
+    function isValidEmail(v){
+      const s = String(v || "").trim();
+      if(!s) return false;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    }
+
+    function buildSenderContactText({isAnon, name, phone, email}){
+  const n = (name || "").trim();
+  const p = (phone || "").trim();
+  const e = (email || "").trim();
+
+  if(isAnon) return "Anonimo";
+
+  const parts = [];
+  // Nome: se manca, mettiamo un placeholder coerente
+  parts.push(n ? `👤 ${n}` : "👤 (nome non indicato)");
+
+  // Telefono: se presente lo mettiamo sempre
+  if(p) parts.push(`📞 ${p}`);
+
+  // Email: se presente la mettiamo sempre
+  if(e) parts.push(`✉️ ${e}`);
+
+  // Se per qualche motivo manca tutto, fallback
+  return parts.length ? parts.join(" • ") : "Contatto non specificato";
+    }
+
+    function showProgress(step, hint){
+      progressWrap.style.display = "block";
+      progressStep.textContent = `${step}/3`;
+      progressHint.textContent = hint || "";
+      const pct = step === 1 ? 33 : step === 2 ? 66 : 100;
+      progressBar.style.width = pct + "%";
+    }
+    function hideProgress(){
+      progressWrap.style.display = "none";
+      progressBar.style.width = "0%";
+      progressStep.textContent = "1/3";
+      progressHint.textContent = "";
+    }
+
+    btnSend.addEventListener("click", async () => {
+      const titolo = (elTitolo.value || "").trim();
+      const descrizione = (elDescrizione.value || "").trim();
+
+      if(titolo.length < 4){
+        showBanner("error", "Inserisci un titolo (minimo 4 caratteri).", 3500);
+        return;
+      }
+      if(descrizione.length < 10){
+        showBanner("error", "Inserisci una descrizione (minimo 10 caratteri).", 3500);
+        return;
+      }
+
+      const isAnon = !!elAnonimo.checked;
+      const contactName = (elContactName?.value || "").trim();
+      const contactPhone = (elContactPhone?.value || "").trim();
+      const contactEmail = (elContactEmail?.value || "").trim();
+
+      // Se NON anonimo, richiediamo almeno email o telefono (come già indicato nel box)
+      if(!isAnon){
+        const okEmail = contactEmail ? isValidEmail(contactEmail) : false;
+        const okPhone = contactPhone.length >= 6;
+        if(!okEmail && !okPhone){
+          showBanner("error", "Se NON anonimo, inserisci almeno Email o Telefono.", 4500);
+          return;
+        }
+      }
+
+      btnSend.disabled = true;
+      showBanner("info", "Invio in corso…");
+      showProgress(1, "Preparazione dati…");
+
+      const now = new Date();
+      const first = photos[0] || null;
+
+      // per Telegram inviamo SOLO la prima foto
+      const photosToSend = (CONFIG.sendOnlyFirstPhotoToServer && first)
+        ? [{
+            dataUrl: first.dataUrl,
+            name: first.name || "foto.jpg",
+            type: first.type || "image/jpeg"
+          }]
+        : photos.map(p => ({
+            dataUrl: p.dataUrl,
+            name: p.name || "foto.jpg",
+            type: p.type || "image/jpeg"
+          }));
+
+      // ✅ CAMPO CRITICO: quello che il Worker vuole
+      const sender_contact = buildSenderContactText({
+        isAnon,
+        name: contactName,
+        phone: contactPhone,
+        email: contactEmail
+      });
+
+// documenti (PDF/Word) max 3
+const documentsToSend = documents.map(d => ({
+  dataUrl: d.dataUrl,
+  name: d.name || "documento",
+  type: d.type || "application/octet-stream"
+})).slice(0, 3);
+
+
+      const payload = {
+        titolo,
+        descrizione,
+        anonimo: isAnon,
+        when: now.toLocaleString("it-IT"),
+        source: "SegnalaFacile PWA",
+
+        // Nomi originali (li teniamo)
+        contactName: isAnon ? "" : contactName,
+        contactEmail: isAnon ? "" : contactEmail,
+        contactPhone: isAnon ? "" : contactPhone,
+
+        geo: geo ? { lat: geo.lat, lng: geo.lng, acc: geo.acc, mode: geo.mode || "gps" } : null,
+
+        // mantenuto per compatibilità vecchia
+        photo: first ? {
+          dataUrl: first.dataUrl,
+          name: first.name || "foto.jpg",
+          type: first.type || "image/jpeg"
+        } : null,
+
+        photos: photosToSend,
+      documents: documentsToSend,
+
+        // ✅ COMPATIBILITÀ WORKER TELEGRAM (campi “attesi”)
+        sender_contact,                              // <— fondamentale
+        sender_name: isAnon ? "Anonimo" : (contactName || ""),
+        sender_phone: isAnon ? "" : (contactPhone || ""),
+        sender_email: isAnon ? "" : (contactEmail || ""),
+
+        // extra (se il Worker legge oggetto)
+        sender: {
+          contact: sender_contact,
+          name: isAnon ? "Anonimo" : (contactName || ""),
+          phone: isAnon ? "" : (contactPhone || ""),
+          email: isAnon ? "" : (contactEmail || "")
+        }
+      };
+
+      // salva in locale subito
+      const arr = loadReports();
+      const localItem = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        titolo,
+        descrizione,
+        anonimo: isAnon,
+        when: payload.when,
+        photoDataUrl: first ? first.dataUrl : null,
+        geo: payload.geo
+      };
+      arr.push(localItem);
+      saveReports(arr);
+
+      refreshAllMaps();
+
+      try{
+        showProgress(2, "Invio a Telegram…");
+        await sendToWorker(payload);
+
+        showProgress(3, "Conferma invio…");
+        await new Promise(r => setTimeout(r, 220));
+
+        hideBanner();
+        hideProgress();
+        location.hash = "#/success";
+        showBanner("success", "Segnalazione inviata ✅", 3000);
+
+        // reset
+        elTitolo.value = "";
+        elDescrizione.value = "";
+        elAnonimo.checked = false;
+        toggleContactBox();
+        elContactName.value = "";
+        elContactPhone.value = "";
+        elContactEmail.value = "";
+
+        elFotoCamera.value = "";
+        elFotoGallery.value = "";
+        photos = [];
+        renderPhotoPreview();
+
+        elDocsInput.value = "";
+        documents = [];
+        renderDocsPreview();
+
+        stopLive();
+        geo = null;
+        renderGeo();
+
+      }catch(e){
+        hideProgress();
+        showBanner("error", `Invio non riuscito: ${e.message} (nessun dato perso).`, 9000);
+        console.warn("Worker error:", e);
+        location.hash = "#/report";
+      }finally{
+        btnSend.disabled = false;
+      }
+    });
+
+    // =========================
+    // Mappe (Leaflet)
+    // =========================
+    let mapHome = null;
+    let mapContacts = null;
+    let mapMain = null;
+
+    let layerHome = null;
+    let layerContacts = null;
+    let layerMain = null;
+
+    function createBaseMap(elId, opts = {}){
+      const el = document.getElementById(elId);
+      if(!el) return null;
+
+      const center = opts.center || [41.492, 13.831];
+      const zoom = opts.zoom || 12;
+
+      const m = L.map(el, {
+        zoomControl: true,
+        attributionControl: true
+      }).setView(center, zoom);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(m);
+
+      return m;
+    }
+
+    function ensureMaps(){
+      if(!mapHome && document.getElementById("mapHome")){
+        mapHome = createBaseMap("mapHome", { zoom: 12 });
+        layerHome = L.layerGroup().addTo(mapHome);
+      }
+      if(!mapContacts && document.getElementById("mapContacts")){
+        mapContacts = createBaseMap("mapContacts", { zoom: 12 });
+        layerContacts = L.layerGroup().addTo(mapContacts);
+      }
+      if(!mapMain && document.getElementById("mapMain")){
+        mapMain = createBaseMap("mapMain", { zoom: 12 });
+        layerMain = L.layerGroup().addTo(mapMain);
+      }
+    }
+
+    function getGeoReports(){
+      const arr = loadReports();
+      return arr.filter(r => r && r.geo && typeof r.geo.lat === "number" && typeof r.geo.lng === "number");
+    }
+
+    function markerPopupHtml(r){
+      const safeTitle = (r.titolo || "Segnalazione").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const when = (r.when || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return `
+        <div style="min-width:220px">
+          <div style="font-weight:950;margin-bottom:6px">${safeTitle}</div>
+          <div style="opacity:.85;font-size:12px;margin-bottom:8px">${when}</div>
+          <button data-openid="${r.id}" style="
+            width:100%;
+            border:1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.08);
+            color:#eaf0ff;
+            border-radius: 14px;
+            padding:10px 12px;
+            font-weight:900;
+            cursor:pointer;
+          ">Apri segnalazione</button>
+        </div>
+      `;
+    }
+
+    function attachPopupButtonHandler(){
+      document.querySelectorAll('button[data-openid]').forEach(btn => {
+        if(btn._wired) return;
+        btn._wired = true;
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-openid");
+          const r = loadReports().find(x => x.id === id);
+          if(r) openReportModal(r);
+        });
+      });
+    }
+
+    function fillLayer(layer, mapObj, limit = Infinity){
+      if(!layer || !mapObj) return;
+
+      layer.clearLayers();
+      const reps = getGeoReports();
+      const items = reps.slice().reverse().slice(0, limit);
+
+      items.forEach(r => {
+        const lat = r.geo.lat;
+        const lng = r.geo.lng;
+
+        const mk = L.marker([lat, lng], { riseOnHover: true });
+        mk.addTo(layer);
+
+        mk.bindPopup(markerPopupHtml(r), { closeButton:true });
+
+        mk.on("popupopen", () => {
+          setTimeout(attachPopupButtonHandler, 0);
+        });
+
+        mk.on("click", () => {
+          openReportModal(r);
+        });
+      });
+
+      if(items.length){
+        const bounds = L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng]));
+        mapObj.fitBounds(bounds.pad(0.25));
+      }else{
+        mapObj.setView([41.492, 13.831], 12);
+      }
+    }
+
+    function updateHomeOverview(){
+      const arr = loadReports();
+      const geoItems = arr.filter(r => r && r.geo && typeof r.geo.lat === "number" && typeof r.geo.lng === "number");
+      const latest = arr.length ? arr[arr.length - 1] : null;
+
+      const countEl = document.getElementById("homeActiveCount");
+      const geoEl = document.getElementById("homeGeoCount");
+      const miniEl = document.getElementById("homeLatestMini");
+      const panel = document.getElementById("homeLatestPanel");
+
+      if(countEl) countEl.textContent = arr.length;
+      if(geoEl) geoEl.textContent = geoItems.length;
+
+      if(latest){
+        const title = latest.titolo || "Segnalazione";
+        if(miniEl) miniEl.textContent = title.length > 18 ? title.slice(0, 18) + "…" : title;
+        if(panel){
+          const safeTitle = title.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+          const safeWhen = (latest.when || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+          const inMap = latest.geo && typeof latest.geo.lat === "number";
+          panel.innerHTML = `
+            <div class="latestIcon">${inMap ? "📍" : "📝"}</div>
+            <div>
+              <div class="latestLabel">${safeTitle}</div>
+              <div class="latestText">Ultima novità: ${safeWhen || "appena inserita"}${inMap ? " • presente sulla mappa" : ""}</div>
+            </div>
+          `;
+          panel.onclick = () => openReportModal(latest);
+          panel.style.cursor = "pointer";
+        }
+      }else{
+        if(miniEl) miniEl.textContent = "—";
+        if(panel){
+          panel.innerHTML = `
+            <div class="latestIcon">✨</div>
+            <div>
+              <div class="latestLabel">Pronto per nuove segnalazioni</div>
+              <div class="latestText">Quando inserisci una segnalazione con posizione, la vedrai qui e nella mappa.</div>
+            </div>
+          `;
+          panel.onclick = null;
+          panel.style.cursor = "default";
+        }
+      }
+    }
+
+    function refreshAllMaps(){
+      try{
+        ensureMaps();
+        updateHomeOverview();
+        if(mapHome) fillLayer(layerHome, mapHome, 5);
+        if(mapContacts) fillLayer(layerContacts, mapContacts, 25);
+        if(mapMain) fillLayer(layerMain, mapMain, Infinity);
+      }catch(e){
+        console.warn("Map refresh error:", e);
+      }
+    }
+
+    document.getElementById("btnMapFit")?.addEventListener("click", () => {
+      if(!mapMain) return;
+      const items = getGeoReports();
+      if(!items.length){
+        showBanner("info", "Nessuna segnalazione con posizione.", 2500);
+        return;
+      }
+      const bounds = L.latLngBounds(items.map(r => [r.geo.lat, r.geo.lng]));
+      mapMain.fitBounds(bounds.pad(0.25));
+    });
+
+    // =========================
+    // init
+    // =========================
+    route();
+    renderPhotoPreview();
+    renderList();
+    renderGeo();
+    ensureMaps();
+    refreshAllMaps();
   </script>
 </body>
 </html>
