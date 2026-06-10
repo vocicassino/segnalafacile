@@ -12,6 +12,7 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
@@ -642,6 +643,157 @@
       .homeQuickRow .btn{width:100%;}
     }
 
+
+    /* CHAT LIVE SEGNALE FACILE */
+    .homeChatCard{
+      margin-top:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(300px 130px at 20% 0%, rgba(45,125,255,.18), transparent 60%),
+        radial-gradient(300px 130px at 100% 0%, rgba(25,195,125,.14), transparent 58%),
+        rgba(0,0,0,.15);
+      border-radius:24px;
+      padding:16px;
+      box-shadow:0 14px 32px rgba(0,0,0,.24);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .homeChatTitle{
+      font-size:18px;
+      font-weight:980;
+      letter-spacing:-.25px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .homeChatTitle .onlineDot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:#19c37d;
+      box-shadow:0 0 0 6px rgba(25,195,125,.12), 0 0 18px rgba(25,195,125,.65);
+      flex:0 0 auto;
+    }
+    .homeChatInfo{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:5px;
+      line-height:1.4;
+    }
+    .chatPanel{
+      display:grid;
+      gap:12px;
+      margin-top:14px;
+    }
+    .chatNotice{
+      border:1px solid rgba(45,125,255,.25);
+      background:rgba(45,125,255,.10);
+      border-radius:20px;
+      padding:12px;
+      color:#dce8ff;
+      font-size:13px;
+      line-height:1.45;
+    }
+    .chatTop{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:end;
+    }
+    .chatOnlinePill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(25,195,125,.28);
+      background:rgba(25,195,125,.10);
+      font-size:13px;
+      font-weight:980;
+      white-space:nowrap;
+    }
+    .chatOnlinePill .onlineDot{
+      width:9px;
+      height:9px;
+      border-radius:999px;
+      background:#19c37d;
+      box-shadow:0 0 0 5px rgba(25,195,125,.12);
+    }
+    .chatBox{
+      height:430px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:24px;
+      background:rgba(0,0,0,.18);
+      overflow:auto;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      scroll-behavior:smooth;
+    }
+    .chatMsg{
+      max-width:86%;
+      border:1px solid rgba(255,255,255,.11);
+      background:rgba(255,255,255,.06);
+      border-radius:20px;
+      padding:10px 12px;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+      align-self:flex-start;
+      word-break:break-word;
+    }
+    .chatMsg.mine{
+      align-self:flex-end;
+      background:rgba(45,125,255,.16);
+      border-color:rgba(45,125,255,.28);
+    }
+    .chatMeta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-bottom:5px;
+      color:#dbe7ff;
+      font-size:12px;
+      font-weight:980;
+    }
+    .chatMeta time{
+      color:var(--muted);
+      font-weight:800;
+      font-size:11px;
+    }
+    .chatText{
+      color:var(--text);
+      font-size:14px;
+      line-height:1.42;
+      white-space:pre-wrap;
+    }
+    .chatComposer{
+      display:grid;
+      grid-template-columns: minmax(120px,.55fr) minmax(180px,1fr) auto;
+      gap:10px;
+      align-items:end;
+    }
+    .chatComposer input{
+      margin-bottom:0;
+    }
+    .chatEmpty{
+      margin:auto;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+    @media(max-width:720px){
+      .chatTop{grid-template-columns:1fr;}
+      .chatComposer{grid-template-columns:1fr;}
+      .chatBox{height:380px;}
+      .chatMsg{max-width:95%;}
+      .homeChatCard .btn{width:100%;}
+    }
+
   </style>
 </head>
 
@@ -753,7 +905,15 @@
             </div>
           </div>
         </div>
-      </div>
+      
+
+        <div class="homeChatCard">
+          <div>
+            <div class="homeChatTitle"><span class="onlineDot"></span> 💬 Chat live Segnala Facile</div>
+            <div class="homeChatInfo">Parla con chi è online, scambia aggiornamenti rapidi e resta collegato alla community.</div>
+          </div>
+          <a class="btn primary" href="#/chat">💬 Apri chat live</a>
+        </div></div>
     </section>
 
     <section id="view-report" class="grid hidden">
@@ -875,6 +1035,45 @@
           <a class="btn ghost" href="#/my">🗂️ Vedi storico</a>
         </div>
         <div class="hint">La segnalazione viene inviata al server e salvata sul dispositivo.</div>
+      </div>
+    </section>
+
+    <section id="view-chat" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:980;font-size:20px">💬 Chat live Segnala Facile</div>
+            <div class="hint" style="margin:6px 0 0">Confronto in tempo reale tra utenti online. Usa sempre rispetto e buon senso.</div>
+          </div>
+          <a class="btn small ghost" href="#/">← Home</a>
+        </div>
+
+        <div class="chatPanel">
+          <div class="chatNotice">
+            ⚠️ Non inserire dati sensibili, numeri privati o informazioni personali. I messaggi possono essere moderati dall’amministratore.
+          </div>
+
+          <div class="chatTop">
+            <div>
+              <label for="chatNickname">Nickname</label>
+              <input id="chatNickname" type="text" maxlength="30" placeholder="Es. Marco, cittadino, utente..." />
+            </div>
+            <div class="chatOnlinePill"><span class="onlineDot"></span> <span id="chatOnlineCount">0</span> online</div>
+          </div>
+
+          <div id="chatMessages" class="chatBox">
+            <div class="chatEmpty">Caricamento chat...</div>
+          </div>
+
+          <div class="chatComposer">
+            <div>
+              <label for="chatMessage">Messaggio</label>
+              <input id="chatMessage" type="text" maxlength="500" placeholder="Scrivi un messaggio..." />
+            </div>
+            <button id="btnSendChat" class="primary" type="button">📨 Invia</button>
+            <button id="btnRefreshChat" class="ghost" type="button">🔄 Aggiorna</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1163,6 +1362,12 @@
       telegramApiKey: "SF-Secure-Key-2026" 
     };
 
+    const CHAT_CONFIG = {
+      supabaseUrl: "https://nyxhwaqqywokubsnhirj.supabase.co",
+      supabaseKey: "sb_publishable_ivK812cY6bRYfHm2fKWeQQ_afyVoj2Z",
+      maxMessages: 50
+    };
+
     window.publicSegnalazioni = [];
     window.publicLuoghi = [];
 
@@ -1231,6 +1436,223 @@
     let db;
     let localReportsCache = [];
 
+
+    let chatSb = null;
+    let chatMessagesChannel = null;
+    let chatPresenceChannel = null;
+    let chatDisplayedIds = new Set();
+    let chatInitialized = false;
+
+    function chatHtmlSafe(v) {
+      return String(v ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+      }[m]));
+    }
+
+    function getChatClientId() {
+      let id = localStorage.getItem("sf_chat_client_id");
+      if (!id) {
+        id = "utente-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem("sf_chat_client_id", id);
+      }
+      return id;
+    }
+
+    function getChatNickname() {
+      const input = document.getElementById("chatNickname");
+      const raw = (input ? input.value : localStorage.getItem("sf_chat_nickname") || "").trim();
+      return raw.replace(/[<>]/g, "").slice(0, 30);
+    }
+
+    function cleanChatMessage(raw) {
+      let s = String(raw || "").trim();
+      s = s.replace(/[<>]/g, "");
+      const banned = ["vaffanculo", "stronzo", "coglione", "merda"];
+      banned.forEach(w => {
+        const re = new RegExp(w, "gi");
+        s = s.replace(re, "****");
+      });
+      return s.slice(0, 500);
+    }
+
+    function ensureChatClient() {
+      if (chatSb) return chatSb;
+      if (!window.supabase || !window.supabase.createClient) {
+        throw new Error("Libreria Supabase non caricata");
+      }
+      chatSb = window.supabase.createClient(CHAT_CONFIG.supabaseUrl, CHAT_CONFIG.supabaseKey);
+      return chatSb;
+    }
+
+    function renderChatMessage(row, prepend = false) {
+      const box = document.getElementById("chatMessages");
+      if (!box || !row || !row.id || chatDisplayedIds.has(row.id)) return;
+      chatDisplayedIds.add(row.id);
+
+      const myNick = getChatNickname().toLowerCase();
+      const isMine = myNick && String(row.nickname || "").toLowerCase() === myNick;
+      const date = row.created_at ? new Date(row.created_at) : new Date();
+      const time = date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+
+      const el = document.createElement("div");
+      el.className = "chatMsg" + (isMine ? " mine" : "");
+      el.innerHTML = `
+        <div class="chatMeta">
+          <span>${chatHtmlSafe(row.nickname || "Utente")}</span>
+          <time>${chatHtmlSafe(time)}</time>
+        </div>
+        <div class="chatText">${chatHtmlSafe(row.message || "")}</div>
+      `;
+
+      const empty = box.querySelector(".chatEmpty");
+      if (empty) empty.remove();
+
+      if (prepend && box.firstChild) box.insertBefore(el, box.firstChild);
+      else box.appendChild(el);
+
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function loadChatMessages() {
+      try {
+        const sb = ensureChatClient();
+        const box = document.getElementById("chatMessages");
+        if (box) box.innerHTML = `<div class="chatEmpty">Caricamento messaggi...</div>`;
+        chatDisplayedIds = new Set();
+
+        const { data, error } = await sb
+          .from("chat_messages")
+          .select("id,nickname,message,created_at,visible")
+          .eq("visible", true)
+          .order("created_at", { ascending: false })
+          .limit(CHAT_CONFIG.maxMessages);
+
+        if (error) throw error;
+
+        const rows = (data || []).slice().reverse();
+        if (!rows.length && box) {
+          box.innerHTML = `<div class="chatEmpty">Ancora nessun messaggio. Scrivi tu il primo saluto 👋</div>`;
+          return;
+        }
+        rows.forEach(row => renderChatMessage(row));
+      } catch (e) {
+        const box = document.getElementById("chatMessages");
+        if (box) box.innerHTML = `<div class="chatEmpty">Errore chat: ${chatHtmlSafe(e.message || e)}</div>`;
+      }
+    }
+
+    async function sendChatMessage() {
+      try {
+        const sb = ensureChatClient();
+        const nickInput = document.getElementById("chatNickname");
+        const msgInput = document.getElementById("chatMessage");
+        const nickname = getChatNickname();
+        const message = cleanChatMessage(msgInput ? msgInput.value : "");
+
+        if (nickname.length < 2) {
+          showBanner("error", "Inserisci un nickname di almeno 2 caratteri.");
+          nickInput?.focus();
+          return;
+        }
+        if (message.length < 1) {
+          showBanner("error", "Scrivi un messaggio.");
+          msgInput?.focus();
+          return;
+        }
+
+        localStorage.setItem("sf_chat_nickname", nickname);
+        if (nickInput) nickInput.value = nickname;
+
+        const { error } = await sb.from("chat_messages").insert({
+          nickname,
+          message,
+          visible: true
+        });
+
+        if (error) throw error;
+        if (msgInput) msgInput.value = "";
+      } catch (e) {
+        showBanner("error", "Errore invio chat: " + (e.message || e));
+      }
+    }
+
+    function subscribeChatMessages() {
+      const sb = ensureChatClient();
+      if (chatMessagesChannel) return;
+
+      chatMessagesChannel = sb
+        .channel("sf_chat_messages_public")
+        .on("postgres_changes", {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages"
+        }, payload => {
+          if (payload && payload.new && payload.new.visible !== false) {
+            renderChatMessage(payload.new);
+          }
+        })
+        .subscribe();
+    }
+
+    function subscribeChatPresence() {
+      const sb = ensureChatClient();
+      if (chatPresenceChannel) return;
+
+      const clientId = getChatClientId();
+      chatPresenceChannel = sb.channel("sf_chat_presence", {
+        config: { presence: { key: clientId } }
+      });
+
+      chatPresenceChannel.on("presence", { event: "sync" }, () => {
+        const state = chatPresenceChannel.presenceState();
+        let count = 0;
+        Object.values(state).forEach(list => count += Array.isArray(list) ? list.length : 0);
+        const el = document.getElementById("chatOnlineCount");
+        if (el) el.textContent = count;
+      });
+
+      chatPresenceChannel.subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          const nickname = getChatNickname() || "Utente";
+          await chatPresenceChannel.track({
+            nickname,
+            online_at: new Date().toISOString()
+          });
+        }
+      });
+    }
+
+    function initChatLive() {
+      if (chatInitialized) return;
+      chatInitialized = true;
+
+      const nickInput = document.getElementById("chatNickname");
+      if (nickInput) {
+        nickInput.value = localStorage.getItem("sf_chat_nickname") || "";
+        nickInput.addEventListener("change", () => {
+          const nick = getChatNickname();
+          if (nick) localStorage.setItem("sf_chat_nickname", nick);
+        });
+      }
+
+      document.getElementById("btnSendChat")?.addEventListener("click", sendChatMessage);
+      document.getElementById("btnRefreshChat")?.addEventListener("click", loadChatMessages);
+      document.getElementById("chatMessage")?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendChatMessage();
+        }
+      });
+
+      loadChatMessages();
+      try {
+        subscribeChatMessages();
+        subscribeChatPresence();
+      } catch (e) {
+        console.log("Realtime chat non disponibile:", e);
+      }
+    }
+
     function initStorage() {
       return new Promise((resolve) => {
         const req = indexedDB.open("SegnalaFacile_v8", 1);
@@ -1277,7 +1699,7 @@
     }
     document.getElementById("bannerClose").addEventListener("click", () => banner.classList.add("hidden"));
 
-    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place'];
+    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place', 'chat'];
     function route(){
       const hash = (location.hash || "#/").replace("#/", "");
       const target = views.includes(hash) ? hash : 'home';
@@ -1293,6 +1715,7 @@
 
       if(target === "my") renderList();
       if(target === "places") renderPublicPlaces();
+      if(target === "chat") initChatLive();
       if(target === "map") { 
         ensureMaps(); 
         setTimeout(() => { 
