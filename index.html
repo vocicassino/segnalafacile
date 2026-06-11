@@ -861,6 +861,80 @@
       }
     }
 
+    /* GUIDA INSTALLAZIONE APP */
+    .installGuideGrid{
+      display:grid;
+      gap:12px;
+      margin-top:14px;
+    }
+    .installStep{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.15), transparent 60%),
+        rgba(0,0,0,.16);
+      box-shadow:0 12px 26px rgba(0,0,0,.20);
+    }
+    .installStepNum{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:980;
+      background:linear-gradient(135deg, rgba(45,125,255,1), rgba(25,195,125,.75));
+      color:white;
+      box-shadow:0 12px 24px rgba(45,125,255,.18);
+      flex:0 0 auto;
+    }
+    .installStep h3{
+      margin:0 0 5px;
+      font-size:15px;
+      line-height:1.25;
+      font-weight:980;
+    }
+    .installStep p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+    .installDeviceTabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .installDeviceTabs .pill{
+      cursor:default;
+    }
+    .installNotice{
+      margin-top:14px;
+      padding:14px;
+      border-radius:22px;
+      border:1px solid rgba(25,195,125,.28);
+      background:rgba(25,195,125,.10);
+      color:#dfffee;
+      font-size:13px;
+      line-height:1.5;
+    }
+    .installLinkBox{
+      margin-top:14px;
+      padding:12px;
+      border-radius:20px;
+      border:1px dashed rgba(255,255,255,.18);
+      background:rgba(0,0,0,.16);
+      word-break:break-all;
+      font-size:13px;
+      color:#dce8ff;
+    }
+
   </style>
 </head>
 
@@ -898,6 +972,7 @@
         <div class="btnRow">
           <a class="btn ghost" href="#/places">⭐ Scopri Luoghi</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
+          <a class="btn ghost" href="#/install">📲 Come installarla</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti</a>
         </div>
       </div>
@@ -1175,6 +1250,82 @@
         </div>
       </div>
     </section>
+
+
+    <section id="view-install" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:980;font-size:20px">📲 Come installare Segnala Facile</div>
+            <div class="hint" style="margin:6px 0 0">Puoi usarla direttamente dal browser oppure installarla sul telefono come una vera app.</div>
+          </div>
+          <a class="btn small ghost" href="#/">← Home</a>
+        </div>
+
+        <div class="installNotice">
+          ✅ Non devi cercarla su Play Store o App Store: Segnala Facile è una <b>PWA</b>, cioè una web app installabile.  
+          Apri il link, premi “Installa” oppure usa il menu del browser e aggiungila alla schermata Home.
+        </div>
+
+        <div class="installLinkBox">
+          🔗 Link ufficiale: https://vocicassino.github.io/segnalafacile/
+        </div>
+
+        <div class="installDeviceTabs">
+          <span class="pill">🤖 Android / Chrome</span>
+          <span class="pill">🍎 iPhone / Safari</span>
+          <span class="pill">💻 PC / Chrome</span>
+        </div>
+
+        <div class="installGuideGrid">
+          <div class="installStep">
+            <div class="installStepNum">1</div>
+            <div>
+              <h3>Apri il link ufficiale</h3>
+              <p>Vai su <b>https://vocicassino.github.io/segnalafacile/</b> dal browser del tuo telefono.</p>
+            </div>
+          </div>
+
+          <div class="installStep">
+            <div class="installStepNum">2</div>
+            <div>
+              <h3>Premi “Installa” se compare il pulsante</h3>
+              <p>Su Android/Chrome può comparire il pulsante <b>⬇️ Installa</b> in alto nell’app. Premilo e conferma.</p>
+            </div>
+          </div>
+
+          <div class="installStep">
+            <div class="installStepNum">3</div>
+            <div>
+              <h3>Se non vedi “Installa”, usa il menu del browser</h3>
+              <p>Su Android premi i <b>tre puntini</b> di Chrome e scegli <b>Installa app</b> oppure <b>Aggiungi alla schermata Home</b>.</p>
+            </div>
+          </div>
+
+          <div class="installStep">
+            <div class="installStepNum">4</div>
+            <div>
+              <h3>Su iPhone usa Safari</h3>
+              <p>Apri il link con <b>Safari</b>, premi il tasto <b>Condividi</b> e scegli <b>Aggiungi alla schermata Home</b>.</p>
+            </div>
+          </div>
+
+          <div class="installStep">
+            <div class="installStepNum">5</div>
+            <div>
+              <h3>Usala come una normale app</h3>
+              <p>Dopo l’installazione troverai l’icona <b>Segnala Facile</b> sul telefono. Tocca l’icona e invia segnalazioni con foto, posizione e documenti.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="btnRow" style="margin-top:16px">
+          <a class="btn primary" href="#/report">📣 Invia una segnalazione</a>
+          <a class="btn ghost" href="#/">🏠 Torna alla Home</a>
+        </div>
+      </div>
+    </section>
+
 
     <section id="view-places" class="grid hidden">
       <div class="card">
@@ -1927,7 +2078,7 @@
     }
     document.getElementById("bannerClose").addEventListener("click", () => banner.classList.add("hidden"));
 
-    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place', 'chat'];
+    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place', 'chat', 'install'];
     function route(){
       const hash = (location.hash || "#/").replace("#/", "");
       const target = views.includes(hash) ? hash : 'home';
