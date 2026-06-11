@@ -2431,7 +2431,9 @@ let allItems = [
           const info = isSeg ? (catInfo[cat] || catInfo.altro) : (placeCatInfo[cat] || placeCatInfo.altro);
           const title = item.titolo || item.nome || "Aggiornamento";
           const date = String(item.dataStr || item.when || "").split(",")[0] || "data non disponibile";
-          const label = isSeg ? "Segnalazione" : "Luogo";
+          const label = item.__type === "articolo"
+           ? "Articolo Voci di Cassino"
+           : (isSeg ? "Segnalazione" : "Luogo");
           return `
             <button class="homeRecentItem" type="button" data-recent-index="${index}">
               <span class="homeRecentEmoji">${info.emoji}</span>
