@@ -935,40 +935,34 @@
       color:#dce8ff;
     }
 
+    /* SEZIONE ARTICOLI VOCI DI CASSINO */
+    .articlesHero{border:1px solid rgba(255,255,255,.12);background:radial-gradient(320px 160px at 20% 0%, rgba(45,125,255,.18), transparent 62%),radial-gradient(320px 160px at 95% 0%, rgba(25,195,125,.14), transparent 58%),rgba(0,0,0,.16);border-radius:24px;padding:16px;margin-top:14px;box-shadow:0 14px 32px rgba(0,0,0,.24);}
+    .articlesTools{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-top:14px;}
+    .articleList{display:grid;gap:10px;margin-top:14px;}
+    .articleCard{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);border-radius:22px;padding:14px;display:grid;gap:10px;transition:transform .14s ease,border-color .14s ease,background .14s ease;}
+    .articleCard:hover{transform:translateY(-2px);border-color:rgba(45,125,255,.38);background:rgba(45,125,255,.08);}
+    .articleMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;font-weight:900;}
+    .articleTitle{margin:0;font-size:17px;line-height:1.2;font-weight:980;color:var(--text);}
+    .articleDesc{margin:0;color:var(--muted);font-size:13px;line-height:1.45;white-space:pre-wrap;}
+    .articleActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px;}
+    .articleEmpty{padding:18px;border-radius:22px;border:1px dashed rgba(255,255,255,.16);background:rgba(0,0,0,.14);color:var(--muted);text-align:center;line-height:1.5;margin-top:14px;}
+    .articleAdminBox{margin-top:14px;padding:14px;border-radius:22px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);}
+    @media(max-width:640px){.articlesTools{grid-template-columns:1fr;}.articlesTools .btn{width:100%;}.articleActions .btn{width:100%;}}
+
     /* ARTICOLI WOW PUBBLICI */
     .newsWowHeader{
-      margin-top:14px;
-      padding:18px;
-      border-radius:26px;
-      border:1px solid rgba(255,255,255,.13);
-      background:
-        radial-gradient(380px 180px at 15% 0%, rgba(45,125,255,.22), transparent 62%),
-        radial-gradient(360px 180px at 100% 0%, rgba(25,195,125,.16), transparent 58%),
-        rgba(0,0,0,.16);
-      box-shadow:0 16px 38px rgba(0,0,0,.26);
-      overflow:hidden;
+      margin-top:14px;padding:18px;border-radius:26px;border:1px solid rgba(255,255,255,.13);
+      background:radial-gradient(380px 180px at 15% 0%, rgba(45,125,255,.22), transparent 62%),radial-gradient(360px 180px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(0,0,0,.16);
+      box-shadow:0 16px 38px rgba(0,0,0,.26);overflow:hidden;
     }
-    .newsWowKicker{
-      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
-      border:1px solid rgba(45,125,255,.32);background:rgba(45,125,255,.12);
-      font-size:12px;font-weight:980;color:#dce8ff;margin-bottom:10px;
-    }
+    .newsWowKicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(45,125,255,.32);background:rgba(45,125,255,.12);font-size:12px;font-weight:980;color:#dce8ff;margin-bottom:10px;}
     .newsWowTitle{font-size:26px;line-height:1.05;font-weight:980;letter-spacing:-.45px;}
     .newsWowText{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.5;max-width:70ch;}
     .newsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px;}
-    .newsCard{
-      border:1px solid rgba(255,255,255,.12);
-      background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.14), transparent 60%),rgba(0,0,0,.18);
-      border-radius:24px;overflow:hidden;box-shadow:0 14px 32px rgba(0,0,0,.24);
-      transition:transform .14s ease,border-color .14s ease,background .14s ease;min-height:100%;display:flex;flex-direction:column;
-    }
+    .newsCard{border:1px solid rgba(255,255,255,.12);background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.14), transparent 60%),rgba(0,0,0,.18);border-radius:24px;overflow:hidden;box-shadow:0 14px 32px rgba(0,0,0,.24);transition:transform .14s ease,border-color .14s ease,background .14s ease;min-height:100%;display:flex;flex-direction:column;}
     .newsCard:hover{transform:translateY(-3px);border-color:rgba(45,125,255,.42);background:rgba(45,125,255,.08);}
     .newsCover{width:100%;height:170px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(45,125,255,.24),rgba(25,195,125,.16));border-bottom:1px solid rgba(255,255,255,.10);}
-    .newsCoverPlaceholder{
-      height:170px;display:flex;align-items:center;justify-content:center;font-size:46px;
-      background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.22), transparent 60%),radial-gradient(260px 120px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(255,255,255,.045);
-      border-bottom:1px solid rgba(255,255,255,.10);
-    }
+    .newsCoverPlaceholder{height:170px;display:flex;align-items:center;justify-content:center;font-size:46px;background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.22), transparent 60%),radial-gradient(260px 120px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.10);}
     .newsBody{padding:14px;display:grid;gap:10px;flex:1;}
     .newsMeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
     .newsMeta .pill{padding:6px 9px;font-size:11px;}
@@ -1509,20 +1503,19 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
             <div style="font-weight:980;font-size:20px">📰 Articoli Voci di Cassino</div>
-            <div class="hint" style="margin:6px 0 0">Notizie, aggiornamenti e approfondimenti collegati alle segnalazioni della città.</div>
+            <div class="hint" style="margin:6px 0 0">Raccolta dei contenuti pubblicati sulla pagina Facebook, collegati all'app Segnala Facile.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
 
-        <div class="newsWowHeader">
-          <div class="newsWowKicker">Voci di Cassino • aggiornamenti dalla città</div>
-          <div class="newsWowTitle">Dalle segnalazioni ai fatti</div>
-          <div class="newsWowText">
-            Qui trovi gli articoli e i post pubblicati da Voci di Cassino: problemi segnalati, sviluppi, approfondimenti e notizie utili per i cittadini.
+        <div class="articlesHero">
+          <div style="font-weight:980;font-size:18px;line-height:1.2">Dalle segnalazioni agli articoli</div>
+          <div class="hint" style="margin:6px 0 0">
+            Qui puoi raccogliere i post e gli articoli pubblicati su <b>Voci di Cassino</b>, così chi usa l'app può ritrovare aggiornamenti, approfondimenti e sviluppi delle segnalazioni.
           </div>
-          <div class="btnRow" style="margin-top:14px">
-            <a class="btn primary" href="#/report">📣 Invia una segnalazione</a>
-            <a class="btn ghost" href="#/map">🗺️ Guarda la mappa</a>
+          <div class="btnRow" style="margin-top:12px">
+            <a class="btn primary" href="https://www.facebook.com/search/top?q=voci%20di%20cassino" target="_blank" rel="noreferrer">📘 Apri Voci di Cassino su Facebook</a>
+            <a class="btn ghost" href="#/report">📣 Invia una segnalazione</a>
           </div>
         </div>
 
@@ -1531,10 +1524,17 @@
             <label for="articleSearch">Cerca articolo</label>
             <input id="articleSearch" type="text" placeholder="Cerca per titolo, categoria o testo..." />
           </div>
-          <button class="btn ghost" id="btnRefreshArticles" type="button">🔄 Aggiorna</button>
+          <button class="btn ghost" id="btnRefreshArticles" type="button">🔄 Aggiorna lista</button>
         </div>
 
-        <div id="articleList" class="newsGrid"></div>
+        <div class="articleAdminBox">
+          <div style="font-weight:980">✍️ Come aggiungere nuovi articoli</div>
+          <div class="hint" style="margin:6px 0 0">
+            Per ora gli articoli si aggiungono modificando la lista <b>ARTICOLI_VOCI</b> nel file index.html. Nel prossimo step possiamo collegarla a Cloudflare D1/Worker, così potrai aggiungerli da pannello admin senza modificare il codice.
+          </div>
+        </div>
+
+        <div id="articleList" class="articleList"></div>
       </div>
     </section>
 
@@ -2665,6 +2665,8 @@
     };
 
 
+
+
     let articlesCache = [];
 
     function articleSafe(v) {
@@ -2676,7 +2678,7 @@
     async function fetchArticlesList() {
       const res = await fetch(CONFIG.telegramWorkerUrl + "/api/articoli?t=" + Date.now());
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.ok) throw new Error(data.error || "Errore caricamento articoli");
+      if (!res.ok || !data.ok) throw new Error(data.error || data.warning || "Errore caricamento articoli");
       articlesCache = Array.isArray(data.articoli) ? data.articoli : [];
       return articlesCache;
     }
@@ -2684,7 +2686,6 @@
     async function renderArticles() {
       const list = document.getElementById("articleList");
       if (!list) return;
-
       list.innerHTML = `<div class="newsEmpty" style="grid-column:1/-1">⏳ Caricamento articoli...</div>`;
 
       try {
