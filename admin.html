@@ -10,276 +10,7 @@
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-
-  // ==========================================
-  // MODERAZIONE CHAT LIVE
-  // ==========================================
-
-  function formatChatDate(value) {
-    if (!value) return "data non disponibile";
-    try {
-      return new Date(value).toLocaleString("it-IT");
-    } catch(e) {
-      return String(value);
-    }
-  }
-
-  async function loadChatAdminData() {
-    if (!apiKey) return;
-    const list = document.getElementById("chatAdminList");
-    const stats = document.getElementById("chatAdminStats");
-    if (list) list.innerHTML = "Caricamento messaggi chat...";
-    try {
-      const res = await fetch(WORKER_URL + "/api/chat/list?t=" + Date.now(), {
-        headers: { "X-Api-Key": apiKey }
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Errore caricamento chat");
-      chatAdminData = data.items || [];
-      renderChatAdminList();
-    } catch(e) {
-      if (list) list.innerHTML = `<p style="color:#ff8d8f;">Errore chat: ${escapeHtml(e.message || e)}</p>`;
-      if (stats) stats.textContent = "Errore caricamento chat.";
-    }
-  }
-
-  function renderChatAdminList() {
-    const list = document.getElementById("chatAdminList");
-    const stats = document.getElementById("chatAdminStats");
-    if (!list || !stats) return;
-
-    const total = chatAdminData.length;
-    const visible = chatAdminData.filter(m => m.visible !== false).length;
-    const hidden = total - visible;
-    stats.textContent = `Totale messaggi: ${total} • Visibili: ${visible} • Nascosti: ${hidden}`;
-
-    if (!chatAdminData.length) {
-      list.innerHTML = `<p style="color:#a9b6db;">Nessun messaggio in chat.</p>`;
-      return;
-    }
-
-    list.innerHTML = chatAdminData.map(msg => {
-      const isVisible = msg.visible !== false;
-      return `
-        <div class="chat-admin-item ${isVisible ? "" : "chat-admin-hidden"}" id="chatmsg-${msg.id}">
-          <div>
-            <div class="chat-admin-title">
-              <span>👤 ${escapeHtml(msg.nickname || "Utente")}</span>
-              <span class="chat-badge ${isVisible ? "ok" : "off"}">${isVisible ? "visibile" : "nascosto"}</span>
-            </div>
-            <div class="chat-admin-msg">${escapeHtml(msg.message || "")}</div>
-            ${(msg.image_url || msg.foto_url) ? `<div class="chat-admin-photo"><img src="${escapeAttr(msg.image_url || msg.foto_url)}" alt="Foto chat" onclick="window.open('${escapeAttr(msg.image_url || msg.foto_url)}','_blank')"></div>` : ""}
-            <div class="chat-admin-meta">🕒 ${escapeHtml(formatChatDate(msg.created_at))} • ID: ${escapeHtml(msg.id)}</div>
-          </div>
-          <div class="chat-admin-actions">
-            ${isVisible
-              ? `<button class="btn-danger" onclick="setChatMessageVisibility('${msg.id}', false)">🚫 Nascondi</button>`
-              : `<button class="btn-success" onclick="setChatMessageVisibility('${msg.id}', true)">👁️ Mostra</button>`}
-            <button class="btn-danger" onclick="deleteChatMessage('${msg.id}')">🗑️ Elimina</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  async function setChatMessageVisibility(id, visible) {
-    try {
-      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
-        method: "PUT",
-        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ visible })
-      });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || "Errore aggiornamento chat");
-      const item = chatAdminData.find(m => m.id === id);
-      if (item) item.visible = visible;
-      renderChatAdminList();
-    } catch(e) {
-      alert("Errore: " + (e.message || e));
-    }
-  }
-
-  async function deleteChatMessage(id) {
-    if (!confirm("Eliminare definitivamente questo messaggio dalla chat?")) return;
-    try {
-      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
-        method: "DELETE",
-        headers: { "X-Api-Key": apiKey }
-      });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || "Errore eliminazione chat");
-      chatAdminData = chatAdminData.filter(m => m.id !== id);
-      renderChatAdminList();
-    } catch(e) {
-      alert("Errore: " + (e.message || e));
-    }
-  }
-
-  async function hideAllVisibleChatMessages() {
-    const visibleMessages = chatAdminData.filter(m => m.visible !== false);
-    if (!visibleMessages.length) return alert("Non ci sono messaggi visibili da nascondere.");
-    if (!confirm(`Nascondere ${visibleMessages.length} messaggi visibili dalla chat pubblica?`)) return;
-    for (const msg of visibleMessages) {
-      try {
-        await fetch(`${WORKER_URL}/api/chat/${msg.id}`, {
-          method: "PUT",
-          headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-          body: JSON.stringify({ visible: false })
-        });
-        msg.visible = false;
-      } catch(e) {}
-    }
-    renderChatAdminList();
-  }
-
-
-  // ==========================================
-  // GESTIONE ARTICOLI VOCI DI CASSINO
-  // ==========================================
-
-  function adminArticleSafe(v) {
-    return String(v ?? "").replace(/[&<>"']/g, m => ({
-      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
-    }[m]));
-  }
-
-  function updateArticleImagePreview() {
-    const url = document.getElementById("articleImage")?.value.trim() || "";
-    const img = document.getElementById("articleImagePreview");
-    if (!img) return;
-    if (url) {
-      img.src = url;
-      img.style.display = "block";
-    } else {
-      img.src = "";
-      img.style.display = "none";
-    }
-  }
-
-  function clearArticleForm() {
-    ["articleUrl","articleTitle","articleCategory","articleDate","articleImage","articleDesc"].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = "";
-    });
-    updateArticleImagePreview();
-  }
-
-  async function loadArticles() {
-    const box = document.getElementById("articoliList");
-    if (!box) return;
-    box.innerHTML = "Caricamento articoli...";
-    try {
-      const res = await fetch(WORKER_URL + "/api/articoli?t=" + Date.now());
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || data.warning || "Errore caricamento articoli");
-      allData.articoli = data.articoli || [];
-      renderArticlesAdmin();
-    } catch(e) {
-      box.innerHTML = "<p style='color:#ff8d8f;'>Errore caricamento articoli: " + adminArticleSafe(e.message || e) + "</p>";
-    }
-  }
-
-  function renderArticlesAdmin() {
-    const box = document.getElementById("articoliList");
-    if (!box) return;
-    const items = allData.articoli || [];
-    if (!items.length) {
-      box.innerHTML = "<p style='color:#a9b6db;'>Nessun articolo salvato.</p>";
-      return;
-    }
-
-    box.innerHTML = items.map(a => `
-      <div class="list-item article-row">
-        <div class="details">
-          <h3>📰 ${adminArticleSafe(a.titolo || "Senza titolo")}</h3>
-          <p><span class="badge badge-cat">${adminArticleSafe(a.categoria || "Aggiornamento")}</span> ${adminArticleSafe(a.dataStr || "")}</p>
-          <p style="margin-top:4px;">${adminArticleSafe(a.descrizione || "")}</p>
-          <p style="margin-top:6px;font-size:12px;color:#a9b6db;word-break:break-all;">🔗 ${adminArticleSafe(a.url || "")}</p>
-          ${a.immagine ? `<div class="mini-photos"><img src="${adminArticleSafe(a.immagine)}" alt="Anteprima articolo"></div>` : ""}
-        </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <a href="${adminArticleSafe(a.url || "#")}" target="_blank"><button type="button">👁️ Apri</button></a>
-          <button class="btn-danger" onclick="deleteArticle('${adminArticleSafe(a.id)}')">🗑️ Elimina</button>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  async function previewArticle() {
-    const url = document.getElementById("articleUrl")?.value.trim() || "";
-    if (!url) return alert("Inserisci prima il link.");
-    try {
-      const res = await fetch(WORKER_URL + "/api/articoli/preview", {
-        method: "POST",
-        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Anteprima non disponibile");
-
-      if (data.preview?.title) document.getElementById("articleTitle").value = data.preview.title;
-      if (data.preview?.description) document.getElementById("articleDesc").value = data.preview.description;
-      if (data.preview?.image) document.getElementById("articleImage").value = data.preview.image;
-      if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
-      if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
-      updateArticleImagePreview();
-      alert("Anteprima recuperata. Controlla i campi e premi Salva.");
-    } catch(e) {
-      if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
-      if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
-      alert("Non riesco a leggere automaticamente il link. Puoi compilare titolo e descrizione manualmente.");
-    }
-  }
-
-  async function saveArticle() {
-    const payload = {
-      url: document.getElementById("articleUrl")?.value.trim() || "",
-      titolo: document.getElementById("articleTitle")?.value.trim() || "",
-      categoria: document.getElementById("articleCategory")?.value.trim() || "Aggiornamento",
-      dataStr: document.getElementById("articleDate")?.value.trim() || new Date().toLocaleDateString("it-IT"),
-      immagine: document.getElementById("articleImage")?.value.trim() || "",
-      descrizione: document.getElementById("articleDesc")?.value.trim() || ""
-    };
-
-    if (!payload.url || !payload.titolo) {
-      return alert("Link e titolo sono obbligatori.");
-    }
-
-    try {
-      const res = await fetch(WORKER_URL + "/api/articoli", {
-        method: "POST",
-        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || data.detail || "Errore salvataggio articolo");
-
-      clearArticleForm();
-      await loadArticles();
-      alert("Articolo salvato correttamente.");
-    } catch(e) {
-      alert("Errore salvataggio articolo: " + (e.message || e));
-    }
-  }
-
-  async function deleteArticle(id) {
-    if (!confirm("Eliminare questo articolo?")) return;
-    try {
-      const res = await fetch(`${WORKER_URL}/api/articoli/${id}`, {
-        method: "DELETE",
-        headers: { "X-Api-Key": apiKey }
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Errore eliminazione articolo");
-      await loadArticles();
-    } catch(e) {
-      alert("Errore eliminazione articolo: " + (e.message || e));
-    }
-  }
-
-
-</script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     body { font-family: system-ui, sans-serif; background: #0b1220; color: #eaf0ff; margin: 0; padding: 20px; }
@@ -414,6 +145,18 @@
     .article-row h3{color:#2d7dff;}
     @media(max-width:700px){.article-form-grid{grid-template-columns:1fr;}}
 
+  
+
+    /* GESTIONE ARTICOLI - MODIFICA E TESTO COMPLETO */
+    .article-mode-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(45,125,255,.12);border:1px solid rgba(45,125,255,.35);color:#dce8ff;font-size:12px;font-weight:900;margin-left:8px;}
+    .article-form-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px;}
+    .article-content-area{min-height:260px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;line-height:1.45;}
+    .article-help{color:#a9b6db;font-size:12px;line-height:1.45;margin:-6px 0 12px;}
+    .article-row .article-full-preview{margin-top:7px;padding:8px 10px;border-left:3px solid rgba(45,125,255,.55);background:rgba(45,125,255,.06);border-radius:8px;color:#c9d4ea;font-size:12px;line-height:1.45;max-height:72px;overflow:hidden;}
+    .article-admin-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;}
+    .btn-warning{background:#f39c12;color:#101827;}
+    .btn-secondary{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);color:#eaf0ff;}
+
   </style>
 </head>
 <body>
@@ -500,11 +243,13 @@
       </div>
       <div id="articoliSection" class="section-content">
         <div style="background:#070c18;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:15px;margin-bottom:15px;">
-          <h3 style="margin-top:0;color:#eaf0ff;">➕ Aggiungi articolo</h3>
+          <h3 id="articleFormTitle" style="margin-top:0;color:#eaf0ff;">➕ Aggiungi articolo <span id="articleModeBadge" class="article-mode-badge" style="display:none;">Modifica attiva</span></h3>
+          <input type="hidden" id="articleEditingId" value="">
           <label>Link articolo / post Facebook</label>
           <input type="text" id="articleUrl" placeholder="https://www.facebook.com/... oppure link articolo" />
           <button onclick="previewArticle()">🔍 Recupera dati dal link</button>
-          <button class="btn-success" onclick="saveArticle()">💾 Salva articolo</button>
+          <button class="btn-success" id="saveArticleBtn" onclick="saveArticle()">💾 Salva articolo</button>
+          <button class="btn-warning" id="cancelArticleEditBtn" onclick="cancelArticleEdit()" style="display:none;">↩️ Annulla modifica</button>
           <button class="btn-danger" onclick="clearArticleForm()">🧹 Pulisci</button>
 
           <div class="article-form-grid" style="margin-top:15px;">
@@ -526,8 +271,14 @@
               <img id="articleImagePreview" class="preview-img" alt="Anteprima immagine articolo">
             </div>
             <div class="full">
-              <label>Descrizione</label>
+              <label>Descrizione breve per anteprima</label>
               <textarea id="articleDesc" placeholder="Breve descrizione dell'articolo..."></textarea>
+              <div class="article-help">Questa parte compare nella scheda dell'articolo come anteprima.</div>
+            </div>
+            <div class="full">
+              <label>Testo completo dell'articolo</label>
+              <textarea id="articleContent" class="article-content-area" placeholder="Incolla qui il testo completo dell'articolo. Se il sito lo permette, il pulsante Recupera dati proverà a compilarlo automaticamente."></textarea>
+              <div class="article-help">Questo testo verrà letto direttamente nell'app pubblica nel popup dell'articolo. Con Facebook può essere necessario incollare il testo manualmente perché spesso blocca l'estrazione automatica.</div>
             </div>
           </div>
         </div>
@@ -1746,14 +1497,29 @@
   }
 
 
+
   // ==========================================
-  // GESTIONE ARTICOLI VOCI DI CASSINO - FIX FUNZIONI GLOBALI
+  // GESTIONE ARTICOLI VOCI DI CASSINO - MODIFICA + TESTO COMPLETO
   // ==========================================
 
   function adminArticleSafe(v) {
     return String(v ?? "").replace(/[&<>"']/g, m => ({
       "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
     }[m]));
+  }
+
+  function adminArticleDecode(v) {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = String(v ?? "");
+    return txt.value;
+  }
+
+  function adminArticlePlain(v, max = 230) {
+    const cleaned = adminArticleDecode(v)
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return cleaned.length > max ? cleaned.slice(0, max).trim() + "..." : cleaned;
   }
 
   function updateArticleImagePreview() {
@@ -1769,12 +1535,40 @@
     }
   }
 
+  function setArticleEditMode(active, article = null) {
+    const title = document.getElementById("articleFormTitle");
+    const badge = document.getElementById("articleModeBadge");
+    const saveBtn = document.getElementById("saveArticleBtn");
+    const cancelBtn = document.getElementById("cancelArticleEditBtn");
+    const hidden = document.getElementById("articleEditingId");
+
+    if (active && article) {
+      if (hidden) hidden.value = article.id || "";
+      if (title) title.firstChild.textContent = "✏️ Modifica articolo ";
+      if (badge) badge.style.display = "inline-flex";
+      if (saveBtn) saveBtn.textContent = "💾 Aggiorna articolo";
+      if (cancelBtn) cancelBtn.style.display = "inline-block";
+    } else {
+      if (hidden) hidden.value = "";
+      if (title) title.firstChild.textContent = "➕ Aggiungi articolo ";
+      if (badge) badge.style.display = "none";
+      if (saveBtn) saveBtn.textContent = "💾 Salva articolo";
+      if (cancelBtn) cancelBtn.style.display = "none";
+    }
+  }
+
   function clearArticleForm() {
-    ["articleUrl","articleTitle","articleCategory","articleDate","articleImage","articleDesc"].forEach(id => {
+    ["articleUrl","articleTitle","articleCategory","articleDate","articleImage","articleDesc","articleContent"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
+    setArticleEditMode(false);
     updateArticleImagePreview();
+  }
+
+  function cancelArticleEdit() {
+    clearArticleForm();
+    document.getElementById("articleUrl")?.focus();
   }
 
   async function loadArticles() {
@@ -1801,21 +1595,43 @@
       return;
     }
 
-    box.innerHTML = items.map(a => `
+    box.innerHTML = items.map(a => {
+      const full = a.contenuto || a.testo || a.content || "";
+      const fullPreview = full ? `<div class="article-full-preview">📖 ${adminArticleSafe(adminArticlePlain(full, 360))}</div>` : `<div class="article-full-preview">⚠️ Testo completo non inserito. Premi Modifica e incollalo nel campo dedicato.</div>`;
+      return `
       <div class="list-item article-row">
         <div class="details">
           <h3>📰 ${adminArticleSafe(a.titolo || "Senza titolo")}</h3>
           <p><span class="badge badge-cat">${adminArticleSafe(a.categoria || "Aggiornamento")}</span> ${adminArticleSafe(a.dataStr || "")}</p>
           <p style="margin-top:4px;">${adminArticleSafe(a.descrizione || "")}</p>
+          ${fullPreview}
           <p style="margin-top:6px;font-size:12px;color:#a9b6db;word-break:break-all;">🔗 ${adminArticleSafe(a.url || "")}</p>
           ${a.immagine ? `<div class="mini-photos"><img src="${adminArticleSafe(a.immagine)}" alt="Anteprima articolo"></div>` : ""}
         </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <div class="article-admin-actions">
           <a href="${adminArticleSafe(a.url || "#")}" target="_blank"><button type="button">👁️ Apri</button></a>
+          <button class="btn-warning" onclick="editArticle('${adminArticleSafe(a.id)}')">✏️ Modifica</button>
           <button class="btn-danger" onclick="deleteArticle('${adminArticleSafe(a.id)}')">🗑️ Elimina</button>
         </div>
-      </div>
-    `).join("");
+      </div>`;
+    }).join("");
+  }
+
+  function editArticle(id) {
+    const article = (allData.articoli || []).find(a => String(a.id) === String(id));
+    if (!article) return alert("Articolo non trovato.");
+
+    document.getElementById("articleUrl").value = article.url || "";
+    document.getElementById("articleTitle").value = adminArticleDecode(article.titolo || "");
+    document.getElementById("articleCategory").value = adminArticleDecode(article.categoria || "Aggiornamento");
+    document.getElementById("articleDate").value = adminArticleDecode(article.dataStr || "");
+    document.getElementById("articleImage").value = article.immagine || "";
+    document.getElementById("articleDesc").value = adminArticleDecode(article.descrizione || "");
+    document.getElementById("articleContent").value = adminArticleDecode(article.contenuto || article.testo || article.content || "");
+    updateArticleImagePreview();
+    setArticleEditMode(true, article);
+
+    document.getElementById("articleFormTitle")?.scrollIntoView({ behavior:"smooth", block:"center" });
   }
 
   async function previewArticle() {
@@ -1830,28 +1646,36 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "Anteprima non disponibile");
 
-      if (data.preview?.title) document.getElementById("articleTitle").value = data.preview.title;
-      if (data.preview?.description) document.getElementById("articleDesc").value = data.preview.description;
+      if (data.preview?.title) document.getElementById("articleTitle").value = adminArticleDecode(data.preview.title);
+      if (data.preview?.description) document.getElementById("articleDesc").value = adminArticleDecode(data.preview.description);
+      if (data.preview?.content) document.getElementById("articleContent").value = adminArticleDecode(data.preview.content);
       if (data.preview?.image) document.getElementById("articleImage").value = data.preview.image;
       if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
       if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
       updateArticleImagePreview();
-      alert("Anteprima recuperata. Controlla i campi e premi Salva.");
+
+      if (data.preview?.content) {
+        alert("Dati recuperati, incluso il testo dell'articolo. Controlla e salva.");
+      } else {
+        alert("Dati recuperati parzialmente. Se il testo completo non compare, incollalo manualmente nel campo 'Testo completo'.");
+      }
     } catch(e) {
       if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
       if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
-      alert("Non riesco a leggere automaticamente il link. Puoi compilare titolo e descrizione manualmente.");
+      alert("Non riesco a leggere automaticamente il link. Compila o incolla manualmente titolo, descrizione e testo completo.");
     }
   }
 
   async function saveArticle() {
+    const editingId = document.getElementById("articleEditingId")?.value.trim() || "";
     const payload = {
       url: document.getElementById("articleUrl")?.value.trim() || "",
       titolo: document.getElementById("articleTitle")?.value.trim() || "",
       categoria: document.getElementById("articleCategory")?.value.trim() || "Aggiornamento",
       dataStr: document.getElementById("articleDate")?.value.trim() || new Date().toLocaleDateString("it-IT"),
       immagine: document.getElementById("articleImage")?.value.trim() || "",
-      descrizione: document.getElementById("articleDesc")?.value.trim() || ""
+      descrizione: document.getElementById("articleDesc")?.value.trim() || "",
+      contenuto: document.getElementById("articleContent")?.value.trim() || ""
     };
 
     if (!payload.url || !payload.titolo) {
@@ -1859,8 +1683,8 @@
     }
 
     try {
-      const res = await fetch(WORKER_URL + "/api/articoli", {
-        method: "POST",
+      const res = await fetch(WORKER_URL + "/api/articoli" + (editingId ? "/" + encodeURIComponent(editingId) : ""), {
+        method: editingId ? "PUT" : "POST",
         headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
@@ -1869,7 +1693,7 @@
 
       clearArticleForm();
       await loadArticles();
-      alert("Articolo salvato correttamente.");
+      alert(editingId ? "Articolo aggiornato correttamente." : "Articolo salvato correttamente.");
     } catch(e) {
       alert("Errore salvataggio articolo: " + (e.message || e));
     }
@@ -1890,10 +1714,11 @@
     }
   }
 
-  // Espongo le funzioni anche su window per i pulsanti onclick
   window.previewArticle = previewArticle;
   window.saveArticle = saveArticle;
   window.clearArticleForm = clearArticleForm;
+  window.cancelArticleEdit = cancelArticleEdit;
+  window.editArticle = editArticle;
   window.deleteArticle = deleteArticle;
   window.loadArticles = loadArticles;
   window.updateArticleImagePreview = updateArticleImagePreview;
