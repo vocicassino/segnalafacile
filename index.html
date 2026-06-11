@@ -2428,7 +2428,9 @@ let allItems = [
         recentList.innerHTML = recent.map((item, index) => {
           const isSeg = item.__type === "segnalazione";
           const cat = item.categoria || "altro";
-          const info = isSeg ? (catInfo[cat] || catInfo.altro) : (placeCatInfo[cat] || placeCatInfo.altro);
+          const info = item.__type === "articolo"
+  ? { emoji: "📰" }
+  : (isSeg ? (catInfo[cat] || catInfo.altro) : (placeCatInfo[cat] || placeCatInfo.altro));
           const title = item.titolo || item.nome || "Aggiornamento";
           const date = String(item.dataStr || item.when || "").split(",")[0] || "data non disponibile";
           const label = item.__type === "articolo"
