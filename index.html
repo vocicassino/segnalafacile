@@ -1108,6 +1108,44 @@
     nav.bottom{ pointer-events:none; }
     nav.bottom .inner, nav.bottom a{ pointer-events:auto; }
 
+  
+
+    /* === FIX DEFINITIVO NAV + ARTICOLI === */
+    .articlesPageCard{min-height:auto;}
+    .articleTopWow{margin-top:16px;padding:22px;border-radius:28px;border:1px solid rgba(255,255,255,.13);background:radial-gradient(520px 220px at 0% 0%, rgba(45,125,255,.24), transparent 60%),radial-gradient(420px 220px at 100% 0%, rgba(25,195,125,.18), transparent 58%),linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));box-shadow:0 18px 46px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.06);}
+    .articleTopBadge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(45,125,255,.32);background:rgba(45,125,255,.12);font-size:12px;font-weight:980;color:#dce8ff;margin-bottom:10px;}
+    .articleTopWow h2{margin:0;font-size:28px;line-height:1.08;letter-spacing:-.5px;}
+    .articleTopWow p{margin:10px 0 0;color:#c7d4ea;line-height:1.55;max-width:72ch;}
+    .articleSearchBar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;margin-top:18px;}
+    .articleSmartList{display:grid;gap:16px;margin-top:16px;}
+    .articleCardPro{display:grid;grid-template-columns:minmax(230px,.78fr) minmax(0,1.22fr);overflow:hidden;border-radius:26px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(145deg, rgba(20,49,82,.92), rgba(8,18,34,.96));box-shadow:0 18px 42px rgba(0,0,0,.26);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
+    .articleCardPro:hover{transform:translateY(-2px);border-color:rgba(45,125,255,.38);box-shadow:0 24px 52px rgba(0,0,0,.32);}
+    .articleCover,.articleCoverPlaceholder{width:100%;height:100%;min-height:245px;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:58px;background:linear-gradient(135deg,rgba(45,125,255,.20),rgba(25,195,125,.13));}
+    .articleCardBody{padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0;}
+    .articleCardMeta{display:flex;gap:8px;flex-wrap:wrap;}
+    .articleCardMeta span{display:inline-flex;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);font-size:12px;font-weight:900;color:#dce8ff;}
+    .articleCardBody h3{margin:2px 0 0;font-size:23px;line-height:1.15;letter-spacing:-.25px;}
+    .articleCardBody p{margin:0;color:#c9d4ea;line-height:1.55;font-size:14px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+    .articleCardActions{display:flex;gap:9px;flex-wrap:wrap;margin-top:auto;padding-top:6px;}
+    .articleReaderModal{max-width:min(900px, calc(100vw - 22px));max-height:min(88vh, 920px);overflow:auto;}
+    .articleReaderHero{overflow:hidden;border-radius:22px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);margin:0 0 16px;}
+    .articleReaderHero img{width:100%;max-height:320px;object-fit:cover;display:block;}
+    .articleReaderHeroPlaceholder{height:230px;display:flex;align-items:center;justify-content:center;font-size:58px;background:linear-gradient(135deg,rgba(45,125,255,.16),rgba(25,195,125,.12));}
+    .articleReaderMeta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px;}
+    .articleReaderText{color:#dbe5f8;line-height:1.72;font-size:15px;white-space:normal;word-break:break-word;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:16px;}
+    .articleReaderText p{margin:0 0 13px;}
+    .articleReaderText p:last-child{margin-bottom:0;}
+    nav.bottom{padding:10px 10px calc(10px + env(safe-area-inset-bottom));}
+    nav.bottom .inner{max-width:920px!important;margin:0 auto!important;padding:10px 8px!important;border-radius:28px!important;border:1px solid rgba(255,255,255,.14)!important;background:radial-gradient(320px 140px at 0% 0%, rgba(45,125,255,.20), transparent 58%),radial-gradient(340px 140px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(8,14,28,.88)!important;backdrop-filter:blur(16px) saturate(140%)!important;box-shadow:0 16px 42px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.05)!important;display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:6px!important;overflow:visible!important;}
+    nav.bottom a{position:relative!important;min-width:0!important;min-height:64px!important;border-radius:21px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;color:#c3d0e6!important;text-decoration:none!important;padding:7px 4px!important;overflow:visible!important;background:transparent!important;border:1px solid transparent!important;}
+    nav.bottom a::before, nav.bottom a::after{display:none!important;content:none!important;}
+    .navIco{display:none!important;}
+    .navEmoji{width:36px;height:36px;display:flex!important;align-items:center;justify-content:center;border-radius:15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);font-size:19px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));}
+    nav.bottom a span:last-child{font-size:11px!important;font-weight:900!important;line-height:1!important;white-space:nowrap!important;}
+    nav.bottom a.active{color:#fff!important;background:linear-gradient(135deg,rgba(45,125,255,.24),rgba(25,195,125,.15))!important;border-color:rgba(255,255,255,.14)!important;box-shadow:0 10px 24px rgba(45,125,255,.16)!important;}
+    nav.bottom a.active .navEmoji{background:linear-gradient(135deg,rgba(45,125,255,.38),rgba(25,195,125,.22));border-color:rgba(118,184,255,.36);transform:translateY(-2px) scale(1.04);}
+    @media(max-width:720px){.articleSearchBar{grid-template-columns:1fr;}.articleSearchBar .btn{width:100%;}.articleCardPro{grid-template-columns:1fr;}.articleCover,.articleCoverPlaceholder{height:190px;min-height:190px;}.articleCardBody h3{font-size:20px;}.articleCardActions .btn{flex:1 1 auto;}nav.bottom .inner{grid-template-columns:repeat(6,1fr)!important;gap:3px!important;padding:8px 5px!important;border-radius:24px!important;}nav.bottom a{min-height:59px!important;border-radius:18px!important;gap:4px!important;padding:6px 2px!important;}.navEmoji{width:29px;height:29px;border-radius:12px;font-size:16px;}nav.bottom a span:last-child{font-size:9.5px!important;}}
+
   </style>
 </head>
 
@@ -1633,39 +1671,35 @@
       </div>
     </section>
 
-
-    
     <section id="view-articoli" class="grid hidden">
-      <div class="card">
+      <div class="card articlesPageCard">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:980;font-size:20px">📰 Articoli Voci di Cassino</div>
+            <div style="font-weight:980;font-size:22px">📰 Articoli Voci di Cassino</div>
             <div class="hint" style="margin:6px 0 0">Notizie, aggiornamenti e approfondimenti collegati alle segnalazioni della città.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
 
-        <div class="newsWowHeader">
-          <div class="newsWowKicker">Voci di Cassino • aggiornamenti dalla città</div>
-          <div class="newsWowTitle">Dalle segnalazioni agli articoli</div>
-          <div class="newsWowText">
-            Qui trovi i post e gli articoli pubblicati da <b>Voci di Cassino</b>, con aggiornamenti, approfondimenti e sviluppi delle segnalazioni arrivate dai cittadini.
-          </div>
+        <div class="articleTopWow">
+          <div class="articleTopBadge">Voci di Cassino • aggiornamenti dalla città</div>
+          <h2>Dalle segnalazioni agli articoli</h2>
+          <p>Leggi direttamente nell’app gli aggiornamenti pubblicati da <b>Voci di Cassino</b>. Puoi aprire la lettura completa in popup e, quando serve, andare anche alla fonte originale.</p>
           <div class="btnRow" style="margin-top:14px">
-            <a class="btn primary" href="https://www.facebook.com/VocidiCassino" target="_blank" rel="noreferrer">📘 Apri Voci di Cassino su Facebook</a>
+            <a class="btn primary" href="https://www.facebook.com/search/top?q=voci%20di%20cassino" target="_blank" rel="noreferrer">📘 Apri Facebook</a>
             <a class="btn ghost" href="#/report">📣 Invia una segnalazione</a>
           </div>
         </div>
 
-        <div class="articlesTools">
+        <div class="articleSearchBar">
           <div>
             <label for="articleSearch">Cerca articolo</label>
             <input id="articleSearch" type="text" placeholder="Cerca per titolo, categoria o testo..." />
           </div>
-          <button class="btn ghost" id="btnRefreshArticles" type="button">🔄 Aggiorna lista</button>
+          <button class="btn ghost" id="btnRefreshArticles" type="button">🔄 Aggiorna</button>
         </div>
 
-        <div id="articleList" class="newsGrid"></div>
+        <div id="articleList" class="articleSmartList"></div>
       </div>
     </section>
 
@@ -1773,7 +1807,7 @@
       <div class="modalHeader">
         <div>
           <h3 id="articleReaderTitle">Articolo</h3>
-          <div class="hint" id="articleReaderSub">Lettura completa</div>
+          <div class="hint" id="articleReaderSub">Lettura completa direttamente nell’app</div>
         </div>
         <button class="modalClose" id="articleReaderClose" type="button">✕</button>
       </div>
@@ -1787,33 +1821,14 @@
     </div>
   </div>
 
-  
   <nav class="bottom" aria-label="Navigazione">
     <div class="inner">
-      <a href="#/" data-nav="home" class="active" aria-label="Home">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 8h-2v10a1 1 0 0 1-1 1h-5v-6H11v6H6a1 1 0 0 1-1-1V11H3l9-8z"/></svg>
-        <span>Home</span>
-      </a>
-      <a href="#/articoli" data-nav="articoli" aria-label="Articoli">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 3v2h10V7H7zm0 4v2h10v-2H7zm0 4v2h6v-2H7z"/></svg>
-        <span>Articoli</span>
-      </a>
-      <a href="#/report" data-nav="report" aria-label="Segnala">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V4zm4 4h8v2H8V8zm0 4h8v2H8v-2zm0 4h6v2H8v-2z"/><path d="M20 8h2v14a2 2 0 0 1-2 2H8v-2h12V8z"/></svg>
-        <span>Segnala</span>
-      </a>
-      <a href="#/places" data-nav="places" aria-label="Luoghi">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        <span>Luoghi</span>
-      </a>
-      <a href="#/my" data-nav="my" aria-label="Storico">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 4h6v2H9V8zm0 4h6v2H9v-2zm0 4h4v2H9v-2z"/></svg>
-        <span>Storico</span>
-      </a>
-      <a href="#/map" data-nav="map" aria-label="Mappa">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-6 2-6-2v15l6 2 6-2 6 2V7l-6-2zm0 2.1l4 1.3v11.4l-4-1.3V7.1zM9 7.1l4-1.3v11.4l-4 1.3V7.1zM3 8.4l4 1.3v11.4l-4-1.3V8.4z"/></svg>
-        <span>Mappa</span>
-      </a>
+      <a href="#/" data-nav="home" class="active" aria-label="Home"><span class="navEmoji">🏠</span><span>Home</span></a>
+      <a href="#/articoli" data-nav="articoli" aria-label="Articoli"><span class="navEmoji">📰</span><span>Articoli</span></a>
+      <a href="#/report" data-nav="report" aria-label="Segnala"><span class="navEmoji">📣</span><span>Segnala</span></a>
+      <a href="#/places" data-nav="places" aria-label="Luoghi"><span class="navEmoji">⭐</span><span>Luoghi</span></a>
+      <a href="#/my" data-nav="my" aria-label="Storico"><span class="navEmoji">🗂️</span><span>Storico</span></a>
+      <a href="#/map" data-nav="map" aria-label="Mappa"><span class="navEmoji">🗺️</span><span>Mappa</span></a>
     </div>
   </nav>
 
@@ -2823,32 +2838,69 @@
 
     let articlesCache = [];
 
+    function decodeHtmlEntities(text) {
+      const textarea = document.createElement("textarea");
+      textarea.innerHTML = String(text ?? "");
+      return textarea.value;
+    }
+
     function articleSafe(v) {
-      return String(v ?? "").replace(/[&<>"']/g, m => ({
+      const decoded = decodeHtmlEntities(v);
+      return String(decoded ?? "").replace(/[&<>"']/g, m => ({
         "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
       }[m]));
     }
 
+    function cleanArticleText(text) {
+      return decodeHtmlEntities(text)
+        .replace(/<br\s*\/?\s*>/gi, "\n")
+        .replace(/<\/p>/gi, "\n\n")
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\r/g, "")
+        .replace(/[ \t]+/g, " ")
+        .replace(/\n\s+/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+
     function getArticleLongText(a){
-      const raw = a?.contenuto || a?.testo || a?.content || a?.full_text || a?.body || a?.descrizione || "";
-      return String(raw || "").trim();
+      const raw = a?.contenuto || a?.testo || a?.content || a?.full_text || a?.body || a?.descrizione || a?.excerpt || "";
+      return cleanArticleText(raw);
+    }
+
+    function getArticlePreviewText(a){
+      const txt = getArticleLongText(a);
+      if (!txt) return "";
+      return txt.length > 210 ? txt.slice(0, 210).trim() + "…" : txt;
     }
 
     function formatArticleText(raw){
-      const safe = articleSafe(raw || "");
-      return safe
+      const cleaned = cleanArticleText(raw || "");
+      if (!cleaned) return `<p>Nessun testo completo disponibile per questo articolo. Puoi comunque aprire la fonte originale.</p>`;
+      return cleaned
         .split(/\n{2,}/)
         .map(p => p.trim())
         .filter(Boolean)
-        .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
-        .join("") || `<p>Nessun testo completo disponibile per questo articolo. Puoi comunque aprire la fonte originale.</p>`;
+        .map(p => `<p>${articleSafe(p).replace(/\n/g, '<br>')}</p>`)
+        .join("");
+    }
+
+    function articleDomId(article) {
+      const base = article?.id || article?.slug || article?.url || article?.titolo || "articolo";
+      return "article-" + String(base)
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80);
     }
 
     async function fetchArticlesList() {
       const res = await fetch(CONFIG.telegramWorkerUrl + "/api/articoli?t=" + Date.now());
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.ok) throw new Error(data.error || "Errore caricamento articoli");
+      if (!res.ok || !data.ok) throw new Error(data.error || data.warning || "Errore caricamento articoli");
       articlesCache = Array.isArray(data.articoli) ? data.articoli : [];
+      window.publicArticoli = articlesCache;
       return articlesCache;
     }
 
@@ -2856,14 +2908,14 @@
       const a = articlesCache[index];
       if(!a) return;
       const titolo = a.titolo || "Articolo Voci di Cassino";
-      const data = a.dataStr || "Data non indicata";
+      const data = a.dataStr || a.data || a.createdAt || a.created_at || "Data non indicata";
       const categoria = a.categoria || "Aggiornamento";
-      const img = a.immagine || "";
-      const url = a.url || "#";
+      const img = a.immagine || a.image || a.cover || a.foto || "";
+      const url = a.url || a.link || "";
       const text = getArticleLongText(a);
 
-      document.getElementById("articleReaderTitle").textContent = titolo;
-      document.getElementById("articleReaderSub").textContent = "Lettura completa direttamente nell'app";
+      document.getElementById("articleReaderTitle").textContent = decodeHtmlEntities(titolo);
+      document.getElementById("articleReaderSub").textContent = "Lettura completa direttamente nell’app";
       document.getElementById("articleReaderMeta").innerHTML = `
         <span class="pill">🗓️ ${articleSafe(data)}</span>
         <span class="pill">🏷️ ${articleSafe(categoria)}</span>
@@ -2910,8 +2962,8 @@
         .map((a, index) => ({...a, __index:index}))
         .filter(a => {
           if (!q) return true;
-          return [a.titolo, a.dataStr, a.categoria, a.descrizione, a.url, a.contenuto, a.testo, a.content]
-            .some(v => String(v || "").toLowerCase().includes(q));
+          return [a.titolo, a.dataStr, a.data, a.categoria, a.descrizione, a.testo, a.contenuto, a.excerpt, a.url]
+            .some(v => decodeHtmlEntities(v).toLowerCase().includes(q));
         });
 
       if (!articoli.length) {
@@ -2927,28 +2979,29 @@
 
       list.innerHTML = articoli.map((a) => {
         const titolo = articleSafe(a.titolo || "Articolo Voci di Cassino");
-        const data = articleSafe(a.dataStr || "Data non indicata");
+        const data = articleSafe(a.dataStr || a.data || a.createdAt || a.created_at || "Data non indicata");
         const categoria = articleSafe(a.categoria || "Aggiornamento");
-        const descrizione = articleSafe(a.descrizione || getArticleLongText(a) || "");
-        const url = articleSafe(a.url || "#");
-        const img = articleSafe(a.immagine || "");
+        const descrizione = articleSafe(getArticlePreviewText(a));
+        const url = articleSafe(a.url || a.link || "#");
+        const img = articleSafe(a.immagine || a.image || a.cover || a.foto || "");
+        const id = articleDomId(a);
         const cover = img
-          ? `<img class="newsCover" src="${img}" alt="${titolo}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'newsCoverPlaceholder',textContent:'📰'}))">`
-          : `<div class="newsCoverPlaceholder">📰</div>`;
+          ? `<img class="articleCover" src="${img}" alt="${titolo}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'articleCoverPlaceholder',textContent:'📰'}))">`
+          : `<div class="articleCoverPlaceholder">📰</div>`;
 
         return `
-          <article class="newsCard">
+          <article class="articleCardPro" id="${id}">
             ${cover}
-            <div class="newsBody">
-              <div class="newsMeta">
-                <span class="pill">🗓️ ${data}</span>
-                <span class="pill">🏷️ ${categoria}</span>
+            <div class="articleCardBody">
+              <div class="articleCardMeta">
+                <span>🗓️ ${data}</span>
+                <span>🏷️ ${categoria}</span>
               </div>
               <h3>${titolo}</h3>
-              ${descrizione ? `<p>${descrizione}</p>` : ""}
-              <div class="newsActions">
-                <button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${a.__index})">📖 Leggi qui</button>
-                <a class="btn softInfo small" href="${url}" target="_blank" rel="noreferrer">🔗 Fonte</a>
+              ${descrizione ? `<p>${descrizione}</p>` : `<p>Apri la lettura completa per leggere l’aggiornamento.</p>`}
+              <div class="articleCardActions">
+                <button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${a.__index})">📖 Leggi nell’app</button>
+                <a class="btn ghost small" href="${url}" target="_blank" rel="noreferrer">🔗 Fonte</a>
                 <a class="btn ghost small" href="#/report">📣 Segnala</a>
               </div>
             </div>
@@ -2957,6 +3010,17 @@
       }).join("");
     }
 
+
+
+    // FIXED_ARTICLE_READER_LISTENERS
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "articleReaderClose") closeArticleReader();
+      if (e.target && e.target.id === "articleReaderReportBtn") {
+        closeArticleReader();
+        location.hash = "#/report";
+      }
+      if (e.target && e.target.id === "articleReaderOverlay") closeArticleReader();
+    });
 
     document.addEventListener("input", (e) => {
       if (e.target && e.target.id === "articleSearch") renderArticles();
