@@ -935,6 +935,20 @@
       color:#dce8ff;
     }
 
+    /* SEZIONE ARTICOLI VOCI DI CASSINO */
+    .articlesHero{border:1px solid rgba(255,255,255,.12);background:radial-gradient(320px 160px at 20% 0%, rgba(45,125,255,.18), transparent 62%),radial-gradient(320px 160px at 95% 0%, rgba(25,195,125,.14), transparent 58%),rgba(0,0,0,.16);border-radius:24px;padding:16px;margin-top:14px;box-shadow:0 14px 32px rgba(0,0,0,.24);}
+    .articlesTools{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-top:14px;}
+    .articleList{display:grid;gap:10px;margin-top:14px;}
+    .articleCard{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);border-radius:22px;padding:14px;display:grid;gap:10px;transition:transform .14s ease,border-color .14s ease,background .14s ease;}
+    .articleCard:hover{transform:translateY(-2px);border-color:rgba(45,125,255,.38);background:rgba(45,125,255,.08);}
+    .articleMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;font-weight:900;}
+    .articleTitle{margin:0;font-size:17px;line-height:1.2;font-weight:980;color:var(--text);}
+    .articleDesc{margin:0;color:var(--muted);font-size:13px;line-height:1.45;white-space:pre-wrap;}
+    .articleActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px;}
+    .articleEmpty{padding:18px;border-radius:22px;border:1px dashed rgba(255,255,255,.16);background:rgba(0,0,0,.14);color:var(--muted);text-align:center;line-height:1.5;margin-top:14px;}
+    .articleAdminBox{margin-top:14px;padding:14px;border-radius:22px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);}
+    @media(max-width:640px){.articlesTools{grid-template-columns:1fr;}.articlesTools .btn{width:100%;}.articleActions .btn{width:100%;}}
+
   </style>
 </head>
 
@@ -971,6 +985,7 @@
 
         <div class="btnRow">
           <a class="btn ghost" href="#/places">⭐ Scopri Luoghi</a>
+          <a class="btn ghost" href="#/articoli">📰 Articoli</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
           <a class="btn ghost" href="#/install">📲 Come installarla</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti</a>
@@ -1033,6 +1048,7 @@
                 <a class="btn primary" href="#/map">🗺️ Apri mappa interattiva</a>
                 <a class="btn ghost" href="#/report">📣 Nuova segnalazione</a>
                 <a class="btn ghost" href="#/places">⭐ Scopri luoghi</a>
+                <a class="btn ghost" href="#/articoli">📰 Articoli</a>
               </div>
             </div>
           </div>
@@ -1457,6 +1473,48 @@
         </div>
       </div>
     </section>
+
+
+    <section id="view-articoli" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:980;font-size:20px">📰 Articoli Voci di Cassino</div>
+            <div class="hint" style="margin:6px 0 0">Raccolta dei contenuti pubblicati sulla pagina Facebook, collegati all'app Segnala Facile.</div>
+          </div>
+          <a class="btn small ghost" href="#/">← Home</a>
+        </div>
+
+        <div class="articlesHero">
+          <div style="font-weight:980;font-size:18px;line-height:1.2">Dalle segnalazioni agli articoli</div>
+          <div class="hint" style="margin:6px 0 0">
+            Qui puoi raccogliere i post e gli articoli pubblicati su <b>Voci di Cassino</b>, così chi usa l'app può ritrovare aggiornamenti, approfondimenti e sviluppi delle segnalazioni.
+          </div>
+          <div class="btnRow" style="margin-top:12px">
+            <a class="btn primary" href="https://www.facebook.com/search/top?q=voci%20di%20cassino" target="_blank" rel="noreferrer">📘 Apri Voci di Cassino su Facebook</a>
+            <a class="btn ghost" href="#/report">📣 Invia una segnalazione</a>
+          </div>
+        </div>
+
+        <div class="articlesTools">
+          <div>
+            <label for="articleSearch">Cerca articolo</label>
+            <input id="articleSearch" type="text" placeholder="Cerca per titolo, categoria o testo..." />
+          </div>
+          <button class="btn ghost" id="btnRefreshArticles" type="button">🔄 Aggiorna lista</button>
+        </div>
+
+        <div class="articleAdminBox">
+          <div style="font-weight:980">✍️ Come aggiungere nuovi articoli</div>
+          <div class="hint" style="margin:6px 0 0">
+            Per ora gli articoli si aggiungono modificando la lista <b>ARTICOLI_VOCI</b> nel file index.html. Nel prossimo step possiamo collegarla a Cloudflare D1/Worker, così potrai aggiungerli da pannello admin senza modificare il codice.
+          </div>
+        </div>
+
+        <div id="articleList" class="articleList"></div>
+      </div>
+    </section>
+
 
     <section id="view-contacts" class="grid hidden">
       <div class="card">
@@ -2078,7 +2136,7 @@
     }
     document.getElementById("bannerClose").addEventListener("click", () => banner.classList.add("hidden"));
 
-    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place', 'chat', 'install'];
+    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place', 'chat', 'install', 'articoli'];
     function route(){
       const hash = (location.hash || "#/").replace("#/", "");
       const target = views.includes(hash) ? hash : 'home';
@@ -2094,6 +2152,7 @@
 
       if(target === "my") renderList();
       if(target === "places") renderPublicPlaces();
+      if(target === "articoli") renderArticles();
       if(target === "chat") initChatLive();
       if(target === "map") { 
         ensureMaps(); 
@@ -2581,6 +2640,82 @@
        placePhotos = [];
        document.getElementById("placePhotoPreview").innerHTML = "";
     };
+
+
+    const ARTICOLI_VOCI = [
+      /*
+        Aggiungi qui i link agli articoli/post Facebook.
+        Esempio:
+        {
+          titolo: "Titolo dell'articolo",
+          data: "11/06/2026",
+          categoria: "Decoro urbano",
+          descrizione: "Breve descrizione dell'articolo.",
+          url: "https://www.facebook.com/..."
+        },
+      */
+    ];
+
+    function articleSafe(v) {
+      return String(v ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+      }[m]));
+    }
+
+    function renderArticles() {
+      const list = document.getElementById("articleList");
+      if (!list) return;
+      const searchInput = document.getElementById("articleSearch");
+      const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+
+      const articoli = (Array.isArray(ARTICOLI_VOCI) ? ARTICOLI_VOCI : []).filter(a => {
+        if (!q) return true;
+        return [a.titolo, a.data, a.categoria, a.descrizione, a.url].some(v => String(v || "").toLowerCase().includes(q));
+      });
+
+      if (!articoli.length) {
+        list.innerHTML = `
+          <div class="articleEmpty">
+            <div style="font-size:34px;margin-bottom:8px">📰</div>
+            <b>Nessun articolo inserito ancora.</b><br>
+            Aggiungi i link nella lista <b>ARTICOLI_VOCI</b> dentro il file index.html.
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = articoli.map((a) => {
+        const titolo = articleSafe(a.titolo || "Articolo Voci di Cassino");
+        const data = articleSafe(a.data || "Data non indicata");
+        const categoria = articleSafe(a.categoria || "Aggiornamento");
+        const descrizione = articleSafe(a.descrizione || "");
+        const url = articleSafe(a.url || "#");
+        const disabled = !a.url || a.url === "#";
+        return `
+          <article class="articleCard">
+            <div class="articleMeta">
+              <span class="pill">🗓️ ${data}</span>
+              <span class="pill">🏷️ ${categoria}</span>
+            </div>
+            <h3 class="articleTitle">${titolo}</h3>
+            ${descrizione ? `<p class="articleDesc">${descrizione}</p>` : ""}
+            <div class="articleActions">
+              ${disabled ? `<span class="btn ghost small" style="opacity:.65;cursor:not-allowed">🔗 Link non inserito</span>` : `<a class="btn primary small" href="${url}" target="_blank" rel="noreferrer">📖 Leggi articolo</a>`}
+              <a class="btn ghost small" href="#/report">📣 Fai una segnalazione</a>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    document.addEventListener("input", (e) => {
+      if (e.target && e.target.id === "articleSearch") renderArticles();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "btnRefreshArticles") renderArticles();
+    });
+
 
     let mapHome = null, mapMain = null;
     let layerHome = null, layerMain = null;
