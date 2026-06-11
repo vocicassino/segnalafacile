@@ -935,19 +935,48 @@
       color:#dce8ff;
     }
 
-    /* SEZIONE ARTICOLI VOCI DI CASSINO */
-    .articlesHero{border:1px solid rgba(255,255,255,.12);background:radial-gradient(320px 160px at 20% 0%, rgba(45,125,255,.18), transparent 62%),radial-gradient(320px 160px at 95% 0%, rgba(25,195,125,.14), transparent 58%),rgba(0,0,0,.16);border-radius:24px;padding:16px;margin-top:14px;box-shadow:0 14px 32px rgba(0,0,0,.24);}
-    .articlesTools{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-top:14px;}
-    .articleList{display:grid;gap:10px;margin-top:14px;}
-    .articleCard{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);border-radius:22px;padding:14px;display:grid;gap:10px;transition:transform .14s ease,border-color .14s ease,background .14s ease;}
-    .articleCard:hover{transform:translateY(-2px);border-color:rgba(45,125,255,.38);background:rgba(45,125,255,.08);}
-    .articleMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;font-weight:900;}
-    .articleTitle{margin:0;font-size:17px;line-height:1.2;font-weight:980;color:var(--text);}
-    .articleDesc{margin:0;color:var(--muted);font-size:13px;line-height:1.45;white-space:pre-wrap;}
-    .articleActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px;}
-    .articleEmpty{padding:18px;border-radius:22px;border:1px dashed rgba(255,255,255,.16);background:rgba(0,0,0,.14);color:var(--muted);text-align:center;line-height:1.5;margin-top:14px;}
-    .articleAdminBox{margin-top:14px;padding:14px;border-radius:22px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);}
-    @media(max-width:640px){.articlesTools{grid-template-columns:1fr;}.articlesTools .btn{width:100%;}.articleActions .btn{width:100%;}}
+    /* ARTICOLI WOW PUBBLICI */
+    .newsWowHeader{
+      margin-top:14px;
+      padding:18px;
+      border-radius:26px;
+      border:1px solid rgba(255,255,255,.13);
+      background:
+        radial-gradient(380px 180px at 15% 0%, rgba(45,125,255,.22), transparent 62%),
+        radial-gradient(360px 180px at 100% 0%, rgba(25,195,125,.16), transparent 58%),
+        rgba(0,0,0,.16);
+      box-shadow:0 16px 38px rgba(0,0,0,.26);
+      overflow:hidden;
+    }
+    .newsWowKicker{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(45,125,255,.32);background:rgba(45,125,255,.12);
+      font-size:12px;font-weight:980;color:#dce8ff;margin-bottom:10px;
+    }
+    .newsWowTitle{font-size:26px;line-height:1.05;font-weight:980;letter-spacing:-.45px;}
+    .newsWowText{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.5;max-width:70ch;}
+    .newsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px;}
+    .newsCard{
+      border:1px solid rgba(255,255,255,.12);
+      background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.14), transparent 60%),rgba(0,0,0,.18);
+      border-radius:24px;overflow:hidden;box-shadow:0 14px 32px rgba(0,0,0,.24);
+      transition:transform .14s ease,border-color .14s ease,background .14s ease;min-height:100%;display:flex;flex-direction:column;
+    }
+    .newsCard:hover{transform:translateY(-3px);border-color:rgba(45,125,255,.42);background:rgba(45,125,255,.08);}
+    .newsCover{width:100%;height:170px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(45,125,255,.24),rgba(25,195,125,.16));border-bottom:1px solid rgba(255,255,255,.10);}
+    .newsCoverPlaceholder{
+      height:170px;display:flex;align-items:center;justify-content:center;font-size:46px;
+      background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.22), transparent 60%),radial-gradient(260px 120px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(255,255,255,.045);
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .newsBody{padding:14px;display:grid;gap:10px;flex:1;}
+    .newsMeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+    .newsMeta .pill{padding:6px 9px;font-size:11px;}
+    .newsCard h3{margin:0;font-size:17px;line-height:1.18;font-weight:980;letter-spacing:-.18px;}
+    .newsCard p{margin:0;color:var(--muted);font-size:13px;line-height:1.45;white-space:pre-wrap;}
+    .newsActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;}
+    .newsEmpty{padding:22px;border-radius:24px;border:1px dashed rgba(255,255,255,.17);background:rgba(0,0,0,.14);color:var(--muted);text-align:center;line-height:1.5;margin-top:14px;}
+    @media(max-width:720px){.newsGrid{grid-template-columns:1fr;}.newsCover,.newsCoverPlaceholder{height:190px;}.newsActions .btn{width:100%;}}
 
   </style>
 </head>
@@ -1480,19 +1509,20 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
             <div style="font-weight:980;font-size:20px">📰 Articoli Voci di Cassino</div>
-            <div class="hint" style="margin:6px 0 0">Raccolta dei contenuti pubblicati sulla pagina Facebook, collegati all'app Segnala Facile.</div>
+            <div class="hint" style="margin:6px 0 0">Notizie, aggiornamenti e approfondimenti collegati alle segnalazioni della città.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
 
-        <div class="articlesHero">
-          <div style="font-weight:980;font-size:18px;line-height:1.2">Dalle segnalazioni agli articoli</div>
-          <div class="hint" style="margin:6px 0 0">
-            Qui puoi raccogliere i post e gli articoli pubblicati su <b>Voci di Cassino</b>, così chi usa l'app può ritrovare aggiornamenti, approfondimenti e sviluppi delle segnalazioni.
+        <div class="newsWowHeader">
+          <div class="newsWowKicker">Voci di Cassino • aggiornamenti dalla città</div>
+          <div class="newsWowTitle">Dalle segnalazioni ai fatti</div>
+          <div class="newsWowText">
+            Qui trovi gli articoli e i post pubblicati da Voci di Cassino: problemi segnalati, sviluppi, approfondimenti e notizie utili per i cittadini.
           </div>
-          <div class="btnRow" style="margin-top:12px">
-            <a class="btn primary" href="https://www.facebook.com/search/top?q=voci%20di%20cassino" target="_blank" rel="noreferrer">📘 Apri Voci di Cassino su Facebook</a>
-            <a class="btn ghost" href="#/report">📣 Invia una segnalazione</a>
+          <div class="btnRow" style="margin-top:14px">
+            <a class="btn primary" href="#/report">📣 Invia una segnalazione</a>
+            <a class="btn ghost" href="#/map">🗺️ Guarda la mappa</a>
           </div>
         </div>
 
@@ -1501,17 +1531,10 @@
             <label for="articleSearch">Cerca articolo</label>
             <input id="articleSearch" type="text" placeholder="Cerca per titolo, categoria o testo..." />
           </div>
-          <button class="btn ghost" id="btnRefreshArticles" type="button">🔄 Aggiorna lista</button>
+          <button class="btn ghost" id="btnRefreshArticles" type="button">🔄 Aggiorna</button>
         </div>
 
-        <div class="articleAdminBox">
-          <div style="font-weight:980">✍️ Come aggiungere nuovi articoli</div>
-          <div class="hint" style="margin:6px 0 0">
-            Per ora gli articoli si aggiungono modificando la lista <b>ARTICOLI_VOCI</b> nel file index.html. Nel prossimo step possiamo collegarla a Cloudflare D1/Worker, così potrai aggiungerli da pannello admin senza modificare il codice.
-          </div>
-        </div>
-
-        <div id="articleList" class="articleList"></div>
+        <div id="articleList" class="newsGrid"></div>
       </div>
     </section>
 
@@ -2642,19 +2665,7 @@
     };
 
 
-    const ARTICOLI_VOCI = [
-      /*
-        Aggiungi qui i link agli articoli/post Facebook.
-        Esempio:
-        {
-          titolo: "Titolo dell'articolo",
-          data: "11/06/2026",
-          categoria: "Decoro urbano",
-          descrizione: "Breve descrizione dell'articolo.",
-          url: "https://www.facebook.com/..."
-        },
-      */
-    ];
+    let articlesCache = [];
 
     function articleSafe(v) {
       return String(v ?? "").replace(/[&<>"']/g, m => ({
@@ -2662,23 +2673,41 @@
       }[m]));
     }
 
-    function renderArticles() {
+    async function fetchArticlesList() {
+      const res = await fetch(CONFIG.telegramWorkerUrl + "/api/articoli?t=" + Date.now());
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || "Errore caricamento articoli");
+      articlesCache = Array.isArray(data.articoli) ? data.articoli : [];
+      return articlesCache;
+    }
+
+    async function renderArticles() {
       const list = document.getElementById("articleList");
       if (!list) return;
+
+      list.innerHTML = `<div class="newsEmpty" style="grid-column:1/-1">⏳ Caricamento articoli...</div>`;
+
+      try {
+        await fetchArticlesList();
+      } catch (e) {
+        list.innerHTML = `<div class="newsEmpty" style="grid-column:1/-1">⚠️ Non riesco a caricare gli articoli. Riprova tra poco.</div>`;
+        return;
+      }
+
       const searchInput = document.getElementById("articleSearch");
       const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
 
-      const articoli = (Array.isArray(ARTICOLI_VOCI) ? ARTICOLI_VOCI : []).filter(a => {
+      const articoli = articlesCache.filter(a => {
         if (!q) return true;
-        return [a.titolo, a.data, a.categoria, a.descrizione, a.url].some(v => String(v || "").toLowerCase().includes(q));
+        return [a.titolo, a.dataStr, a.categoria, a.descrizione, a.url].some(v => String(v || "").toLowerCase().includes(q));
       });
 
       if (!articoli.length) {
         list.innerHTML = `
-          <div class="articleEmpty">
-            <div style="font-size:34px;margin-bottom:8px">📰</div>
-            <b>Nessun articolo inserito ancora.</b><br>
-            Aggiungi i link nella lista <b>ARTICOLI_VOCI</b> dentro il file index.html.
+          <div class="newsEmpty" style="grid-column:1/-1">
+            <div style="font-size:38px;margin-bottom:8px">📰</div>
+            <b>Nessun articolo disponibile.</b><br>
+            Torna più tardi per nuovi aggiornamenti da Voci di Cassino.
           </div>
         `;
         return;
@@ -2686,22 +2715,29 @@
 
       list.innerHTML = articoli.map((a) => {
         const titolo = articleSafe(a.titolo || "Articolo Voci di Cassino");
-        const data = articleSafe(a.data || "Data non indicata");
+        const data = articleSafe(a.dataStr || "Data non indicata");
         const categoria = articleSafe(a.categoria || "Aggiornamento");
         const descrizione = articleSafe(a.descrizione || "");
         const url = articleSafe(a.url || "#");
-        const disabled = !a.url || a.url === "#";
+        const img = articleSafe(a.immagine || "");
+        const cover = img
+          ? `<img class="newsCover" src="${img}" alt="${titolo}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'newsCoverPlaceholder',textContent:'📰'}))">`
+          : `<div class="newsCoverPlaceholder">📰</div>`;
+
         return `
-          <article class="articleCard">
-            <div class="articleMeta">
-              <span class="pill">🗓️ ${data}</span>
-              <span class="pill">🏷️ ${categoria}</span>
-            </div>
-            <h3 class="articleTitle">${titolo}</h3>
-            ${descrizione ? `<p class="articleDesc">${descrizione}</p>` : ""}
-            <div class="articleActions">
-              ${disabled ? `<span class="btn ghost small" style="opacity:.65;cursor:not-allowed">🔗 Link non inserito</span>` : `<a class="btn primary small" href="${url}" target="_blank" rel="noreferrer">📖 Leggi articolo</a>`}
-              <a class="btn ghost small" href="#/report">📣 Fai una segnalazione</a>
+          <article class="newsCard">
+            ${cover}
+            <div class="newsBody">
+              <div class="newsMeta">
+                <span class="pill">🗓️ ${data}</span>
+                <span class="pill">🏷️ ${categoria}</span>
+              </div>
+              <h3>${titolo}</h3>
+              ${descrizione ? `<p>${descrizione}</p>` : ""}
+              <div class="newsActions">
+                <a class="btn primary small" href="${url}" target="_blank" rel="noreferrer">📖 Leggi articolo</a>
+                <a class="btn ghost small" href="#/report">📣 Segnala</a>
+              </div>
             </div>
           </article>
         `;

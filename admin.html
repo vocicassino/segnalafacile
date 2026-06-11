@@ -9,131 +9,6 @@
   <link rel="manifest" href="admin.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-
-  // ==========================================
-  // MODERAZIONE CHAT LIVE
-  // ==========================================
-
-  function formatChatDate(value) {
-    if (!value) return "data non disponibile";
-    try {
-      return new Date(value).toLocaleString("it-IT");
-    } catch(e) {
-      return String(value);
-    }
-  }
-
-  async function loadChatAdminData() {
-    if (!apiKey) return;
-    const list = document.getElementById("chatAdminList");
-    const stats = document.getElementById("chatAdminStats");
-    if (list) list.innerHTML = "Caricamento messaggi chat...";
-    try {
-      const res = await fetch(WORKER_URL + "/api/chat/list?t=" + Date.now(), {
-        headers: { "X-Api-Key": apiKey }
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Errore caricamento chat");
-      chatAdminData = data.items || [];
-      renderChatAdminList();
-    } catch(e) {
-      if (list) list.innerHTML = `<p style="color:#ff8d8f;">Errore chat: ${escapeHtml(e.message || e)}</p>`;
-      if (stats) stats.textContent = "Errore caricamento chat.";
-    }
-  }
-
-  function renderChatAdminList() {
-    const list = document.getElementById("chatAdminList");
-    const stats = document.getElementById("chatAdminStats");
-    if (!list || !stats) return;
-
-    const total = chatAdminData.length;
-    const visible = chatAdminData.filter(m => m.visible !== false).length;
-    const hidden = total - visible;
-    stats.textContent = `Totale messaggi: ${total} • Visibili: ${visible} • Nascosti: ${hidden}`;
-
-    if (!chatAdminData.length) {
-      list.innerHTML = `<p style="color:#a9b6db;">Nessun messaggio in chat.</p>`;
-      return;
-    }
-
-    list.innerHTML = chatAdminData.map(msg => {
-      const isVisible = msg.visible !== false;
-      return `
-        <div class="chat-admin-item ${isVisible ? "" : "chat-admin-hidden"}" id="chatmsg-${msg.id}">
-          <div>
-            <div class="chat-admin-title">
-              <span>👤 ${escapeHtml(msg.nickname || "Utente")}</span>
-              <span class="chat-badge ${isVisible ? "ok" : "off"}">${isVisible ? "visibile" : "nascosto"}</span>
-            </div>
-            <div class="chat-admin-msg">${escapeHtml(msg.message || "")}</div>
-            ${(msg.image_url || msg.foto_url) ? `<div class="chat-admin-photo"><img src="${escapeAttr(msg.image_url || msg.foto_url)}" alt="Foto chat" onclick="window.open('${escapeAttr(msg.image_url || msg.foto_url)}','_blank')"></div>` : ""}
-            <div class="chat-admin-meta">🕒 ${escapeHtml(formatChatDate(msg.created_at))} • ID: ${escapeHtml(msg.id)}</div>
-          </div>
-          <div class="chat-admin-actions">
-            ${isVisible
-              ? `<button class="btn-danger" onclick="setChatMessageVisibility('${msg.id}', false)">🚫 Nascondi</button>`
-              : `<button class="btn-success" onclick="setChatMessageVisibility('${msg.id}', true)">👁️ Mostra</button>`}
-            <button class="btn-danger" onclick="deleteChatMessage('${msg.id}')">🗑️ Elimina</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  async function setChatMessageVisibility(id, visible) {
-    try {
-      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
-        method: "PUT",
-        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ visible })
-      });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || "Errore aggiornamento chat");
-      const item = chatAdminData.find(m => m.id === id);
-      if (item) item.visible = visible;
-      renderChatAdminList();
-    } catch(e) {
-      alert("Errore: " + (e.message || e));
-    }
-  }
-
-  async function deleteChatMessage(id) {
-    if (!confirm("Eliminare definitivamente questo messaggio dalla chat?")) return;
-    try {
-      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
-        method: "DELETE",
-        headers: { "X-Api-Key": apiKey }
-      });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || "Errore eliminazione chat");
-      chatAdminData = chatAdminData.filter(m => m.id !== id);
-      renderChatAdminList();
-    } catch(e) {
-      alert("Errore: " + (e.message || e));
-    }
-  }
-
-  async function hideAllVisibleChatMessages() {
-    const visibleMessages = chatAdminData.filter(m => m.visible !== false);
-    if (!visibleMessages.length) return alert("Non ci sono messaggi visibili da nascondere.");
-    if (!confirm(`Nascondere ${visibleMessages.length} messaggi visibili dalla chat pubblica?`)) return;
-    for (const msg of visibleMessages) {
-      try {
-        await fetch(`${WORKER_URL}/api/chat/${msg.id}`, {
-          method: "PUT",
-          headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-          body: JSON.stringify({ visible: false })
-        });
-        msg.visible = false;
-      } catch(e) {}
-    }
-    renderChatAdminList();
-  }
-
-</script>
 
   <style>
     body { font-family: system-ui, sans-serif; background: #0b1220; color: #eaf0ff; margin: 0; padding: 20px; }
@@ -193,72 +68,12 @@
     label { display: block; font-size: 12px; color: #a9b6db; margin-bottom: 5px; }
     .ghost-alert { color: #ff4d4f !important; font-weight: 900 !important; background: rgba(255,77,79,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;}
 
-    .photo-manager { border: 1px dashed rgba(255,255,255,0.25); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); }
-    .photo-manager-note { font-size: 12px; color: #a9b6db; margin: 6px 0 10px; line-height: 1.35; }
-    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin-top: 10px; }
-    .photo-tile { position: relative; border-radius: 10px; overflow: hidden; background: #070c18; border: 1px solid rgba(255,255,255,0.12); min-height: 92px; }
-    .photo-tile img { width: 100%; height: 92px; object-fit: cover; display: block; }
-    .photo-tile button { position: absolute; top: 5px; right: 5px; padding: 5px 8px; margin: 0; border-radius: 999px; font-size: 12px; background: rgba(255,77,79,0.92); }
-    .mini-photos { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-    .mini-photos img { width:52px; height:52px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.18); }
-
-
-    /* ARCHIVIO SUPABASE INTEGRATO */
-    .archive-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
-    .archive-manual-box { background: rgba(45,125,255,0.08); border:1px solid rgba(45,125,255,0.25); border-radius:12px; padding:14px; margin-bottom:16px; }
-    .archive-form-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
-    .archive-form-grid .full { grid-column: 1 / -1; }
-    .archive-list { display:flex; flex-direction:column; gap:12px; }
-    .archive-item { background:#070c18; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px; display:grid; grid-template-columns:96px 1fr auto; gap:12px; align-items:start; }
-    .archive-item img { width:96px; height:96px; border-radius:10px; object-fit:cover; border:1px solid rgba(255,255,255,0.14); background:#050912; }
-    .archive-title { font-weight:900; color:#ffffff; margin-bottom:4px; }
-    .archive-meta { color:#a9b6db; font-size:12px; line-height:1.45; }
-    .archive-actions { display:flex; flex-direction:column; gap:6px; min-width:145px; }
-    .archive-actions button, .archive-actions a { margin:0; text-align:center; justify-content:center; }
-    .archive-hidden { opacity:.55; border-color: rgba(255,77,79,0.28); }
-    .archive-badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:900; margin:2px 4px 2px 0; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#dce7ff; }
-    .archive-badge.warn { color:#f39c12; border-color:rgba(243,156,18,.45); background:rgba(243,156,18,.12); }
-    .archive-badge.ok { color:#19c37d; border-color:rgba(25,195,125,.45); background:rgba(25,195,125,.12); }
-    .archive-badge.off { color:#ff8d8f; border-color:rgba(255,77,79,.45); background:rgba(255,77,79,.12); }
-    @media(max-width:720px){ .archive-form-grid{grid-template-columns:1fr;} .archive-item{grid-template-columns:80px 1fr;} .archive-actions{grid-column:1/-1; flex-direction:row; flex-wrap:wrap;} .archive-item img{width:80px;height:80px;} }
-
-    .archive-map-box { border:1px solid rgba(45,125,255,0.35); border-radius:12px; overflow:hidden; background:#070c18; }
-    #archiveMap { height:320px; width:100%; background:#07101f; }
-    .archive-map-help { color:#a9b6db; font-size:12px; line-height:1.45; margin:8px 0 10px; }
-    .archive-map-actions { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; align-items:center; }
-    .archive-map-actions input { flex:1; min-width:220px; margin:0; }
-    .coord-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; background:rgba(25,195,125,.10); border:1px solid rgba(25,195,125,.35); color:#d9fff0; font-size:12px; font-weight:800; }
-    .leaflet-container { font-family: system-ui, sans-serif; }
-
-
-
-    /* MODERAZIONE CHAT LIVE */
-    .chat-admin-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
-    .chat-admin-stats { color:#a9b6db; font-size:13px; margin-bottom:10px; }
-    .chat-admin-list { display:flex; flex-direction:column; gap:10px; }
-    .chat-admin-item { background:#070c18; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px; display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start; }
-    .chat-admin-hidden { opacity:.55; border-color:rgba(255,77,79,.28); }
-    .chat-admin-title { display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-weight:900; color:#fff; margin-bottom:6px; }
-    .chat-admin-msg { color:#dce7ff; line-height:1.45; white-space:pre-wrap; word-break:break-word; }
-    .chat-admin-meta { color:#a9b6db; font-size:12px; line-height:1.45; margin-top:6px; }
-    .chat-admin-actions { display:flex; flex-direction:column; gap:6px; min-width:140px; }
-    .chat-admin-actions button { margin:0; }
-    .chat-badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:900; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:#dce7ff; }
-    .chat-badge.ok { color:#19c37d; border-color:rgba(25,195,125,.45); background:rgba(25,195,125,.12); }
-    .chat-badge.off { color:#ff8d8f; border-color:rgba(255,77,79,.45); background:rgba(255,77,79,.12); }
-    @media(max-width:720px){ .chat-admin-item{grid-template-columns:1fr;} .chat-admin-actions{flex-direction:row; flex-wrap:wrap;} }
-
-  
-    .chat-admin-photo { margin-top:8px; }
-    .chat-admin-photo img {
-      width:130px;
-      height:100px;
-      object-fit:cover;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,0.15);
-      box-shadow:0 8px 18px rgba(0,0,0,0.25);
-      cursor:pointer;
-    }
+    /* GESTIONE ARTICOLI */
+    .article-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .article-form-grid .full{grid-column:1/-1;}
+    .preview-img{width:100%;max-height:190px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12);margin-top:8px;display:none;}
+    .article-row h3{color:#2d7dff;}
+    @media(max-width:700px){.article-form-grid{grid-template-columns:1fr;}}
 
   </style>
 </head>
@@ -268,10 +83,9 @@
   
   <div class="card" id="loginBox">
     <h1>Area Amministratore 🔒</h1>
-    <p style="color: #a9b6db;">Inserisci il PIN admin. Il pannello userà automaticamente la chiave corretta del Worker.</p>
-    <input type="password" id="apiKeyInput" placeholder="Inserisci PIN admin..." />
-    <p style="font-size:12px; color:#a9b6db; margin-top:-8px;">PIN previsto: 2026. Le operazioni protette usano automaticamente la chiave Worker corretta.</p>
-    <button onclick="login()">Accedi al pannello</button>
+    <p style="color: #a9b6db;">Inserisci la Password (API Key) per gestire il database.</p>
+    <input type="password" id="apiKeyInput" placeholder="Inserisci Password..." />
+    <button onclick="login()">Accedi al Database</button>
   </div>
 
   <div id="dashboard">
@@ -339,88 +153,45 @@
     </div>
 
     <div class="card">
-      <div class="section-header" onclick="toggleSection('archivioSection', 'archivioIcon')">
-        <h2>Archivio Supabase 🗂️</h2>
-        <span id="archivioIcon" class="section-icon">▼</span>
+      <div class="section-header" onclick="toggleSection('articoliSection', 'articoliIcon')">
+        <h2>Gestione Articoli 📰</h2>
+        <span id="articoliIcon" class="section-icon">▼</span>
       </div>
-      <div id="archivioSection" class="section-content">
-        <div class="archive-toolbar">
-          <button onclick="loadArchiveData()">🔄 Aggiorna Archivio</button>
-          <a href="https://vocicassino.github.io/archivio-segnalafacile/" target="_blank" style="text-decoration:none;"><button type="button">🌐 Apri Archivio Pubblico</button></a>
-        </div>
+      <div id="articoliSection" class="section-content">
+        <div style="background:#070c18;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:15px;margin-bottom:15px;">
+          <h3 style="margin-top:0;color:#eaf0ff;">➕ Aggiungi articolo</h3>
+          <label>Link articolo / post Facebook</label>
+          <input type="text" id="articleUrl" placeholder="https://www.facebook.com/... oppure link articolo" />
+          <button onclick="previewArticle()">🔍 Recupera dati dal link</button>
+          <button class="btn-success" onclick="saveArticle()">💾 Salva articolo</button>
+          <button class="btn-danger" onclick="clearArticleForm()">🧹 Pulisci</button>
 
-        <div class="archive-manual-box">
-          <h3 style="margin-top:0;">➕ Nuovo elemento archivio</h3>
-          <div class="archive-form-grid">
-            <div>
-              <label>Tipo</label>
-              <select id="archiveTipo">
-                <option value="segnalazione">Segnalazione</option>
-                <option value="luogo">Luogo</option>
-                <option value="altro">Altro</option>
-              </select>
+          <div class="article-form-grid" style="margin-top:15px;">
+            <div class="full">
+              <label>Titolo</label>
+              <input type="text" id="articleTitle" placeholder="Titolo articolo" />
             </div>
             <div>
               <label>Categoria</label>
-              <input type="text" id="archiveCategoria" placeholder="es. verde, rifiuti, monumento...">
+              <input type="text" id="articleCategory" placeholder="Es. Decoro urbano" />
+            </div>
+            <div>
+              <label>Data</label>
+              <input type="text" id="articleDate" placeholder="Es. 11/06/2026" />
             </div>
             <div class="full">
-              <label>Titolo</label>
-              <input type="text" id="archiveTitolo" placeholder="Titolo della scheda archivio">
+              <label>Immagine anteprima URL</label>
+              <input type="text" id="articleImage" placeholder="https://..." oninput="updateArticleImagePreview()" />
+              <img id="articleImagePreview" class="preview-img" alt="Anteprima immagine articolo">
             </div>
             <div class="full">
               <label>Descrizione</label>
-              <textarea id="archiveDescrizione" placeholder="Descrizione o note utili..."></textarea>
-            </div>
-            <div class="full">
-              <label>Posizione sulla mappa opzionale</label>
-              <div class="archive-map-help">
-                Clicca direttamente sulla mappa per scegliere il punto. Puoi anche cercare un indirizzo o usare la posizione attuale del dispositivo.
-              </div>
-              <div class="archive-map-actions">
-                <input type="text" id="archiveAddressSearch" placeholder="Cerca indirizzo o luogo, es. Piazza De Gasperi Cassino..." onkeydown="if(event.key==='Enter'){event.preventDefault(); searchArchiveAddress();}">
-                <button type="button" onclick="searchArchiveAddress()">🔎 Cerca</button>
-                <button type="button" onclick="useCurrentPositionForArchive()">📍 Usa posizione attuale</button>
-                <button type="button" class="btn-danger" onclick="clearArchiveMapPoint()">🧹 Cancella punto</button>
-              </div>
-              <div class="archive-map-box">
-                <div id="archiveMap"></div>
-              </div>
-              <div style="margin-top:10px;">
-                <span id="archiveCoordLabel" class="coord-pill">📍 Nessun punto selezionato</span>
-              </div>
-              <input type="hidden" id="archiveLat">
-              <input type="hidden" id="archiveLng">
-            </div>
-            <div class="full">
-              <label>Foto archivio</label>
-              <div class="photo-manager">
-                <input type="file" id="archivePhotoInput" accept="image/*" multiple onchange="addArchiveManualPhotosFromInput(this)">
-                <div class="photo-manager-note">Puoi caricare fino a 3 foto. Verranno salvate su Supabase, non su R2.</div>
-                <div id="archiveManualPreview" class="photo-grid"></div>
-              </div>
+              <textarea id="articleDesc" placeholder="Breve descrizione dell'articolo..."></textarea>
             </div>
           </div>
-          <button class="btn-success" onclick="createManualArchiveItem()">💾 Salva nuovo elemento in archivio</button>
         </div>
 
-        <div id="archiveStats" style="color:#a9b6db; font-size:13px; margin-bottom:10px;">Archivio non ancora caricato.</div>
-        <div id="archiveList" class="archive-list">Caricamento archivio...</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-header" onclick="toggleSection('chatSection', 'chatIcon')">
-        <h2>Moderazione Chat Live 💬</h2>
-        <span id="chatIcon" class="section-icon">▼</span>
-      </div>
-      <div id="chatSection" class="section-content">
-        <div class="chat-admin-toolbar">
-          <button onclick="loadChatAdminData()">🔄 Aggiorna Chat</button>
-          <button class="btn-danger" onclick="hideAllVisibleChatMessages()">🚫 Nascondi tutti i visibili</button>
-        </div>
-        <div class="chat-admin-stats" id="chatAdminStats">Chat non ancora caricata.</div>
-        <div id="chatAdminList" class="chat-admin-list">Caricamento messaggi...</div>
+        <div id="articoliList">Caricamento articoli...</div>
       </div>
     </div>
 
@@ -478,18 +249,6 @@
       <textarea id="editDescrizione"></textarea>
     </div>
 
-    <div class="form-group" id="photoGroup">
-      <label>Foto della scheda</label>
-      <div class="photo-manager">
-        <input type="file" id="editPhotoInput" accept="image/*" multiple onchange="addEditPhotosFromInput(this)" />
-        <div class="photo-manager-note">
-          Puoi aggiungere fino a 3 foto. Le nuove immagini vengono ridimensionate automaticamente per evitare blocchi del Worker.
-        </div>
-        <div id="editPhotoPreview" class="photo-grid"></div>
-      </div>
-    </div>
-
-
     <div style="display:flex; justify-content:space-between; margin-top:20px;">
       <button onclick="closeModal()" style="background:transparent; border:1px solid white;">Annulla</button>
       <button class="btn-success" onclick="saveEdit()">💾 Applica Modifiche</button>
@@ -507,23 +266,12 @@
     } else {
       section.style.display = "block";
       icon.style.transform = "rotate(180deg)";
-      if (sectionId === "archivioSection") {
-        setTimeout(() => {
-          initArchiveMap();
-          if (archiveMap) archiveMap.invalidateSize();
-        }, 250);
-      }
-      if (sectionId === "chatSection") {
-        loadChatAdminData();
-      }
     }
   }
 
   const WORKER_URL = "https://segnalafacile-telegram.vocidicassino.workers.dev";
-  const ADMIN_PIN = "2026";
-  const WORKER_API_KEY = "SF-Secure-Key-2026";
   let apiKey = "";
-  let allData = { luoghi: [], segnalazioni: [] };
+  let allData = { luoghi: [], segnalazioni: [], articoli: [] };
   
   let filterLuoghi = "Tutte";
   let filterSegnalazioni = "Tutte";
@@ -531,12 +279,6 @@
   let editingId = null;
   let editingType = null;
   let currentEditingItem = null;
-  let editPhotos = [];
-  let archiveData = [];
-  let archiveManualPhotos = [];
-  let archiveMap = null;
-  let archiveMarker = null;
-  let chatAdminData = [];
 
   // Parser robusto per le date
   function parseDateString(dStr) {
@@ -553,21 +295,11 @@
 
   function login() {
     const input = document.getElementById("apiKeyInput").value.trim();
-    if (!input) return alert("Inserisci il PIN admin.");
-
-    // Il PIN serve per entrare nel pannello.
-    // Le chiamate DELETE/PUT al Worker devono invece usare la vera API_KEY del Worker.
-    // Così non compare più l'errore: UNAUTHORIZED - Password Errata.
-    if (input !== ADMIN_PIN && input !== WORKER_API_KEY) {
-      return alert("PIN admin non valido.");
-    }
-
-    apiKey = WORKER_API_KEY;
+    if (!input) return alert("Inserisci la password.");
+    apiKey = input;
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
     loadData();
-    loadArchiveData();
-    loadChatAdminData();
   }
 
   async function loadData() {
@@ -600,6 +332,7 @@
       renderFilters("segnalazioni");
       updateListView("luoghi");
       updateListView("segnalazioni");
+      loadArticles();
 
     } catch (e) {
       alert("Errore di connessione all'infrastruttura.");
@@ -778,152 +511,6 @@
     updateListView(type); 
   }
 
-
-  function getFotoArray(item) {
-    const out = [];
-    if (!item) return out;
-
-    function pushVal(v) {
-      if (!v) return;
-      if (typeof v === "string") {
-        const s = v.trim();
-        if (!s) return;
-        if (s.startsWith("[")) {
-          try {
-            const arr = JSON.parse(s);
-            if (Array.isArray(arr)) arr.forEach(pushVal);
-            return;
-          } catch(e) {}
-        }
-        if (s.startsWith("http") || s.startsWith("data:image")) out.push(s);
-        return;
-      }
-
-      if (Array.isArray(v)) {
-        v.forEach(pushVal);
-        return;
-      }
-
-      if (typeof v === "object") {
-        pushVal(v.url || v.dataUrl || v.src || "");
-      }
-    }
-
-    pushVal(item.foto);
-    pushVal(item.photos);
-    pushVal(item.photoDataUrl);
-
-    return [...new Set(out)].filter(Boolean).slice(0, 3);
-  }
-
-  function photosPreviewHtml(item) {
-    const photos = getFotoArray(item);
-    if (!photos.length) return '<div style="margin-top:8px; font-size:12px; color:#a9b6db;">🖼️ Nessuna foto caricata</div>';
-    return `<div class="mini-photos">${photos.map(src => `<img src="${escapeAttr(src)}" alt="Foto" loading="lazy">`).join("")}</div>`;
-  }
-
-  function escapeAttr(value) {
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-  }
-
-
-
-  function escapeHtml(value) {
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function renderEditPhotos() {
-    const box = document.getElementById("editPhotoPreview");
-    if (!box) return;
-
-    if (!editPhotos.length) {
-      box.innerHTML = `<div style="grid-column:1/-1; color:#a9b6db; font-size:13px;">Nessuna foto presente. Usa il pulsante sopra per aggiungerla.</div>`;
-      return;
-    }
-
-    box.innerHTML = editPhotos.map((src, index) => `
-      <div class="photo-tile">
-        <img src="${escapeAttr(src)}" alt="Foto ${index + 1}">
-        <button type="button" onclick="removeEditPhoto(${index})">✕</button>
-      </div>
-    `).join("");
-  }
-
-  function removeEditPhoto(index) {
-    editPhotos.splice(index, 1);
-    renderEditPhotos();
-  }
-
-  async function addEditPhotosFromInput(input) {
-    const files = Array.from(input.files || []);
-    input.value = "";
-
-    if (!files.length) return;
-
-    for (const file of files) {
-      if (editPhotos.length >= 3) {
-        alert("Massimo 3 foto per scheda.");
-        break;
-      }
-
-      if (!file.type || !file.type.startsWith("image/")) {
-        alert("Puoi caricare solo immagini.");
-        continue;
-      }
-
-      try {
-        const resized = await resizeImageToDataUrl(file, 1280, 0.78);
-        editPhotos.push(resized);
-      } catch (e) {
-        alert("Errore durante il caricamento della foto.");
-      }
-    }
-
-    renderEditPhotos();
-  }
-
-  function resizeImageToDataUrl(file, maxSize = 1280, quality = 0.78) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        const img = new Image();
-        img.onerror = reject;
-        img.onload = () => {
-          let w = img.width;
-          let h = img.height;
-
-          if (w > h && w > maxSize) {
-            h = Math.round(h * (maxSize / w));
-            w = maxSize;
-          } else if (h >= w && h > maxSize) {
-            w = Math.round(w * (maxSize / h));
-            h = maxSize;
-          }
-
-          const canvas = document.createElement("canvas");
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL("image/jpeg", quality));
-        };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-
   function updateListView(type) {
     let items = allData[type];
     const currentFilter = type === "luoghi" ? filterLuoghi : filterSegnalazioni;
@@ -944,7 +531,6 @@
           <p style="margin-top:6px; font-size:12px; color:#a9b6db;" class="${isGhost ? 'ghost-alert' : ''}">
             📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA!' : ''}
           </p>
-          ${photosPreviewHtml(l)}
         </div>
       `});
     } else {
@@ -965,7 +551,6 @@
           <p style="margin-top:6px; font-size:12px; color:#a9b6db;" class="${isGhost ? 'ghost-alert' : ''}">
             📍 Coordinate: [${lat}, ${lng}] ${isGhost ? ' ⚠️ FANTASMA!' : ''}
           </p>
-          ${photosPreviewHtml(s)}
         </div>
       `});
     }
@@ -1039,9 +624,6 @@
       document.getElementById("editDescrizione").value = currentEditingItem.recensione || "";
     }
 
-    editPhotos = getFotoArray(currentEditingItem).slice(0, 3);
-    renderEditPhotos();
-
     document.getElementById("editModalOverlay").style.display = "flex";
   }
 
@@ -1050,7 +632,6 @@
     editingId = null;
     editingType = null;
     currentEditingItem = null;
-    editPhotos = [];
   }
 
   async function saveEdit() {
@@ -1076,8 +657,6 @@
       payload.rating = parseInt(document.getElementById("editRating").value) || 5;
     }
 
-    payload.foto = JSON.stringify(editPhotos);
-
     try {
       const res = await fetch(`${WORKER_URL}/api/${editingType}/${editingId}`, {
         method: "PUT",
@@ -1094,452 +673,6 @@
       }
     } catch (e) { alert("Errore di connessione."); }
   }
-
-  document.getElementById("apiKeyInput")?.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") login();
-  });
-
-
-  // ==========================================
-  // MAPPA ARCHIVIO: selezione punto senza scrivere coordinate
-  // ==========================================
-
-  function initArchiveMap() {
-    const mapEl = document.getElementById("archiveMap");
-    if (!mapEl || typeof L === "undefined") return;
-
-    if (archiveMap) {
-      setTimeout(() => archiveMap.invalidateSize(), 120);
-      return;
-    }
-
-    const defaultLat = 41.4925;
-    const defaultLng = 13.8338;
-
-    archiveMap = L.map("archiveMap", {
-      zoomControl: true,
-      scrollWheelZoom: true
-    }).setView([defaultLat, defaultLng], 14);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap"
-    }).addTo(archiveMap);
-
-    archiveMap.on("click", function(e) {
-      setArchiveMapPoint(e.latlng.lat, e.latlng.lng, archiveMap.getZoom());
-    });
-
-    updateArchiveCoordLabel();
-    setTimeout(() => archiveMap.invalidateSize(), 250);
-  }
-
-  function setArchiveMapPoint(lat, lng, zoom = 17) {
-    const la = Number(lat);
-    const ln = Number(lng);
-    if (!Number.isFinite(la) || !Number.isFinite(ln)) return;
-
-    document.getElementById("archiveLat").value = la.toFixed(7);
-    document.getElementById("archiveLng").value = ln.toFixed(7);
-
-    if (!archiveMap) initArchiveMap();
-    if (archiveMap) {
-      archiveMap.setView([la, ln], zoom);
-      if (!archiveMarker) {
-        archiveMarker = L.marker([la, ln], { draggable: true }).addTo(archiveMap);
-        archiveMarker.on("dragend", function() {
-          const pos = archiveMarker.getLatLng();
-          setArchiveMapPoint(pos.lat, pos.lng, archiveMap.getZoom());
-        });
-      } else {
-        archiveMarker.setLatLng([la, ln]);
-      }
-    }
-
-    updateArchiveCoordLabel();
-  }
-
-  function clearArchiveMapPoint() {
-    document.getElementById("archiveLat").value = "";
-    document.getElementById("archiveLng").value = "";
-    if (archiveMarker && archiveMap) {
-      archiveMap.removeLayer(archiveMarker);
-      archiveMarker = null;
-    }
-    updateArchiveCoordLabel();
-  }
-
-  function updateArchiveCoordLabel() {
-    const label = document.getElementById("archiveCoordLabel");
-    if (!label) return;
-    const lat = document.getElementById("archiveLat")?.value || "";
-    const lng = document.getElementById("archiveLng")?.value || "";
-    if (!lat || !lng) {
-      label.textContent = "📍 Nessun punto selezionato";
-    } else {
-      label.textContent = `📍 Punto selezionato: ${lat}, ${lng}`;
-    }
-  }
-
-  function useCurrentPositionForArchive() {
-    if (!navigator.geolocation) {
-      alert("Geolocalizzazione non supportata da questo dispositivo.");
-      return;
-    }
-    initArchiveMap();
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        setArchiveMapPoint(pos.coords.latitude, pos.coords.longitude, 17);
-      },
-      err => {
-        alert("Non riesco a leggere la posizione attuale. Controlla i permessi del browser.");
-      },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-    );
-  }
-
-  async function searchArchiveAddress() {
-    const q = document.getElementById("archiveAddressSearch")?.value.trim();
-    if (!q) return alert("Scrivi un indirizzo o un luogo da cercare.");
-    initArchiveMap();
-
-    try {
-      const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&q=" + encodeURIComponent(q);
-      const res = await fetch(url, { headers: { "Accept": "application/json" } });
-      const data = await res.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        alert("Indirizzo non trovato. Prova a scrivere anche 'Cassino' o il nome della via.");
-        return;
-      }
-      setArchiveMapPoint(Number(data[0].lat), Number(data[0].lon), 17);
-    } catch (e) {
-      alert("Errore durante la ricerca dell'indirizzo. Puoi comunque cliccare manualmente sulla mappa.");
-    }
-  }
-
-  // ==========================================
-  // ARCHIVIO SUPABASE INTEGRATO NELL'ADMIN
-  // ==========================================
-
-  function renderArchiveManualPhotos() {
-    const box = document.getElementById("archiveManualPreview");
-    if (!box) return;
-    if (!archiveManualPhotos.length) {
-      box.innerHTML = `<div style="grid-column:1/-1; color:#a9b6db; font-size:13px;">Nessuna foto selezionata.</div>`;
-      return;
-    }
-    box.innerHTML = archiveManualPhotos.map((src, index) => `
-      <div class="photo-tile">
-        <img src="${escapeAttr(src)}" alt="Foto archivio ${index + 1}">
-        <button type="button" onclick="removeArchiveManualPhoto(${index})">✕</button>
-      </div>
-    `).join("");
-  }
-
-  function removeArchiveManualPhoto(index) {
-    archiveManualPhotos.splice(index, 1);
-    renderArchiveManualPhotos();
-  }
-
-  async function addArchiveManualPhotosFromInput(input) {
-    const files = Array.from(input.files || []);
-    input.value = "";
-    if (!files.length) return;
-
-    for (const file of files) {
-      if (archiveManualPhotos.length >= 3) {
-        alert("Massimo 3 foto per elemento archivio.");
-        break;
-      }
-      if (!file.type || !file.type.startsWith("image/")) {
-        alert("Puoi caricare solo immagini.");
-        continue;
-      }
-      try {
-        const resized = await resizeImageToDataUrl(file, 1280, 0.78);
-        archiveManualPhotos.push(resized);
-      } catch (e) {
-        alert("Errore durante il caricamento della foto archivio.");
-      }
-    }
-    renderArchiveManualPhotos();
-  }
-
-  async function loadArchiveData() {
-    if (!apiKey) return;
-    const list = document.getElementById("archiveList");
-    const stats = document.getElementById("archiveStats");
-    if (!list) return;
-    list.innerHTML = "Caricamento archivio Supabase...";
-    if (stats) stats.innerText = "Sincronizzazione archivio...";
-
-    try {
-      const res = await fetch(WORKER_URL + "/api/archive/list?t=" + Date.now(), {
-        headers: { "X-Api-Key": apiKey }
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Errore archivio");
-      archiveData = data.items || [];
-      renderArchiveData();
-    } catch (e) {
-      list.innerHTML = `<p style="color:#ff8d8f;">Errore caricamento archivio: ${escapeHtml(e.message || e)}</p>`;
-      if (stats) stats.innerText = "Archivio non disponibile.";
-    }
-  }
-
-  function renderArchiveData() {
-    const list = document.getElementById("archiveList");
-    const stats = document.getElementById("archiveStats");
-    if (!list) return;
-
-    const total = archiveData.length;
-    const visible = archiveData.filter(i => i.visibile !== false).length;
-    const pending = archiveData.filter(i => (i.stato_controllo || "") === "da_controllare").length;
-    if (stats) stats.innerHTML = `Totale: <b>${total}</b> • Visibili: <b>${visible}</b> • Da controllare: <b>${pending}</b>`;
-
-    if (!archiveData.length) {
-      list.innerHTML = `<p style="color:#a9b6db;">Archivio Supabase vuoto.</p>`;
-      return;
-    }
-
-    list.innerHTML = archiveData.map(item => {
-      const visibile = item.visibile !== false;
-      const stato = item.stato_controllo || "da_controllare";
-      const badgeStato = stato === "approvato" ? "ok" : "warn";
-      const created = item.created_at ? new Date(item.created_at).toLocaleString("it-IT") : "";
-      return `
-        <div class="archive-item ${visibile ? "" : "archive-hidden"}" id="archive-${item.id}">
-          <img src="${escapeAttr(item.foto_url)}" alt="${escapeAttr(item.titolo)}" loading="lazy" onclick="window.open('${escapeAttr(item.foto_url)}','_blank')">
-          <div>
-            <div class="archive-title">${escapeHtml(item.titolo || "Senza titolo")}</div>
-            <div>
-              <span class="archive-badge ${badgeStato}">${escapeHtml(stato)}</span>
-              <span class="archive-badge ${visibile ? "ok" : "off"}">${visibile ? "visibile" : "nascosto"}</span>
-              <span class="archive-badge">${escapeHtml(item.tipo || "archivio")}</span>
-              <span class="archive-badge">${escapeHtml(item.categoria || "senza categoria")}</span>
-            </div>
-            <div class="archive-meta">
-              ${escapeHtml(item.descrizione || "")}
-              <br>Fonte: ${escapeHtml(item.fonte || "")}
-              ${item.origin_type ? `<br>Origine: ${escapeHtml(item.origin_type)} / ${escapeHtml(item.origin_id || "")}` : ""}
-              ${created ? `<br>Creato: ${escapeHtml(created)}` : ""}
-              ${(item.lat && item.lng) ? `<br>Coordinate: ${escapeHtml(item.lat)}, ${escapeHtml(item.lng)}` : ""}
-              ${item.note_admin ? `<br>Note: ${escapeHtml(item.note_admin)}` : ""}
-            </div>
-          </div>
-          <div class="archive-actions">
-            <a href="${escapeAttr(item.foto_url)}" target="_blank" style="text-decoration:none;"><button type="button">🔎 Apri foto</button></a>
-            ${(item.lat && item.lng) ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.lat + ',' + item.lng)}" target="_blank" style="text-decoration:none;"><button type="button">🧭 Raggiungi</button></a>` : ""}
-            <button type="button" onclick="markArchiveChecked('${item.id}')">✅ Controllata</button>
-            <button type="button" onclick="toggleArchiveVisibility('${item.id}', ${visibile ? "false" : "true"})">${visibile ? "🚫 Nascondi" : "👁️ Mostra"}</button>
-            <button type="button" class="btn-danger" onclick="deleteArchiveItem('${item.id}')">🗑️ Elimina scheda</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  async function updateArchiveItem(id, patch) {
-    const res = await fetch(`${WORKER_URL}/api/archive/${id}`, {
-      method: "PUT",
-      headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify(patch)
-    });
-    const result = await res.json();
-    if (!result.ok) throw new Error(result.error || "Errore aggiornamento archivio");
-  }
-
-  async function markArchiveChecked(id) {
-    try {
-      await updateArchiveItem(id, { stato_controllo: "approvato", note_admin: "Controllata da admin Segnala Facile" });
-      await loadArchiveData();
-    } catch (e) { alert("Errore: " + (e.message || e)); }
-  }
-
-  async function toggleArchiveVisibility(id, visible) {
-    try {
-      await updateArchiveItem(id, { visibile: visible });
-      await loadArchiveData();
-    } catch (e) { alert("Errore: " + (e.message || e)); }
-  }
-
-  async function deleteArchiveItem(id) {
-    if (!confirm("Eliminare questa scheda dall'archivio Supabase? La foto resterà eventualmente nello Storage come copia tecnica.")) return;
-    try {
-      const res = await fetch(`${WORKER_URL}/api/archive/${id}`, {
-        method: "DELETE",
-        headers: { "X-Api-Key": apiKey }
-      });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || "Errore eliminazione archivio");
-      archiveData = archiveData.filter(i => i.id !== id);
-      renderArchiveData();
-    } catch (e) { alert("Errore: " + (e.message || e)); }
-  }
-
-  async function createManualArchiveItem() {
-    const titolo = document.getElementById("archiveTitolo").value.trim();
-    const categoria = document.getElementById("archiveCategoria").value.trim() || "altro";
-    const descrizione = document.getElementById("archiveDescrizione").value.trim();
-    const tipo = document.getElementById("archiveTipo").value;
-    const latTxt = document.getElementById("archiveLat").value.trim().replace(",", ".");
-    const lngTxt = document.getElementById("archiveLng").value.trim().replace(",", ".");
-
-    if (!titolo) return alert("Inserisci un titolo.");
-    if (!archiveManualPhotos.length) return alert("Inserisci almeno una foto.");
-
-    const payload = {
-      tipo, titolo, categoria, descrizione,
-      lat: latTxt ? Number(latTxt) : null,
-      lng: lngTxt ? Number(lngTxt) : null,
-      data_evento: new Date().toLocaleString("it-IT"),
-      photos: archiveManualPhotos.map((dataUrl, idx) => ({ dataUrl, name: `archivio-admin-${idx+1}.jpg`, type: "image/jpeg" }))
-    };
-
-    try {
-      const res = await fetch(WORKER_URL + "/api/archive/manual", {
-        method: "POST",
-        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || "Errore salvataggio archivio");
-
-      document.getElementById("archiveTitolo").value = "";
-      document.getElementById("archiveCategoria").value = "";
-      document.getElementById("archiveDescrizione").value = "";
-      clearArchiveMapPoint();
-      document.getElementById("archiveAddressSearch").value = "";
-      archiveManualPhotos = [];
-      renderArchiveManualPhotos();
-      await loadArchiveData();
-      alert("Elemento archiviato su Supabase.");
-    } catch (e) { alert("Errore: " + (e.message || e)); }
-  }
-
-
-
-  // ==========================================
-  // MODERAZIONE CHAT LIVE
-  // ==========================================
-
-  function formatChatDate(value) {
-    if (!value) return "data non disponibile";
-    try {
-      return new Date(value).toLocaleString("it-IT");
-    } catch(e) {
-      return String(value);
-    }
-  }
-
-  async function loadChatAdminData() {
-    if (!apiKey) return;
-    const list = document.getElementById("chatAdminList");
-    const stats = document.getElementById("chatAdminStats");
-    if (list) list.innerHTML = "Caricamento messaggi chat...";
-    try {
-      const res = await fetch(WORKER_URL + "/api/chat/list?t=" + Date.now(), {
-        headers: { "X-Api-Key": apiKey }
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Errore caricamento chat");
-      chatAdminData = data.items || [];
-      renderChatAdminList();
-    } catch(e) {
-      if (list) list.innerHTML = `<p style="color:#ff8d8f;">Errore chat: ${escapeHtml(e.message || e)}</p>`;
-      if (stats) stats.textContent = "Errore caricamento chat.";
-    }
-  }
-
-  function renderChatAdminList() {
-    const list = document.getElementById("chatAdminList");
-    const stats = document.getElementById("chatAdminStats");
-    if (!list || !stats) return;
-
-    const total = chatAdminData.length;
-    const visible = chatAdminData.filter(m => m.visible !== false).length;
-    const hidden = total - visible;
-    stats.textContent = `Totale messaggi: ${total} • Visibili: ${visible} • Nascosti: ${hidden}`;
-
-    if (!chatAdminData.length) {
-      list.innerHTML = `<p style="color:#a9b6db;">Nessun messaggio in chat.</p>`;
-      return;
-    }
-
-    list.innerHTML = chatAdminData.map(msg => {
-      const isVisible = msg.visible !== false;
-      return `
-        <div class="chat-admin-item ${isVisible ? "" : "chat-admin-hidden"}" id="chatmsg-${msg.id}">
-          <div>
-            <div class="chat-admin-title">
-              <span>👤 ${escapeHtml(msg.nickname || "Utente")}</span>
-              <span class="chat-badge ${isVisible ? "ok" : "off"}">${isVisible ? "visibile" : "nascosto"}</span>
-            </div>
-            <div class="chat-admin-msg">${escapeHtml(msg.message || "")}</div>
-            ${(msg.image_url || msg.foto_url) ? `<div class="chat-admin-photo"><img src="${escapeAttr(msg.image_url || msg.foto_url)}" alt="Foto chat" onclick="window.open('${escapeAttr(msg.image_url || msg.foto_url)}','_blank')"></div>` : ""}
-            <div class="chat-admin-meta">🕒 ${escapeHtml(formatChatDate(msg.created_at))} • ID: ${escapeHtml(msg.id)}</div>
-          </div>
-          <div class="chat-admin-actions">
-            ${isVisible
-              ? `<button class="btn-danger" onclick="setChatMessageVisibility('${msg.id}', false)">🚫 Nascondi</button>`
-              : `<button class="btn-success" onclick="setChatMessageVisibility('${msg.id}', true)">👁️ Mostra</button>`}
-            <button class="btn-danger" onclick="deleteChatMessage('${msg.id}')">🗑️ Elimina</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  async function setChatMessageVisibility(id, visible) {
-    try {
-      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
-        method: "PUT",
-        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ visible })
-      });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || "Errore aggiornamento chat");
-      const item = chatAdminData.find(m => m.id === id);
-      if (item) item.visible = visible;
-      renderChatAdminList();
-    } catch(e) {
-      alert("Errore: " + (e.message || e));
-    }
-  }
-
-  async function deleteChatMessage(id) {
-    if (!confirm("Eliminare definitivamente questo messaggio dalla chat?")) return;
-    try {
-      const res = await fetch(`${WORKER_URL}/api/chat/${id}`, {
-        method: "DELETE",
-        headers: { "X-Api-Key": apiKey }
-      });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || "Errore eliminazione chat");
-      chatAdminData = chatAdminData.filter(m => m.id !== id);
-      renderChatAdminList();
-    } catch(e) {
-      alert("Errore: " + (e.message || e));
-    }
-  }
-
-  async function hideAllVisibleChatMessages() {
-    const visibleMessages = chatAdminData.filter(m => m.visible !== false);
-    if (!visibleMessages.length) return alert("Non ci sono messaggi visibili da nascondere.");
-    if (!confirm(`Nascondere ${visibleMessages.length} messaggi visibili dalla chat pubblica?`)) return;
-    for (const msg of visibleMessages) {
-      try {
-        await fetch(`${WORKER_URL}/api/chat/${msg.id}`, {
-          method: "PUT",
-          headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-          body: JSON.stringify({ visible: false })
-        });
-        msg.visible = false;
-      } catch(e) {}
-    }
-    renderChatAdminList();
-  }
-
 </script>
 </body>
 </html>
