@@ -157,6 +157,40 @@
     .btn-warning{background:#f39c12;color:#101827;}
     .btn-secondary{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);color:#eaf0ff;}
 
+
+    /* UPLOAD IMMAGINE ARTICOLO DA GALLERIA */
+    .article-image-tools{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin:-4px 0 10px;
+    }
+    .article-image-note{
+      color:#a9b6db;
+      font-size:12px;
+      line-height:1.4;
+      margin:-5px 0 10px;
+    }
+    .article-image-state{
+      display:none;
+      margin:0 0 10px;
+      padding:9px 11px;
+      border-radius:10px;
+      border:1px solid rgba(25,195,125,.35);
+      background:rgba(25,195,125,.10);
+      color:#d9fff0;
+      font-size:12px;
+      font-weight:800;
+      line-height:1.35;
+      word-break:break-word;
+    }
+    .article-image-state.warn{
+      border-color:rgba(243,156,18,.40);
+      background:rgba(243,156,18,.12);
+      color:#ffe8b8;
+    }
+
   </style>
 </head>
 <body>
@@ -266,8 +300,18 @@
               <input type="text" id="articleDate" placeholder="Es. 11/06/2026" />
             </div>
             <div class="full">
-              <label>Immagine anteprima URL</label>
-              <input type="text" id="articleImage" placeholder="https://..." oninput="updateArticleImagePreview()" />
+              <label>Immagine anteprima</label>
+              <input type="text" id="articleImage" placeholder="Incolla URL immagine oppure carica dalla galleria..." oninput="clearArticleUploadedImageIfUrlChanged(); updateArticleImagePreview();" />
+              <input type="hidden" id="articleImageData" value="">
+              <input type="file" id="articleImageFile" accept="image/*" style="display:none" onchange="handleArticleImageUpload(this)" />
+              <div class="article-image-tools">
+                <button type="button" onclick="pickArticleImageFromGallery()">🖼️ Carica immagine da galleria</button>
+                <button type="button" class="btn-danger" onclick="removeArticleImage()">🧹 Rimuovi immagine</button>
+              </div>
+              <div class="article-image-note">
+                Puoi incollare un URL oppure caricare una foto dal PC/telefono. L'immagine caricata viene ridimensionata automaticamente per non appesantire il database.
+              </div>
+              <div id="articleImageState" class="article-image-state"></div>
               <img id="articleImagePreview" class="preview-img" alt="Anteprima immagine articolo">
             </div>
             <div class="full">
@@ -1522,16 +1566,93 @@
     return cleaned.length > max ? cleaned.slice(0, max).trim() + "..." : cleaned;
   }
 
-  function updateArticleImagePreview() {
+  function getArticleImageValue() {
+    const uploaded = document.getElementById("articleImageData")?.value.trim() || "";
     const url = document.getElementById("articleImage")?.value.trim() || "";
+    return uploaded || url;
+  }
+
+  function setArticleImageState(text = "", type = "ok") {
+    const box = document.getElementById("articleImageState");
+    if (!box) return;
+    if (!text) {
+      box.style.display = "none";
+      box.textContent = "";
+      box.classList.remove("warn");
+      return;
+    }
+    box.textContent = text;
+    box.style.display = "block";
+    box.classList.toggle("warn", type === "warn");
+  }
+
+  function updateArticleImagePreview() {
+    const src = getArticleImageValue();
     const img = document.getElementById("articleImagePreview");
     if (!img) return;
-    if (url) {
-      img.src = url;
+    if (src) {
+      img.src = src;
       img.style.display = "block";
     } else {
       img.src = "";
       img.style.display = "none";
+    }
+  }
+
+  function clearArticleUploadedImageIfUrlChanged() {
+    const url = document.getElementById("articleImage")?.value.trim() || "";
+    const hidden = document.getElementById("articleImageData");
+    if (!hidden) return;
+    // Se l'utente scrive/incolla un URL, do priorità all'URL e cancello l'immagine caricata
+    if (url && hidden.value) {
+      hidden.value = "";
+      setArticleImageState("URL immagine inserito manualmente.", "warn");
+    } else if (!url && !hidden.value) {
+      setArticleImageState("");
+    }
+  }
+
+  function pickArticleImageFromGallery() {
+    document.getElementById("articleImageFile")?.click();
+  }
+
+  function removeArticleImage() {
+    const urlInput = document.getElementById("articleImage");
+    const dataInput = document.getElementById("articleImageData");
+    const fileInput = document.getElementById("articleImageFile");
+    if (urlInput) urlInput.value = "";
+    if (dataInput) dataInput.value = "";
+    if (fileInput) fileInput.value = "";
+    setArticleImageState("");
+    updateArticleImagePreview();
+  }
+
+  async function handleArticleImageUpload(input) {
+    const file = input?.files?.[0];
+    if (!file) return;
+
+    if (!file.type || !file.type.startsWith("image/")) {
+      alert("Puoi caricare solo immagini.");
+      input.value = "";
+      return;
+    }
+
+    try {
+      setArticleImageState("Caricamento e ridimensionamento immagine in corso...", "warn");
+      const dataUrl = await resizeImageToDataUrl(file, 950, 0.72);
+
+      const dataInput = document.getElementById("articleImageData");
+      const urlInput = document.getElementById("articleImage");
+      if (dataInput) dataInput.value = dataUrl;
+      if (urlInput) urlInput.value = "";
+
+      setArticleImageState("✅ Immagine caricata dalla galleria e pronta per il salvataggio.");
+      updateArticleImagePreview();
+    } catch(e) {
+      alert("Errore durante il caricamento dell'immagine.");
+      setArticleImageState("");
+    } finally {
+      input.value = "";
     }
   }
 
@@ -1558,11 +1679,14 @@
   }
 
   function clearArticleForm() {
-    ["articleUrl","articleTitle","articleCategory","articleDate","articleImage","articleDesc","articleContent"].forEach(id => {
+    ["articleUrl","articleTitle","articleCategory","articleDate","articleImage","articleImageData","articleDesc","articleContent"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
     setArticleEditMode(false);
+    const fileInput = document.getElementById("articleImageFile");
+    if (fileInput) fileInput.value = "";
+    setArticleImageState("");
     updateArticleImagePreview();
   }
 
@@ -1625,7 +1749,16 @@
     document.getElementById("articleTitle").value = adminArticleDecode(article.titolo || "");
     document.getElementById("articleCategory").value = adminArticleDecode(article.categoria || "Aggiornamento");
     document.getElementById("articleDate").value = adminArticleDecode(article.dataStr || "");
-    document.getElementById("articleImage").value = article.immagine || "";
+    const savedImage = article.immagine || "";
+    if (String(savedImage).startsWith("data:image")) {
+      document.getElementById("articleImage").value = "";
+      document.getElementById("articleImageData").value = savedImage;
+      setArticleImageState("✅ Immagine salvata da galleria già presente.");
+    } else {
+      document.getElementById("articleImage").value = savedImage;
+      document.getElementById("articleImageData").value = "";
+      setArticleImageState(savedImage ? "URL immagine già presente." : "");
+    }
     document.getElementById("articleDesc").value = adminArticleDecode(article.descrizione || "");
     document.getElementById("articleContent").value = adminArticleDecode(article.contenuto || article.testo || article.content || "");
     updateArticleImagePreview();
@@ -1649,7 +1782,11 @@
       if (data.preview?.title) document.getElementById("articleTitle").value = adminArticleDecode(data.preview.title);
       if (data.preview?.description) document.getElementById("articleDesc").value = adminArticleDecode(data.preview.description);
       if (data.preview?.content) document.getElementById("articleContent").value = adminArticleDecode(data.preview.content);
-      if (data.preview?.image) document.getElementById("articleImage").value = data.preview.image;
+      if (data.preview?.image) {
+        document.getElementById("articleImage").value = data.preview.image;
+        document.getElementById("articleImageData").value = "";
+        setArticleImageState("Immagine recuperata dal link.");
+      }
       if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
       if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
       updateArticleImagePreview();
@@ -1673,7 +1810,7 @@
       titolo: document.getElementById("articleTitle")?.value.trim() || "",
       categoria: document.getElementById("articleCategory")?.value.trim() || "Aggiornamento",
       dataStr: document.getElementById("articleDate")?.value.trim() || new Date().toLocaleDateString("it-IT"),
-      immagine: document.getElementById("articleImage")?.value.trim() || "",
+      immagine: getArticleImageValue(),
       descrizione: document.getElementById("articleDesc")?.value.trim() || "",
       contenuto: document.getElementById("articleContent")?.value.trim() || ""
     };
@@ -1722,6 +1859,10 @@
   window.deleteArticle = deleteArticle;
   window.loadArticles = loadArticles;
   window.updateArticleImagePreview = updateArticleImagePreview;
+  window.pickArticleImageFromGallery = pickArticleImageFromGallery;
+  window.handleArticleImageUpload = handleArticleImageUpload;
+  window.removeArticleImage = removeArticleImage;
+  window.clearArticleUploadedImageIfUrlChanged = clearArticleUploadedImageIfUrlChanged;
 
 
 </script>
