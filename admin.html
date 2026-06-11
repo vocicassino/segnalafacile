@@ -1745,6 +1745,160 @@
     renderChatAdminList();
   }
 
+
+  // ==========================================
+  // GESTIONE ARTICOLI VOCI DI CASSINO - FIX FUNZIONI GLOBALI
+  // ==========================================
+
+  function adminArticleSafe(v) {
+    return String(v ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+    }[m]));
+  }
+
+  function updateArticleImagePreview() {
+    const url = document.getElementById("articleImage")?.value.trim() || "";
+    const img = document.getElementById("articleImagePreview");
+    if (!img) return;
+    if (url) {
+      img.src = url;
+      img.style.display = "block";
+    } else {
+      img.src = "";
+      img.style.display = "none";
+    }
+  }
+
+  function clearArticleForm() {
+    ["articleUrl","articleTitle","articleCategory","articleDate","articleImage","articleDesc"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+    updateArticleImagePreview();
+  }
+
+  async function loadArticles() {
+    const box = document.getElementById("articoliList");
+    if (!box) return;
+    box.innerHTML = "Caricamento articoli...";
+    try {
+      const res = await fetch(WORKER_URL + "/api/articoli?t=" + Date.now());
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || data.warning || "Errore caricamento articoli");
+      allData.articoli = data.articoli || [];
+      renderArticlesAdmin();
+    } catch(e) {
+      box.innerHTML = "<p style='color:#ff8d8f;'>Errore caricamento articoli: " + adminArticleSafe(e.message || e) + "</p>";
+    }
+  }
+
+  function renderArticlesAdmin() {
+    const box = document.getElementById("articoliList");
+    if (!box) return;
+    const items = allData.articoli || [];
+    if (!items.length) {
+      box.innerHTML = "<p style='color:#a9b6db;'>Nessun articolo salvato.</p>";
+      return;
+    }
+
+    box.innerHTML = items.map(a => `
+      <div class="list-item article-row">
+        <div class="details">
+          <h3>📰 ${adminArticleSafe(a.titolo || "Senza titolo")}</h3>
+          <p><span class="badge badge-cat">${adminArticleSafe(a.categoria || "Aggiornamento")}</span> ${adminArticleSafe(a.dataStr || "")}</p>
+          <p style="margin-top:4px;">${adminArticleSafe(a.descrizione || "")}</p>
+          <p style="margin-top:6px;font-size:12px;color:#a9b6db;word-break:break-all;">🔗 ${adminArticleSafe(a.url || "")}</p>
+          ${a.immagine ? `<div class="mini-photos"><img src="${adminArticleSafe(a.immagine)}" alt="Anteprima articolo"></div>` : ""}
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <a href="${adminArticleSafe(a.url || "#")}" target="_blank"><button type="button">👁️ Apri</button></a>
+          <button class="btn-danger" onclick="deleteArticle('${adminArticleSafe(a.id)}')">🗑️ Elimina</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function previewArticle() {
+    const url = document.getElementById("articleUrl")?.value.trim() || "";
+    if (!url) return alert("Inserisci prima il link.");
+    try {
+      const res = await fetch(WORKER_URL + "/api/articoli/preview", {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Anteprima non disponibile");
+
+      if (data.preview?.title) document.getElementById("articleTitle").value = data.preview.title;
+      if (data.preview?.description) document.getElementById("articleDesc").value = data.preview.description;
+      if (data.preview?.image) document.getElementById("articleImage").value = data.preview.image;
+      if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
+      if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
+      updateArticleImagePreview();
+      alert("Anteprima recuperata. Controlla i campi e premi Salva.");
+    } catch(e) {
+      if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
+      if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
+      alert("Non riesco a leggere automaticamente il link. Puoi compilare titolo e descrizione manualmente.");
+    }
+  }
+
+  async function saveArticle() {
+    const payload = {
+      url: document.getElementById("articleUrl")?.value.trim() || "",
+      titolo: document.getElementById("articleTitle")?.value.trim() || "",
+      categoria: document.getElementById("articleCategory")?.value.trim() || "Aggiornamento",
+      dataStr: document.getElementById("articleDate")?.value.trim() || new Date().toLocaleDateString("it-IT"),
+      immagine: document.getElementById("articleImage")?.value.trim() || "",
+      descrizione: document.getElementById("articleDesc")?.value.trim() || ""
+    };
+
+    if (!payload.url || !payload.titolo) {
+      return alert("Link e titolo sono obbligatori.");
+    }
+
+    try {
+      const res = await fetch(WORKER_URL + "/api/articoli", {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || data.detail || "Errore salvataggio articolo");
+
+      clearArticleForm();
+      await loadArticles();
+      alert("Articolo salvato correttamente.");
+    } catch(e) {
+      alert("Errore salvataggio articolo: " + (e.message || e));
+    }
+  }
+
+  async function deleteArticle(id) {
+    if (!confirm("Eliminare questo articolo?")) return;
+    try {
+      const res = await fetch(`${WORKER_URL}/api/articoli/${id}`, {
+        method: "DELETE",
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Errore eliminazione articolo");
+      await loadArticles();
+    } catch(e) {
+      alert("Errore eliminazione articolo: " + (e.message || e));
+    }
+  }
+
+  // Espongo le funzioni anche su window per i pulsanti onclick
+  window.previewArticle = previewArticle;
+  window.saveArticle = saveArticle;
+  window.clearArticleForm = clearArticleForm;
+  window.deleteArticle = deleteArticle;
+  window.loadArticles = loadArticles;
+  window.updateArticleImagePreview = updateArticleImagePreview;
+
+
 </script>
 </body>
 </html>
