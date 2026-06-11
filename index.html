@@ -1146,6 +1146,117 @@
     nav.bottom a.active .navEmoji{background:linear-gradient(135deg,rgba(45,125,255,.38),rgba(25,195,125,.22));border-color:rgba(118,184,255,.36);transform:translateY(-2px) scale(1.04);}
     @media(max-width:720px){.articleSearchBar{grid-template-columns:1fr;}.articleSearchBar .btn{width:100%;}.articleCardPro{grid-template-columns:1fr;}.articleCover,.articleCoverPlaceholder{height:190px;min-height:190px;}.articleCardBody h3{font-size:20px;}.articleCardActions .btn{flex:1 1 auto;}nav.bottom .inner{grid-template-columns:repeat(6,1fr)!important;gap:3px!important;padding:8px 5px!important;border-radius:24px!important;}nav.bottom a{min-height:59px!important;border-radius:18px!important;gap:4px!important;padding:6px 2px!important;}.navEmoji{width:29px;height:29px;border-radius:12px;font-size:16px;}nav.bottom a span:last-child{font-size:9.5px!important;}}
 
+  
+
+    /* =========================================================
+       UPGRADE FINALE ARTICOLI + HOME + NAV WOW
+       ========================================================= */
+    .homeFeaturedArticles{
+      position:relative;
+      overflow:hidden;
+      border-radius:30px;
+      border:1px solid rgba(255,255,255,.13);
+      background:
+        radial-gradient(520px 230px at 10% 0%, rgba(45,125,255,.22), transparent 62%),
+        radial-gradient(420px 220px at 100% 20%, rgba(25,195,125,.13), transparent 58%),
+        linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02));
+      box-shadow:0 18px 46px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .homeFeaturedHead{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+    .homeFeaturedKicker{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border-radius:999px;background:rgba(45,125,255,.13);border:1px solid rgba(45,125,255,.28);font-size:12px;font-weight:950;color:#dce8ff;margin-bottom:8px;}
+    .homeFeaturedTitle{font-size:24px;font-weight:980;line-height:1.1;letter-spacing:-.35px;margin:0;}
+    .homeFeaturedSub{color:#c8d5ea;font-size:13px;line-height:1.48;margin:6px 0 0;max-width:66ch;}
+    .homeFeaturedGrid{display:grid;grid-template-columns:1.25fr .85fr;gap:14px;align-items:stretch;}
+    .homeFeaturedMain,.homeFeaturedSide{border:1px solid rgba(255,255,255,.11);border-radius:24px;background:rgba(5,12,25,.35);overflow:hidden;box-shadow:0 14px 30px rgba(0,0,0,.20);}
+    .homeFeaturedMain{display:grid;grid-template-columns:minmax(220px,.9fr) 1.1fr;min-height:225px;}
+    .homeFeaturedMainImg,.homeFeaturedPlaceholder{min-height:225px;background:linear-gradient(135deg,rgba(45,125,255,.18),rgba(25,195,125,.12));display:flex;align-items:center;justify-content:center;font-size:54px;}
+    .homeFeaturedMainImg{width:100%;height:100%;object-fit:cover;cursor:pointer;}
+    .homeFeaturedMainBody{padding:16px;display:flex;flex-direction:column;gap:10px;}
+    .homeFeaturedMainBody h3{margin:0;font-size:21px;line-height:1.16;letter-spacing:-.22px;}
+    .homeFeaturedMainBody p{margin:0;color:#c9d4ea;font-size:13px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+    .homeFeaturedSide{display:grid;gap:0;}
+    .homeFeaturedMini{display:grid;grid-template-columns:84px 1fr;gap:10px;padding:12px;border-bottom:1px solid rgba(255,255,255,.08);align-items:center;text-decoration:none;color:inherit;transition:background .18s ease, transform .18s ease;}
+    .homeFeaturedMini:last-child{border-bottom:0;}
+    .homeFeaturedMini:hover{background:rgba(45,125,255,.08);transform:translateY(-1px);}
+    .homeFeaturedMini img,.homeFeaturedMiniIcon{width:84px;height:68px;border-radius:16px;object-fit:cover;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:28px;}
+    .homeFeaturedMini strong{display:block;font-size:13px;line-height:1.2;color:#fff;margin-top:5px;}
+    .homeFeaturedEmpty{padding:18px;border-radius:22px;border:1px dashed rgba(255,255,255,.15);background:rgba(0,0,0,.12);color:#c8d5ea;text-align:center;}
+
+    .categoryBadge{
+      display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:980;border:1px solid var(--badge-border, rgba(255,255,255,.15));background:var(--badge-bg, rgba(255,255,255,.08));color:var(--badge-color,#eaf0ff);box-shadow:0 8px 18px rgba(0,0,0,.10);
+    }
+    .articleSearchBar{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-top:18px;}
+    .articleSmartList{display:grid;gap:16px;margin-top:18px;}
+    .articleCardPro{
+      display:grid!important;
+      grid-template-columns:minmax(260px,.82fr) minmax(0,1.18fr)!important;
+      border-radius:28px!important;
+      overflow:hidden!important;
+      border:1px solid rgba(255,255,255,.12)!important;
+      background:linear-gradient(145deg, rgba(19,47,80,.94), rgba(7,17,32,.98))!important;
+      box-shadow:0 18px 42px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04)!important;
+      transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease!important;
+    }
+    .articleCardPro:hover{transform:translateY(-3px)!important;border-color:rgba(45,125,255,.46)!important;box-shadow:0 28px 58px rgba(0,0,0,.34)!important;}
+    .articleCover,.articleCoverPlaceholder{height:100%!important;min-height:250px!important;width:100%;object-fit:cover;cursor:pointer;background:linear-gradient(135deg,rgba(45,125,255,.20),rgba(25,195,125,.14));display:flex;align-items:center;justify-content:center;font-size:56px;border-right:1px solid rgba(255,255,255,.08);}
+    .articleCardBody{padding:18px!important;display:flex!important;flex-direction:column!important;gap:12px!important;}
+    .articleCardMeta{display:flex!important;gap:8px!important;flex-wrap:wrap!important;align-items:center!important;}
+    .articleCardBody h3{font-size:25px!important;line-height:1.12!important;margin:0!important;letter-spacing:-.3px!important;}
+    .articleCardBody p{font-size:14px!important;line-height:1.62!important;color:#cbd7ec!important;margin:0!important;display:-webkit-box!important;-webkit-line-clamp:5!important;-webkit-box-orient:vertical!important;overflow:hidden!important;}
+    .articleCardActions{display:flex!important;gap:10px!important;flex-wrap:wrap!important;margin-top:auto!important;}
+
+    .articleReaderModal{
+      width:min(920px, calc(100vw - 22px))!important;
+      max-width:min(920px, calc(100vw - 22px))!important;
+      max-height:min(92vh, 980px)!important;
+      overflow:auto!important;
+      padding:0!important;
+      border-radius:30px!important;
+      background:linear-gradient(180deg, #132642 0%, #0b1528 42%, #07101f 100%)!important;
+      border:1px solid rgba(255,255,255,.14)!important;
+      box-shadow:0 30px 90px rgba(0,0,0,.55)!important;
+    }
+    .articleReaderModal .modalHeader{padding:16px 18px 12px!important;position:sticky;top:0;z-index:3;background:rgba(10,20,38,.82);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);}
+    .articleReaderHero{margin:0!important;border:0!important;border-radius:0!important;position:relative;background:#07101f!important;}
+    .articleReaderHero img{width:100%!important;max-height:360px!important;object-fit:cover!important;display:block!important;cursor:zoom-in!important;}
+    .articleReaderHeroPlaceholder{height:280px!important;display:flex;align-items:center;justify-content:center;font-size:70px;background:radial-gradient(360px 180px at 20% 0%,rgba(45,125,255,.22),transparent),radial-gradient(360px 180px at 100% 0%,rgba(25,195,125,.14),transparent),rgba(255,255,255,.04)!important;}
+    .articleReaderInner{padding:18px 20px 22px;}
+    .articleReaderMeta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px!important;}
+    .articleReaderTitleBig{font-size:30px;line-height:1.08;letter-spacing:-.45px;margin:0 0 12px;font-weight:980;color:#fff;}
+    .articleReaderLead{font-size:15px;line-height:1.65;color:#cbd7ec;margin:0 0 16px;padding:14px 16px;border-radius:20px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);}
+    .articleReaderText{background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:22px!important;padding:18px!important;color:#e4edff!important;font-size:16px!important;line-height:1.78!important;white-space:normal!important;}
+    .articleReaderText p{margin:0 0 14px!important;}
+    .articleReaderText p:last-child{margin-bottom:0!important;}
+    .articleReaderActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;}
+
+    nav.bottom{pointer-events:none!important;padding:10px 10px calc(10px + env(safe-area-inset-bottom))!important;}
+    nav.bottom .inner{pointer-events:auto!important;max-width:940px!important;margin:0 auto!important;padding:9px 8px!important;border-radius:30px!important;border:1px solid rgba(255,255,255,.14)!important;background:radial-gradient(340px 150px at 0% 0%, rgba(45,125,255,.22), transparent 58%),radial-gradient(340px 150px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(7,15,30,.90)!important;backdrop-filter:blur(18px) saturate(150%)!important;box-shadow:0 18px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.06)!important;display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:6px!important;}
+    nav.bottom a{pointer-events:auto!important;position:relative!important;min-height:66px!important;border-radius:22px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;color:#c4d1e7!important;text-decoration:none!important;background:transparent!important;border:1px solid transparent!important;transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease,color .18s ease!important;overflow:visible!important;}
+    nav.bottom a::before, nav.bottom a::after{display:none!important;content:none!important;}
+    .navEmoji{width:35px!important;height:35px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:16px!important;background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.10)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 18px rgba(0,0,0,.18)!important;font-size:20px!important;line-height:1!important;filter:none!important;transform:translateZ(0);transition:transform .18s ease,background .18s ease,box-shadow .18s ease!important;}
+    nav.bottom a span:last-child{font-size:11px!important;font-weight:950!important;line-height:1!important;white-space:nowrap!important;}
+    nav.bottom a:hover{transform:translateY(-2px)!important;color:#fff!important;}
+    nav.bottom a:hover .navEmoji{transform:translateY(-2px) scale(1.04)!important;}
+    nav.bottom a.active{color:#fff!important;background:linear-gradient(135deg,rgba(45,125,255,.25),rgba(25,195,125,.15))!important;border-color:rgba(255,255,255,.15)!important;box-shadow:0 10px 26px rgba(45,125,255,.18)!important;}
+    nav.bottom a.active .navEmoji{background:linear-gradient(135deg,rgba(45,125,255,.42),rgba(25,195,125,.24))!important;border-color:rgba(118,184,255,.38)!important;box-shadow:0 10px 22px rgba(45,125,255,.18)!important;animation:navEmojiPulse 2.4s ease-in-out infinite;}
+    @keyframes navEmojiPulse{0%,100%{transform:translateY(-2px) scale(1.03)}50%{transform:translateY(-4px) scale(1.10)}}
+    @media(max-width:760px){
+      .homeFeaturedGrid{grid-template-columns:1fr;}
+      .homeFeaturedMain{grid-template-columns:1fr;}
+      .homeFeaturedMainImg,.homeFeaturedPlaceholder{min-height:190px;height:190px;}
+      .articleSearchBar{grid-template-columns:1fr;}
+      .articleSearchBar .btn{width:100%;}
+      .articleCardPro{grid-template-columns:1fr!important;}
+      .articleCover,.articleCoverPlaceholder{height:195px!important;min-height:195px!important;border-right:0;border-bottom:1px solid rgba(255,255,255,.08);}
+      .articleCardBody h3{font-size:21px!important;}
+      .articleReaderTitleBig{font-size:23px;}
+      .articleReaderText{font-size:15px!important;}
+      nav.bottom .inner{gap:3px!important;padding:8px 5px!important;border-radius:24px!important;}
+      nav.bottom a{min-height:60px!important;border-radius:18px!important;padding:5px 2px!important;gap:4px!important;}
+      .navEmoji{width:29px!important;height:29px!important;border-radius:13px!important;font-size:17px!important;}
+      nav.bottom a span:last-child{font-size:9.3px!important;}
+    }
+
   </style>
 </head>
 
@@ -1188,6 +1299,19 @@
           <a class="btn ghost" href="#/contacts">☎️ Contatti</a>
         </div>
       </div>
+
+      <div class="card homeFeaturedArticles" id="homeFeaturedArticlesCard">
+        <div class="homeFeaturedHead">
+          <div>
+            <div class="homeFeaturedKicker">📰 Voci di Cassino • in evidenza</div>
+            <h2 class="homeFeaturedTitle">Ultimi articoli dalla città</h2>
+            <p class="homeFeaturedSub">Le notizie più recenti pubblicate su Voci di Cassino, consultabili direttamente dentro Segnala Facile.</p>
+          </div>
+          <a class="btn small primary" href="#/articoli">Apri tutti gli articoli</a>
+        </div>
+        <div id="homeFeaturedArticles" class="homeFeaturedEmpty">Caricamento articoli in evidenza...</div>
+      </div>
+
 
       <div class="card homeMapCard">
         <div class="homeMapHead">
@@ -1812,11 +1936,16 @@
         <button class="modalClose" id="articleReaderClose" type="button">✕</button>
       </div>
       <div class="articleReaderHero" id="articleReaderHero"></div>
-      <div class="articleReaderMeta" id="articleReaderMeta"></div>
-      <div class="articleReaderText" id="articleReaderContent">Contenuto non disponibile.</div>
-      <div class="btnRow" style="margin-top:14px;">
-        <a class="btn primary" id="articleReaderOpenLink" href="#" target="_blank" rel="noreferrer">🔗 Apri fonte originale</a>
-        <button class="btn ghost" id="articleReaderReportBtn" type="button">📣 Invia una segnalazione</button>
+      <div class="articleReaderInner">
+        <div class="articleReaderMeta" id="articleReaderMeta"></div>
+        <h2 class="articleReaderTitleBig" id="articleReaderTitleBig">Articolo</h2>
+        <div class="articleReaderLead" id="articleReaderLead" style="display:none"></div>
+        <div class="articleReaderText" id="articleReaderContent">Contenuto non disponibile.</div>
+        <div class="articleReaderActions">
+          <a class="btn primary" id="articleReaderOpenLink" href="#" target="_blank" rel="noreferrer">🔗 Apri fonte originale</a>
+          <button class="btn ghost" id="articleReaderImageBtn" type="button">🖼️ Apri immagine</button>
+          <button class="btn ghost" id="articleReaderReportBtn" type="button">📣 Invia una segnalazione</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2336,6 +2465,7 @@
         a.classList.toggle("active", a.dataset.nav === target || (target==='add-place' && a.dataset.nav==='places'));
       });
 
+      if(target === "home") renderHomeFeaturedArticles();
       if(target === "my") renderList();
       if(target === "places") renderPublicPlaces();
       if(target === "articoli") renderArticles();
@@ -2360,6 +2490,9 @@
     document.getElementById("articleReaderReportBtn")?.addEventListener("click", () => {
       closeArticleReader();
       location.hash = "#/report";
+    });
+    document.getElementById("articleReaderImageBtn")?.addEventListener("click", () => {
+      if(articleReaderCurrentImage) openImage(articleReaderCurrentImage);
     });
     document.getElementById("articleReaderOverlay")?.addEventListener("click", (e) => {
       if(e.target && e.target.id === "articleReaderOverlay") closeArticleReader();
@@ -2837,6 +2970,7 @@
     };
 
     let articlesCache = [];
+    let articleReaderCurrentImage = "";
 
     function decodeHtmlEntities(text) {
       const textarea = document.createElement("textarea");
@@ -2868,10 +3002,10 @@
       return cleanArticleText(raw);
     }
 
-    function getArticlePreviewText(a){
+    function getArticlePreviewText(a, max = 230){
       const txt = getArticleLongText(a);
       if (!txt) return "";
-      return txt.length > 210 ? txt.slice(0, 210).trim() + "…" : txt;
+      return txt.length > max ? txt.slice(0, max).trim() + "…" : txt;
     }
 
     function formatArticleText(raw){
@@ -2895,6 +3029,39 @@
         .slice(0, 80);
     }
 
+    function getArticleCategoryMeta(category){
+      const c = String(category || "aggiornamento").toLowerCase();
+      const map = [
+        { k:["sicurezza","furto","rissa","degrado"], emoji:"🚨", color:"#ff6b6b", bg:"rgba(255,107,107,.15)", border:"rgba(255,107,107,.38)" },
+        { k:["ambiente","verde","rifiuti","decoro"], emoji:"🌳", color:"#19c37d", bg:"rgba(25,195,125,.14)", border:"rgba(25,195,125,.36)" },
+        { k:["viabilità","viabilita","strade","traffico","buche"], emoji:"🛣️", color:"#ffb86c", bg:"rgba(255,184,108,.15)", border:"rgba(255,184,108,.38)" },
+        { k:["politica","comune","amministrazione","piazza"], emoji:"🏛️", color:"#8ab4ff", bg:"rgba(138,180,255,.15)", border:"rgba(138,180,255,.38)" },
+        { k:["eventi","cultura","scuola"], emoji:"🎭", color:"#c792ea", bg:"rgba(199,146,234,.15)", border:"rgba(199,146,234,.36)" },
+        { k:["lavori","cantieri","opere"], emoji:"🚧", color:"#f1c40f", bg:"rgba(241,196,15,.14)", border:"rgba(241,196,15,.36)" },
+        { k:["aggiornamento","notizia","news"], emoji:"🔖", color:"#68d8ff", bg:"rgba(104,216,255,.13)", border:"rgba(104,216,255,.34)" }
+      ];
+      const found = map.find(x => x.k.some(k => c.includes(k))) || map[6];
+      return found;
+    }
+
+    function categoryBadgeHtml(category){
+      const label = articleSafe(category || "Aggiornamento");
+      const meta = getArticleCategoryMeta(category);
+      return `<span class="categoryBadge" style="--badge-color:${meta.color};--badge-bg:${meta.bg};--badge-border:${meta.border};">${meta.emoji} ${label}</span>`;
+    }
+
+    function articleDateLabel(a){
+      return a?.dataStr || a?.data || a?.createdAt || a?.created_at || "Data non indicata";
+    }
+
+    function articleImageUrl(a){
+      const foto = a?.foto;
+      if (typeof foto === "string" && foto.trim().startsWith("[")) {
+        try { const arr = JSON.parse(foto); if (arr && arr[0]) return arr[0]; } catch(e) {}
+      }
+      return a?.immagine || a?.image || a?.cover || a?.foto || "";
+    }
+
     async function fetchArticlesList() {
       const res = await fetch(CONFIG.telegramWorkerUrl + "/api/articoli?t=" + Date.now());
       const data = await res.json().catch(() => ({}));
@@ -2907,26 +3074,41 @@
     function openArticleReaderByIndex(index){
       const a = articlesCache[index];
       if(!a) return;
-      const titolo = a.titolo || "Articolo Voci di Cassino";
-      const data = a.dataStr || a.data || a.createdAt || a.created_at || "Data non indicata";
+      const titolo = decodeHtmlEntities(a.titolo || "Articolo Voci di Cassino");
+      const data = articleDateLabel(a);
       const categoria = a.categoria || "Aggiornamento";
-      const img = a.immagine || a.image || a.cover || a.foto || "";
+      const img = articleImageUrl(a);
       const url = a.url || a.link || "";
       const text = getArticleLongText(a);
+      const lead = getArticlePreviewText(a, 280);
+      articleReaderCurrentImage = img || "";
 
-      document.getElementById("articleReaderTitle").textContent = decodeHtmlEntities(titolo);
-      document.getElementById("articleReaderSub").textContent = "Lettura completa direttamente nell’app";
+      document.getElementById("articleReaderTitle").textContent = titolo;
+      document.getElementById("articleReaderTitleBig").textContent = titolo;
+      document.getElementById("articleReaderSub").textContent = "News app • lettura completa";
       document.getElementById("articleReaderMeta").innerHTML = `
         <span class="pill">🗓️ ${articleSafe(data)}</span>
-        <span class="pill">🏷️ ${articleSafe(categoria)}</span>
+        ${categoryBadgeHtml(categoria)}
       `;
       document.getElementById("articleReaderHero").innerHTML = img
-        ? `<img src="${articleSafe(img)}" alt="${articleSafe(titolo)}" onerror="this.parentNode.innerHTML='<div class=\"articleReaderHeroPlaceholder\">📰</div>'">`
+        ? `<img src="${articleSafe(img)}" alt="${articleSafe(titolo)}" onclick="openImage(this.src)" onerror="this.parentNode.innerHTML='<div class=\"articleReaderHeroPlaceholder\">📰</div>'">`
         : `<div class="articleReaderHeroPlaceholder">📰</div>`;
+
+      const leadEl = document.getElementById("articleReaderLead");
+      if (lead && lead.length > 25) {
+        leadEl.style.display = "block";
+        leadEl.textContent = lead;
+      } else {
+        leadEl.style.display = "none";
+        leadEl.textContent = "";
+      }
+
       document.getElementById("articleReaderContent").innerHTML = formatArticleText(text);
       const link = document.getElementById("articleReaderOpenLink");
       link.href = url || "#";
       link.style.display = url ? "inline-flex" : "none";
+      const imgBtn = document.getElementById("articleReaderImageBtn");
+      imgBtn.style.display = img ? "inline-flex" : "none";
       const overlay = document.getElementById("articleReaderOverlay");
       overlay.style.display = "flex";
       overlay.setAttribute("aria-hidden", "false");
@@ -2941,6 +3123,39 @@
 
     window.openArticleReaderByIndex = openArticleReaderByIndex;
     window.closeArticleReader = closeArticleReader;
+
+    function articleCardHtml(a, opts = {}){
+      const titolo = articleSafe(a.titolo || "Articolo Voci di Cassino");
+      const data = articleSafe(articleDateLabel(a));
+      const categoria = a.categoria || "Aggiornamento";
+      const descrizione = articleSafe(getArticlePreviewText(a, opts.previewMax || 240));
+      const url = articleSafe(a.url || a.link || "#");
+      const img = articleSafe(articleImageUrl(a));
+      const idx = Number.isInteger(a.__index) ? a.__index : articlesCache.indexOf(a);
+      const id = articleDomId(a);
+      const cover = img
+        ? `<img class="articleCover" src="${img}" alt="${titolo}" loading="lazy" onclick="openImage(this.src)" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'articleCoverPlaceholder',textContent:'📰'}))">`
+        : `<div class="articleCoverPlaceholder">📰</div>`;
+
+      return `
+        <article class="articleCardPro" id="${id}">
+          ${cover}
+          <div class="articleCardBody">
+            <div class="articleCardMeta">
+              <span class="pill">🗓️ ${data}</span>
+              ${categoryBadgeHtml(categoria)}
+            </div>
+            <h3>${titolo}</h3>
+            ${descrizione ? `<p>${descrizione}</p>` : `<p>Apri la lettura completa per leggere l’aggiornamento.</p>`}
+            <div class="articleCardActions">
+              <button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${idx})">📖 Leggi nell’app</button>
+              <a class="btn ghost small" href="${url}" target="_blank" rel="noreferrer">🔗 Fonte</a>
+              <a class="btn ghost small" href="#/report">📣 Segnala</a>
+            </div>
+          </div>
+        </article>
+      `;
+    }
 
     async function renderArticles() {
       const list = document.getElementById("articleList");
@@ -2977,51 +3192,58 @@
         return;
       }
 
-      list.innerHTML = articoli.map((a) => {
-        const titolo = articleSafe(a.titolo || "Articolo Voci di Cassino");
-        const data = articleSafe(a.dataStr || a.data || a.createdAt || a.created_at || "Data non indicata");
-        const categoria = articleSafe(a.categoria || "Aggiornamento");
-        const descrizione = articleSafe(getArticlePreviewText(a));
-        const url = articleSafe(a.url || a.link || "#");
-        const img = articleSafe(a.immagine || a.image || a.cover || a.foto || "");
-        const id = articleDomId(a);
-        const cover = img
-          ? `<img class="articleCover" src="${img}" alt="${titolo}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'articleCoverPlaceholder',textContent:'📰'}))">`
-          : `<div class="articleCoverPlaceholder">📰</div>`;
-
-        return `
-          <article class="articleCardPro" id="${id}">
-            ${cover}
-            <div class="articleCardBody">
-              <div class="articleCardMeta">
-                <span>🗓️ ${data}</span>
-                <span>🏷️ ${categoria}</span>
-              </div>
-              <h3>${titolo}</h3>
-              ${descrizione ? `<p>${descrizione}</p>` : `<p>Apri la lettura completa per leggere l’aggiornamento.</p>`}
-              <div class="articleCardActions">
-                <button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${a.__index})">📖 Leggi nell’app</button>
-                <a class="btn ghost small" href="${url}" target="_blank" rel="noreferrer">🔗 Fonte</a>
-                <a class="btn ghost small" href="#/report">📣 Segnala</a>
-              </div>
-            </div>
-          </article>
-        `;
-      }).join("");
+      list.innerHTML = articoli.map((a) => articleCardHtml(a)).join("");
     }
 
-
-
-    // FIXED_ARTICLE_READER_LISTENERS
-    document.addEventListener("click", (e) => {
-      if (e.target && e.target.id === "articleReaderClose") closeArticleReader();
-      if (e.target && e.target.id === "articleReaderReportBtn") {
-        closeArticleReader();
-        location.hash = "#/report";
+    async function renderHomeFeaturedArticles(){
+      const box = document.getElementById("homeFeaturedArticles");
+      if(!box) return;
+      box.className = "homeFeaturedEmpty";
+      box.innerHTML = "Caricamento articoli in evidenza...";
+      try{
+        if(!articlesCache.length) await fetchArticlesList();
+      }catch(e){
+        box.innerHTML = "⚠️ Articoli non disponibili al momento.";
+        return;
       }
-      if (e.target && e.target.id === "articleReaderOverlay") closeArticleReader();
-    });
+      const items = articlesCache.slice(0,3).map((a,index)=>({...a,__index:index}));
+      if(!items.length){
+        box.innerHTML = "📰 Nessun articolo in evidenza disponibile.";
+        return;
+      }
+      const main = items[0];
+      const mainImg = articleImageUrl(main);
+      const mainCover = mainImg
+        ? `<img class="homeFeaturedMainImg" src="${articleSafe(mainImg)}" onclick="openImage(this.src)" alt="${articleSafe(main.titolo || 'Articolo')}" loading="lazy">`
+        : `<div class="homeFeaturedPlaceholder">📰</div>`;
+      const side = items.slice(1).map((a) => {
+        const img = articleImageUrl(a);
+        const thumb = img ? `<img src="${articleSafe(img)}" alt="${articleSafe(a.titolo || 'Articolo')}">` : `<div class="homeFeaturedMiniIcon">📰</div>`;
+        return `<button class="homeFeaturedMini" type="button" onclick="openArticleReaderByIndex(${a.__index})">
+          ${thumb}
+          <span>${categoryBadgeHtml(a.categoria || 'Aggiornamento')}<strong>${articleSafe(a.titolo || 'Articolo Voci di Cassino')}</strong></span>
+        </button>`;
+      }).join("");
 
+      box.className = "homeFeaturedGrid";
+      box.innerHTML = `
+        <div class="homeFeaturedMain">
+          ${mainCover}
+          <div class="homeFeaturedMainBody">
+            <div>${categoryBadgeHtml(main.categoria || 'Aggiornamento')}</div>
+            <h3>${articleSafe(main.titolo || 'Articolo Voci di Cassino')}</h3>
+            <p>${articleSafe(getArticlePreviewText(main, 260) || 'Apri la lettura completa per leggere l’aggiornamento.')}</p>
+            <div class="articleCardActions">
+              <button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${main.__index})">📖 Leggi in app</button>
+              <a class="btn ghost small" href="#/articoli">📰 Tutti gli articoli</a>
+            </div>
+          </div>
+        </div>
+        <div class="homeFeaturedSide">
+          ${side || `<div class="homeFeaturedEmpty">Altri articoli compariranno qui.</div>`}
+        </div>
+      `;
+    }
     document.addEventListener("input", (e) => {
       if (e.target && e.target.id === "articleSearch") renderArticles();
     });
@@ -3511,6 +3733,7 @@
       fetchPublicData();
       route();
       updateHomeOverview();
+      renderHomeFeaturedArticles();
       
       setInterval(() => {
          if(document.visibilityState === 'visible') {
