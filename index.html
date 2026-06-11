@@ -2359,7 +2359,7 @@
               <div class="row" style="margin-top:10px;">
                 <button class="btn primary small" onclick="addReviewToPlace('${key.replace(/'/g, "\\'")}')">➕ Aggiungi Recensione</button>
                 <button class="btn ghost small" onclick="focusOnMap(${group.lat}, ${group.lng})">📍 Mappa</button>
-                <a class="btn ghost small" href="http://googleusercontent.com/maps.google.com/4${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
+                <a class="btn ghost small" href="https://www.google.com/maps/search/?api=1&query=${group.lat},${group.lng}" target="_blank" style="text-decoration:none;">🧭 Raggiungi</a>
               </div>
             </div>
 
@@ -2535,7 +2535,7 @@
             <small style="color:#a9b6db;">${dateStr}</small>
             ${imagesHtml}
             <p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${r.descrizione || 'Nessuna descrizione.'}</p>
-            <a class="btn primary small" href="http://googleusercontent.com/maps.google.com/5${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
+            <a class="btn primary small" href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" style="text-decoration:none; display:flex; width:100%; padding:8px; margin-top:5px;">🧭 Raggiungi</a>
           </div>`;
         
         if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
