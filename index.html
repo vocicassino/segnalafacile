@@ -935,34 +935,40 @@
       color:#dce8ff;
     }
 
-    /* SEZIONE ARTICOLI VOCI DI CASSINO */
-    .articlesHero{border:1px solid rgba(255,255,255,.12);background:radial-gradient(320px 160px at 20% 0%, rgba(45,125,255,.18), transparent 62%),radial-gradient(320px 160px at 95% 0%, rgba(25,195,125,.14), transparent 58%),rgba(0,0,0,.16);border-radius:24px;padding:16px;margin-top:14px;box-shadow:0 14px 32px rgba(0,0,0,.24);}
-    .articlesTools{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-top:14px;}
-    .articleList{display:grid;gap:10px;margin-top:14px;}
-    .articleCard{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);border-radius:22px;padding:14px;display:grid;gap:10px;transition:transform .14s ease,border-color .14s ease,background .14s ease;}
-    .articleCard:hover{transform:translateY(-2px);border-color:rgba(45,125,255,.38);background:rgba(45,125,255,.08);}
-    .articleMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;font-weight:900;}
-    .articleTitle{margin:0;font-size:17px;line-height:1.2;font-weight:980;color:var(--text);}
-    .articleDesc{margin:0;color:var(--muted);font-size:13px;line-height:1.45;white-space:pre-wrap;}
-    .articleActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px;}
-    .articleEmpty{padding:18px;border-radius:22px;border:1px dashed rgba(255,255,255,.16);background:rgba(0,0,0,.14);color:var(--muted);text-align:center;line-height:1.5;margin-top:14px;}
-    .articleAdminBox{margin-top:14px;padding:14px;border-radius:22px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);}
-    @media(max-width:640px){.articlesTools{grid-template-columns:1fr;}.articlesTools .btn{width:100%;}.articleActions .btn{width:100%;}}
-
     /* ARTICOLI WOW PUBBLICI */
     .newsWowHeader{
-      margin-top:14px;padding:18px;border-radius:26px;border:1px solid rgba(255,255,255,.13);
-      background:radial-gradient(380px 180px at 15% 0%, rgba(45,125,255,.22), transparent 62%),radial-gradient(360px 180px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(0,0,0,.16);
-      box-shadow:0 16px 38px rgba(0,0,0,.26);overflow:hidden;
+      margin-top:14px;
+      padding:18px;
+      border-radius:26px;
+      border:1px solid rgba(255,255,255,.13);
+      background:
+        radial-gradient(380px 180px at 15% 0%, rgba(45,125,255,.22), transparent 62%),
+        radial-gradient(360px 180px at 100% 0%, rgba(25,195,125,.16), transparent 58%),
+        rgba(0,0,0,.16);
+      box-shadow:0 16px 38px rgba(0,0,0,.26);
+      overflow:hidden;
     }
-    .newsWowKicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(45,125,255,.32);background:rgba(45,125,255,.12);font-size:12px;font-weight:980;color:#dce8ff;margin-bottom:10px;}
+    .newsWowKicker{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(45,125,255,.32);background:rgba(45,125,255,.12);
+      font-size:12px;font-weight:980;color:#dce8ff;margin-bottom:10px;
+    }
     .newsWowTitle{font-size:26px;line-height:1.05;font-weight:980;letter-spacing:-.45px;}
     .newsWowText{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.5;max-width:70ch;}
     .newsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px;}
-    .newsCard{border:1px solid rgba(255,255,255,.12);background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.14), transparent 60%),rgba(0,0,0,.18);border-radius:24px;overflow:hidden;box-shadow:0 14px 32px rgba(0,0,0,.24);transition:transform .14s ease,border-color .14s ease,background .14s ease;min-height:100%;display:flex;flex-direction:column;}
+    .newsCard{
+      border:1px solid rgba(255,255,255,.12);
+      background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.14), transparent 60%),rgba(0,0,0,.18);
+      border-radius:24px;overflow:hidden;box-shadow:0 14px 32px rgba(0,0,0,.24);
+      transition:transform .14s ease,border-color .14s ease,background .14s ease;min-height:100%;display:flex;flex-direction:column;
+    }
     .newsCard:hover{transform:translateY(-3px);border-color:rgba(45,125,255,.42);background:rgba(45,125,255,.08);}
     .newsCover{width:100%;height:170px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(45,125,255,.24),rgba(25,195,125,.16));border-bottom:1px solid rgba(255,255,255,.10);}
-    .newsCoverPlaceholder{height:170px;display:flex;align-items:center;justify-content:center;font-size:46px;background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.22), transparent 60%),radial-gradient(260px 120px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.10);}
+    .newsCoverPlaceholder{
+      height:170px;display:flex;align-items:center;justify-content:center;font-size:46px;
+      background:radial-gradient(260px 120px at 20% 0%, rgba(45,125,255,.22), transparent 60%),radial-gradient(260px 120px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(255,255,255,.045);
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
     .newsBody{padding:14px;display:grid;gap:10px;flex:1;}
     .newsMeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
     .newsMeta .pill{padding:6px 9px;font-size:11px;}
@@ -972,49 +978,126 @@
     .newsEmpty{padding:22px;border-radius:24px;border:1px dashed rgba(255,255,255,.17);background:rgba(0,0,0,.14);color:var(--muted);text-align:center;line-height:1.5;margin-top:14px;}
     @media(max-width:720px){.newsGrid{grid-template-columns:1fr;}.newsCover,.newsCoverPlaceholder{height:190px;}.newsActions .btn{width:100%;}}
 
-    /* MIGLIORAMENTI PUBBLICI ARTICOLI + HOME */
-    .articleAdminBox,
-    .articleHelpBox,
-    .howToArticlesBox,
-    #articlesHelpBox,
-    #comeAggiungereArticoli{
-      display:none !important;
+  
+
+    /* === UPGRADE ARTICOLI + NAV WOW === */
+    .newsWowHeader{
+      position:relative;
+      overflow:hidden;
+      border-radius:28px;
+      padding:20px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(520px 220px at 0% 0%, rgba(45,125,255,.24), transparent 60%),
+        radial-gradient(420px 220px at 100% 0%, rgba(25,195,125,.18), transparent 58%),
+        linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      box-shadow: 0 18px 46px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
     }
+    .newsWowHeader::after{
+      content:"";
+      position:absolute; inset:auto -60px -60px auto;
+      width:180px; height:180px; border-radius:50%;
+      background:radial-gradient(circle, rgba(45,125,255,.25), transparent 68%);
+      pointer-events:none;
+      filter: blur(8px);
+    }
+    .articlesTools{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:12px;
+      align-items:end;
+      margin-top:18px;
+    }
+    .articlesTools > div{min-width:0;}
+    .newsGrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:16px;}
     .newsCard{
       position:relative;
+      overflow:hidden;
+      border-radius:24px;
+      border:1px solid rgba(255,255,255,.11);
+      background:linear-gradient(180deg, rgba(9,18,34,.92), rgba(7,15,28,.98));
+      box-shadow:0 12px 32px rgba(0,0,0,.22);
+      transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
-    .newsCard.articlePulse{
-      animation: articlePulseGlow 1.6s ease;
-    }
-    .newsCard p{
+    .newsCard:hover{transform:translateY(-2px);box-shadow:0 22px 44px rgba(0,0,0,.28);border-color:rgba(45,125,255,.35);}
+    .newsCover, .newsCoverPlaceholder{height:210px;}
+    .newsBody{padding:16px 16px 18px;}
+    .newsMeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+    .newsMeta .pill{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.1)}
+    .newsBody h3{margin:0 0 8px;font-size:24px;line-height:1.15;}
+    .newsBody p{
+      margin:0;
+      color:#c9d4ea;
+      line-height:1.55;
       display:-webkit-box;
-      -webkit-line-clamp:3;
+      -webkit-line-clamp:4;
       -webkit-box-orient:vertical;
       overflow:hidden;
-      word-break:break-word;
     }
-    @keyframes articlePulseGlow{
-      0%{box-shadow:0 14px 32px rgba(0,0,0,.24); transform:scale(1);}
-      40%{box-shadow:0 0 30px rgba(45,125,255,.55), 0 14px 32px rgba(0,0,0,.24); transform:scale(1.015);}
-      100%{box-shadow:0 14px 32px rgba(0,0,0,.24); transform:scale(1);}
-    }
-    .mapPopupPhotos{
-      display:flex;
+    .newsActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+    .btn.softInfo{background:linear-gradient(135deg, rgba(45,125,255,.18), rgba(72,172,255,.14));border-color:rgba(45,125,255,.34);color:#eaf0ff;}
+    .articleReaderModal{max-width:min(860px, calc(100vw - 24px));max-height:min(88vh, 920px);overflow:auto;}
+    .articleReaderHero{overflow:hidden;border-radius:22px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);margin:0 0 16px;}
+    .articleReaderHero img{width:100%;max-height:280px;object-fit:cover;display:block;}
+    .articleReaderHeroPlaceholder{height:220px;display:flex;align-items:center;justify-content:center;font-size:58px;background:linear-gradient(135deg, rgba(45,125,255,.16), rgba(25,195,125,.12));}
+    .articleReaderMeta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px;}
+    .articleReaderText{color:#dbe5f8;line-height:1.72;font-size:15px;white-space:pre-wrap;word-break:break-word;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:16px;}
+    .articleReaderText p{margin:0 0 12px;}
+    .articleReaderText p:last-child{margin-bottom:0;}
+    nav.bottom{padding:10px 10px calc(10px + env(safe-area-inset-bottom));}
+    nav.bottom .inner{
+      max-width:920px;
+      margin:0 auto;
+      padding:10px 8px;
+      border-radius:28px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(320px 140px at 0% 0%, rgba(45,125,255,.18), transparent 58%),
+        radial-gradient(340px 140px at 100% 0%, rgba(25,195,125,.14), transparent 58%),
+        rgba(8,14,28,.84);
+      backdrop-filter:blur(16px) saturate(140%);
+      box-shadow:0 16px 42px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.05);
+      display:grid;
+      grid-template-columns:repeat(6, 1fr);
       gap:6px;
-      overflow-x:auto;
-      margin-top:8px;
-      padding-bottom:2px;
     }
-    .mapPopupPhotos img{
-      height:82px;
-      width:82px;
-      object-fit:cover;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,0.16);
-      cursor:pointer;
-      flex-shrink:0;
-      background:rgba(255,255,255,.06);
-      box-shadow:0 8px 18px rgba(0,0,0,.25);
+    nav.bottom a{
+      position:relative;
+      min-width:0;
+      min-height:62px;
+      border-radius:20px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      color:#c3d0e6;
+      text-decoration:none;
+      transition:transform .18s ease, color .18s ease, background .18s ease, box-shadow .18s ease;
+      padding:6px 4px;
+    }
+    nav.bottom a .navIco{
+      width:22px;height:22px;
+      padding:10px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      transition:inherit;
+      flex:0 0 auto;
+    }
+    nav.bottom a span{font-size:11px;font-weight:850;letter-spacing:.02em;white-space:nowrap;}
+    nav.bottom a:hover{transform:translateY(-1px);color:#fff;}
+    nav.bottom a.active{color:#fff;background:linear-gradient(135deg, rgba(45,125,255,.22), rgba(25,195,125,.14));box-shadow:0 10px 24px rgba(45,125,255,.16);}
+    nav.bottom a.active .navIco{background:linear-gradient(135deg, rgba(45,125,255,.28), rgba(25,195,125,.18));border-color:rgba(118,184,255,.34);box-shadow:0 10px 20px rgba(45,125,255,.16);transform:translateY(-1px) scale(1.03);}
+    @media (max-width: 680px){
+      .articlesTools{grid-template-columns:1fr;}
+      .newsCover, .newsCoverPlaceholder{height:180px;}
+      .newsBody h3{font-size:20px;}
+      nav.bottom .inner{grid-template-columns:repeat(6,1fr);gap:4px;padding:8px 6px;border-radius:24px;}
+      nav.bottom a{min-height:60px;border-radius:18px;gap:5px;}
+      nav.bottom a .navIco{width:20px;height:20px;padding:8px;border-radius:14px;}
+      nav.bottom a span{font-size:10px;}
     }
 
   </style>
@@ -1543,23 +1626,25 @@
     </section>
 
 
+    
     <section id="view-articoli" class="grid hidden">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
             <div style="font-weight:980;font-size:20px">📰 Articoli Voci di Cassino</div>
-            <div class="hint" style="margin:6px 0 0">Raccolta dei contenuti pubblicati sulla pagina Facebook, collegati all'app Segnala Facile.</div>
+            <div class="hint" style="margin:6px 0 0">Notizie, aggiornamenti e approfondimenti collegati alle segnalazioni della città.</div>
           </div>
           <a class="btn small ghost" href="#/">← Home</a>
         </div>
 
-        <div class="articlesHero">
-          <div style="font-weight:980;font-size:18px;line-height:1.2">Dalle segnalazioni agli articoli</div>
-          <div class="hint" style="margin:6px 0 0">
-            Qui trovi i post e gli articoli pubblicati su <b>Voci di Cassino</b>, con aggiornamenti, approfondimenti e sviluppi delle segnalazioni arrivate dai cittadini.
+        <div class="newsWowHeader">
+          <div class="newsWowKicker">Voci di Cassino • aggiornamenti dalla città</div>
+          <div class="newsWowTitle">Dalle segnalazioni agli articoli</div>
+          <div class="newsWowText">
+            Qui trovi i post e gli articoli pubblicati da <b>Voci di Cassino</b>, con aggiornamenti, approfondimenti e sviluppi delle segnalazioni arrivate dai cittadini.
           </div>
-          <div class="btnRow" style="margin-top:12px">
-            <a class="btn primary" href="https://www.facebook.com/search/top?q=voci%20di%20cassino" target="_blank" rel="noreferrer">📘 Apri Voci di Cassino su Facebook</a>
+          <div class="btnRow" style="margin-top:14px">
+            <a class="btn primary" href="https://www.facebook.com/VocidiCassino" target="_blank" rel="noreferrer">📘 Apri Voci di Cassino su Facebook</a>
             <a class="btn ghost" href="#/report">📣 Invia una segnalazione</a>
           </div>
         </div>
@@ -1572,7 +1657,7 @@
           <button class="btn ghost" id="btnRefreshArticles" type="button">🔄 Aggiorna lista</button>
         </div>
 
-        <div id="articleList" class="articleList"></div>
+        <div id="articleList" class="newsGrid"></div>
       </div>
     </section>
 
@@ -1675,23 +1760,42 @@
     <img id="imageViewerImg" src="" style="max-width: 95%; max-height: 80vh; border-radius: 12px; object-fit: contain;" />
   </div>
 
+  <div class="modalOverlay" id="articleReaderOverlay" aria-hidden="true" style="display:none; z-index:999998;">
+    <div class="modal articleReaderModal" role="dialog" aria-modal="true" aria-labelledby="articleReaderTitle">
+      <div class="modalHeader">
+        <div>
+          <h3 id="articleReaderTitle">Articolo</h3>
+          <div class="hint" id="articleReaderSub">Lettura completa</div>
+        </div>
+        <button class="modalClose" id="articleReaderClose" type="button">✕</button>
+      </div>
+      <div class="articleReaderHero" id="articleReaderHero"></div>
+      <div class="articleReaderMeta" id="articleReaderMeta"></div>
+      <div class="articleReaderText" id="articleReaderContent">Contenuto non disponibile.</div>
+      <div class="btnRow" style="margin-top:14px;">
+        <a class="btn primary" id="articleReaderOpenLink" href="#" target="_blank" rel="noreferrer">🔗 Apri fonte originale</a>
+        <button class="btn ghost" id="articleReaderReportBtn" type="button">📣 Invia una segnalazione</button>
+      </div>
+    </div>
+  </div>
+
+  
   <nav class="bottom" aria-label="Navigazione">
     <div class="inner">
       <a href="#/" data-nav="home" class="active" aria-label="Home">
         <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 8h-2v10a1 1 0 0 1-1 1h-5v-6H11v6H6a1 1 0 0 1-1-1V11H3l9-8z"/></svg>
         <span>Home</span>
       </a>
+      <a href="#/articoli" data-nav="articoli" aria-label="Articoli">
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 3v2h10V7H7zm0 4v2h10v-2H7zm0 4v2h6v-2H7z"/></svg>
+        <span>Articoli</span>
+      </a>
       <a href="#/report" data-nav="report" aria-label="Segnala">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V4zm4 4h8v2H8V8zm0 4h8v2H8v-2zm0 4h6v2H8v-2z"/>
-          <path d="M20 8h2v14a2 2 0 0 1-2 2H8v-2h12V8z"/>
-        </svg>
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V4zm4 4h8v2H8V8zm0 4h8v2H8v-2zm0 4h6v2H8v-2z"/><path d="M20 8h2v14a2 2 0 0 1-2 2H8v-2h12V8z"/></svg>
         <span>Segnala</span>
       </a>
       <a href="#/places" data-nav="places" aria-label="Luoghi">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-        </svg>
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
         <span>Luoghi</span>
       </a>
       <a href="#/my" data-nav="my" aria-label="Storico">
@@ -1699,9 +1803,7 @@
         <span>Storico</span>
       </a>
       <a href="#/map" data-nav="map" aria-label="Mappa">
-        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 5l-6 2-6-2v15l6 2 6-2 6 2V7l-6-2zm0 2.1l4 1.3v11.4l-4-1.3V7.1zM9 7.1l4-1.3v11.4l-4 1.3V7.1zM3 8.4l4 1.3v11.4l-4-1.3V8.4z"/>
-        </svg>
+        <svg class="navIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-6 2-6-2v15l6 2 6-2 6 2V7l-6-2zm0 2.1l4 1.3v11.4l-4-1.3V7.1zM9 7.1l4-1.3v11.4l-4 1.3V7.1zM3 8.4l4 1.3v11.4l-4-1.3V8.4z"/></svg>
         <span>Mappa</span>
       </a>
     </div>
@@ -1724,7 +1826,6 @@
 
     window.publicSegnalazioni = [];
     window.publicLuoghi = [];
-    window.publicArticoli = [];
 
     const catInfo = { 
       verde:   { color: '#19c37d', emoji: '🌳' }, 
@@ -2232,66 +2333,38 @@
       document.getElementById('imageViewer').style.display = 'flex';
     };
 
+    document.getElementById("articleReaderClose")?.addEventListener("click", closeArticleReader);
+    document.getElementById("articleReaderReportBtn")?.addEventListener("click", () => {
+      closeArticleReader();
+      location.hash = "#/report";
+    });
+    document.getElementById("articleReaderOverlay")?.addEventListener("click", (e) => {
+      if(e.target && e.target.id === "articleReaderOverlay") closeArticleReader();
+    });
+
     const estraiTutteLeFoto = (item) => {
       if(!item) return [];
-
-      const arr = [];
-      const pushOne = (value) => {
-        if(!value) return;
-
-        if (Array.isArray(value)) {
-          value.forEach(pushOne);
-          return;
+      let arr = [];
+      
+      if (item.foto) {
+        try {
+          const parsed = JSON.parse(item.foto);
+          if (Array.isArray(parsed)) arr.push(...parsed);
+          else arr.push(item.foto);
+        } catch(e) {
+          arr.push(item.foto);
         }
-
-        if (typeof value === "object") {
-          pushOne(value.dataUrl || value.url || value.src || value.foto || value.photoUrl || value.publicUrl || value.immagine);
-          return;
-        }
-
-        const raw = String(value).trim();
-        if(!raw || raw === "[]" || raw === "{}" || raw.toLowerCase() === "null" || raw.toLowerCase() === "undefined") return;
-
-        if ((raw.startsWith("[") && raw.endsWith("]")) || (raw.startsWith("{") && raw.endsWith("}"))) {
-          try {
-            pushOne(JSON.parse(raw));
-            return;
-          } catch(e) {}
-        }
-
-        // Alcuni campi possono contenere più URL separati da virgola o punto e virgola.
-        if ((raw.includes("http") || raw.includes("data:image")) && /[,;]/.test(raw) && !raw.startsWith("data:image")) {
-          raw.split(/[,;]/).map(x => x.trim()).filter(Boolean).forEach(pushOne);
-          return;
-        }
-
-        if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("data:image/") || raw.startsWith("blob:")) {
-          arr.push(raw);
-        }
-      };
-
-      [
-        item.foto,
-        item.fotoUrl,
-        item.foto_url,
-        item.photoUrl,
-        item.photo_url,
-        item.photoDataUrl,
-        item.photos,
-        item.immagine,
-        item.image,
-        item.imageUrl,
-        item.image_url,
-        item.cover,
-        item.copertina,
-        item.allegati,
-        item.attachments,
-        item.foto1,
-        item.foto2,
-        item.foto3
-      ].forEach(pushOne);
-
-      return [...new Set(arr)].filter(Boolean).slice(0, 5);
+      }
+      if (item.photoDataUrl) arr.push(item.photoDataUrl);
+      if (item.photos) {
+        try {
+          const parsed = typeof item.photos === 'string' ? JSON.parse(item.photos) : item.photos;
+          if (Array.isArray(parsed)) {
+            parsed.forEach(p => { if(p.dataUrl) arr.push(p.dataUrl); else if(typeof p === 'string') arr.push(p); });
+          }
+        } catch(e) {}
+      }
+      return [...new Set(arr)].filter(Boolean).slice(0, 3);
     };
 
     async function fetchPublicData() {
@@ -2301,13 +2374,6 @@
         if(data.ok) {
           window.publicSegnalazioni = data.segnalazioni || [];
           window.publicLuoghi = data.luoghi || [];
-
-          // Carica anche gli articoli, così la Home mostra gli ultimi aggiornamenti pubblicati.
-          try {
-            await fetchArticlesList(false);
-          } catch(e) {
-            console.log("Articoli non disponibili al momento:", e);
-          }
 
           const localReps = loadReports();
           let cacheChanged = false;
@@ -2356,28 +2422,15 @@
     }
     
     function parseDateString(dStr) {
-      if(!dStr) return 0;
-      if (typeof dStr === "number") return dStr;
-
-      const raw = String(dStr).trim();
-      if(!raw) return 0;
-
-      // formato italiano: 11/06/2026 oppure 11/06/2026, 14:30
-      const it = raw.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
-      if (it) {
-        const d = Number(it[1]);
-        const m = Number(it[2]) - 1;
-        let y = Number(it[3]);
-        if (y < 100) y += 2000;
-        const hh = Number(it[4] || 0);
-        const mm = Number(it[5] || 0);
-        const ss = Number(it[6] || 0);
-        const t = new Date(y, m, d, hh, mm, ss).getTime();
-        if(!Number.isNaN(t)) return t;
-      }
-
-      const parsed = Date.parse(raw);
-      return Number.isNaN(parsed) ? 0 : parsed;
+       if(!dStr) return 0;
+       try {
+         const parts = dStr.split(/[ ,]+/); 
+         const datePart = parts[0];
+         const timePart = parts[1] || '00:00:00';
+         const [d, m, y] = datePart.split('/');
+         const [hr, min, sec] = timePart.split(':');
+         return new Date(y, m-1, d, hr, min, sec).getTime();
+       } catch(e) { return 0; }
     }
 
     function updateMiniFeed() {
@@ -2424,7 +2477,6 @@
     function updateHomeOverview() {
       const segs = Array.isArray(window.publicSegnalazioni) ? window.publicSegnalazioni : [];
       const luoghi = Array.isArray(window.publicLuoghi) ? window.publicLuoghi : [];
-      const articoli = Array.isArray(window.publicArticoli) ? window.publicArticoli : (Array.isArray(articlesCache) ? articlesCache : []);
 
       const htmlSafe = (v) => String(v ?? "").replace(/[&<>"']/g, m => ({
         "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
@@ -2438,29 +2490,8 @@
         return { lat, lng };
       };
 
-      const getArticleDomId = (item) => {
-        const base = item.id || item.slug || item.url || item.titolo || "articolo";
-        return "article-" + String(base).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
-      };
-
       const openRecentItem = (item) => {
         if (!item) return;
-
-        if (item.__type === "articolo") {
-          location.hash = "#/articoli";
-          setTimeout(async () => {
-            try {
-              await renderArticles();
-              const el = document.getElementById(getArticleDomId(item));
-              if (el) {
-                el.scrollIntoView({ behavior: "smooth", block: "center" });
-                el.classList.add("articlePulse");
-                setTimeout(() => el.classList.remove("articlePulse"), 1600);
-              }
-            } catch(e) {}
-          }, 250);
-          return;
-        }
 
         if (item.__type === "luogo") {
           const safeKey = String(item.nome || "").toLowerCase().replace(/[^a-z0-9]/g, "-");
@@ -2481,7 +2512,9 @@
             if (mapMain) {
               mapMain.invalidateSize();
               refreshPublicMaps();
-              if (coords) mapMain.setView([coords.lat, coords.lng], 18);
+              if (coords) {
+                mapMain.setView([coords.lat, coords.lng], 18);
+              }
             }
           } catch(e) {
             console.log("Focus mappa non disponibile:", e);
@@ -2509,13 +2542,12 @@
 
       let allItems = [
         ...segs.map(x => ({...x, __type:"segnalazione"})),
-        ...luoghi.map(x => ({...x, __type:"luogo"})),
-        ...articoli.map(x => ({...x, __type:"articolo"}))
+        ...luoghi.map(x => ({...x, __type:"luogo"}))
       ];
 
       allItems.sort((a, b) => {
-        const dateA = parseDateString(a.dataStr || a.when || a.data || a.createdAt || a.created_at);
-        const dateB = parseDateString(b.dataStr || b.when || b.data || b.createdAt || b.created_at);
+        const dateA = parseDateString(a.dataStr || a.when);
+        const dateB = parseDateString(b.dataStr || b.when);
         return dateB - dateA;
       });
 
@@ -2523,15 +2555,15 @@
         if (allItems.length) {
           const latest = allItems[0];
           const title = latest.titolo || latest.nome || "Nuova attività";
-          const date = String(latest.dataStr || latest.when || latest.data || latest.createdAt || latest.created_at || "").split(",")[0];
+          const date = String(latest.dataStr || latest.when || "").split(",")[0];
           elLatest.textContent = date ? `${title} • ${date}` : title;
         } else {
-          elLatest.textContent = "Nessun aggiornamento ancora presente";
+          elLatest.textContent = "Nessun punto ancora presente";
         }
       }
 
       if (recentList) {
-        const recent = allItems.slice(0, 5);
+        const recent = allItems.slice(0, 3);
         if (!recent.length) {
           recentList.innerHTML = `<div class="homeRecentEmpty">Ancora nessun aggiornamento disponibile.</div>`;
           return;
@@ -2539,14 +2571,11 @@
 
         recentList.innerHTML = recent.map((item, index) => {
           const isSeg = item.__type === "segnalazione";
-          const isArt = item.__type === "articolo";
           const cat = item.categoria || "altro";
-          const info = isArt
-            ? { emoji: "📰" }
-            : (isSeg ? (catInfo[cat] || catInfo.altro) : (placeCatInfo[cat] || placeCatInfo.altro));
+          const info = isSeg ? (catInfo[cat] || catInfo.altro) : (placeCatInfo[cat] || placeCatInfo.altro);
           const title = item.titolo || item.nome || "Aggiornamento";
-          const date = String(item.dataStr || item.when || item.data || item.createdAt || item.created_at || "").split(",")[0] || "data non disponibile";
-          const label = isArt ? "Articolo" : (isSeg ? "Segnalazione" : "Luogo");
+          const date = String(item.dataStr || item.when || "").split(",")[0] || "data non disponibile";
+          const label = isSeg ? "Segnalazione" : "Luogo";
           return `
             <button class="homeRecentItem" type="button" data-recent-index="${index}">
               <span class="homeRecentEmoji">${info.emoji}</span>
@@ -2784,77 +2813,100 @@
        document.getElementById("placePhotoPreview").innerHTML = "";
     };
 
-
-
-
     let articlesCache = [];
 
-    function decodeHtmlEntities(text) {
-      const textarea = document.createElement("textarea");
-      textarea.innerHTML = String(text ?? "");
-      return textarea.value;
-    }
-
     function articleSafe(v) {
-      const decoded = decodeHtmlEntities(v);
-      return String(decoded ?? "").replace(/[&<>"']/g, m => ({
+      return String(v ?? "").replace(/[&<>"']/g, m => ({
         "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
       }[m]));
     }
 
-    function cleanArticlePreview(text, max = 190) {
-      const cleaned = decodeHtmlEntities(text)
-        .replace(/<[^>]*>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      return cleaned.length > max ? cleaned.slice(0, max).trim() + "..." : cleaned;
+    function getArticleLongText(a){
+      const raw = a?.contenuto || a?.testo || a?.content || a?.full_text || a?.body || a?.descrizione || "";
+      return String(raw || "").trim();
     }
 
-    function articleDomId(article) {
-      const base = article?.id || article?.slug || article?.url || article?.titolo || "articolo";
-      return "article-" + String(base)
-        .toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 80);
+    function formatArticleText(raw){
+      const safe = articleSafe(raw || "");
+      return safe
+        .split(/
+{2,}/)
+        .map(p => p.trim())
+        .filter(Boolean)
+        .map(p => `<p>${p.replace(/
+/g, '<br>')}</p>`)
+        .join("") || `<p>Nessun testo completo disponibile per questo articolo. Puoi comunque aprire la fonte originale.</p>`;
     }
 
-    async function fetchArticlesList(showError = true) {
+    async function fetchArticlesList() {
       const res = await fetch(CONFIG.telegramWorkerUrl + "/api/articoli?t=" + Date.now());
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.ok) {
-        if (showError) throw new Error(data.error || data.warning || "Errore caricamento articoli");
-        return articlesCache;
-      }
+      if (!res.ok || !data.ok) throw new Error(data.error || "Errore caricamento articoli");
       articlesCache = Array.isArray(data.articoli) ? data.articoli : [];
-      window.publicArticoli = articlesCache;
       return articlesCache;
     }
+
+    function openArticleReaderByIndex(index){
+      const a = articlesCache[index];
+      if(!a) return;
+      const titolo = a.titolo || "Articolo Voci di Cassino";
+      const data = a.dataStr || "Data non indicata";
+      const categoria = a.categoria || "Aggiornamento";
+      const img = a.immagine || "";
+      const url = a.url || "#";
+      const text = getArticleLongText(a);
+
+      document.getElementById("articleReaderTitle").textContent = titolo;
+      document.getElementById("articleReaderSub").textContent = "Lettura completa direttamente nell'app";
+      document.getElementById("articleReaderMeta").innerHTML = `
+        <span class="pill">🗓️ ${articleSafe(data)}</span>
+        <span class="pill">🏷️ ${articleSafe(categoria)}</span>
+      `;
+      document.getElementById("articleReaderHero").innerHTML = img
+        ? `<img src="${articleSafe(img)}" alt="${articleSafe(titolo)}" onerror="this.parentNode.innerHTML='<div class=\"articleReaderHeroPlaceholder\">📰</div>'">`
+        : `<div class="articleReaderHeroPlaceholder">📰</div>`;
+      document.getElementById("articleReaderContent").innerHTML = formatArticleText(text);
+      const link = document.getElementById("articleReaderOpenLink");
+      link.href = url || "#";
+      link.style.display = url ? "inline-flex" : "none";
+      const overlay = document.getElementById("articleReaderOverlay");
+      overlay.style.display = "flex";
+      overlay.setAttribute("aria-hidden", "false");
+    }
+
+    function closeArticleReader(){
+      const overlay = document.getElementById("articleReaderOverlay");
+      if(!overlay) return;
+      overlay.style.display = "none";
+      overlay.setAttribute("aria-hidden", "true");
+    }
+
+    window.openArticleReaderByIndex = openArticleReaderByIndex;
+    window.closeArticleReader = closeArticleReader;
 
     async function renderArticles() {
       const list = document.getElementById("articleList");
       if (!list) return;
+
       list.innerHTML = `<div class="newsEmpty" style="grid-column:1/-1">⏳ Caricamento articoli...</div>`;
 
       try {
         await fetchArticlesList();
       } catch (e) {
-        if (!articlesCache.length) {
-          list.innerHTML = `<div class="newsEmpty" style="grid-column:1/-1">⚠️ Non riesco a caricare gli articoli. Riprova tra poco.</div>`;
-          return;
-        }
+        list.innerHTML = `<div class="newsEmpty" style="grid-column:1/-1">⚠️ Non riesco a caricare gli articoli. Riprova tra poco.</div>`;
+        return;
       }
 
       const searchInput = document.getElementById("articleSearch");
       const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
 
-      const articoli = articlesCache.filter(a => {
-        if (!q) return true;
-        return [a.titolo, a.dataStr, a.data, a.categoria, a.descrizione, a.testo, a.excerpt, a.url]
-          .some(v => decodeHtmlEntities(v).toLowerCase().includes(q));
-      });
+      const articoli = articlesCache
+        .map((a, index) => ({...a, __index:index}))
+        .filter(a => {
+          if (!q) return true;
+          return [a.titolo, a.dataStr, a.categoria, a.descrizione, a.url, a.contenuto, a.testo, a.content]
+            .some(v => String(v || "").toLowerCase().includes(q));
+        });
 
       if (!articoli.length) {
         list.innerHTML = `
@@ -2869,19 +2921,17 @@
 
       list.innerHTML = articoli.map((a) => {
         const titolo = articleSafe(a.titolo || "Articolo Voci di Cassino");
-        const data = articleSafe(a.dataStr || a.data || a.createdAt || a.created_at || "Data non indicata");
+        const data = articleSafe(a.dataStr || "Data non indicata");
         const categoria = articleSafe(a.categoria || "Aggiornamento");
-        const descrizione = articleSafe(cleanArticlePreview(a.descrizione || a.testo || a.excerpt || ""));
-        const url = articleSafe(a.url || a.link || "#");
-        const img = articleSafe(a.immagine || a.image || a.cover || a.foto || "");
-        const id = articleDomId(a);
-
+        const descrizione = articleSafe(a.descrizione || getArticleLongText(a) || "");
+        const url = articleSafe(a.url || "#");
+        const img = articleSafe(a.immagine || "");
         const cover = img
           ? `<img class="newsCover" src="${img}" alt="${titolo}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'newsCoverPlaceholder',textContent:'📰'}))">`
           : `<div class="newsCoverPlaceholder">📰</div>`;
 
         return `
-          <article class="newsCard" id="${id}">
+          <article class="newsCard">
             ${cover}
             <div class="newsBody">
               <div class="newsMeta">
@@ -2891,7 +2941,8 @@
               <h3>${titolo}</h3>
               ${descrizione ? `<p>${descrizione}</p>` : ""}
               <div class="newsActions">
-                <a class="btn primary small" href="${url}" target="_blank" rel="noreferrer">📖 Leggi articolo</a>
+                <button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${a.__index})">📖 Leggi qui</button>
+                <a class="btn softInfo small" href="${url}" target="_blank" rel="noreferrer">🔗 Fonte</a>
                 <a class="btn ghost small" href="#/report">📣 Segnala</a>
               </div>
             </div>
@@ -2899,6 +2950,7 @@
         `;
       }).join("");
     }
+
 
     document.addEventListener("input", (e) => {
       if (e.target && e.target.id === "articleSearch") renderArticles();
@@ -2998,8 +3050,8 @@
         
         const immagini = estraiTutteLeFoto(r);
         const imagesHtml = immagini.length > 0 
-          ? `<div class="mapPopupPhotos">` + 
-            immagini.map(img => `<img src="${String(img).replace(/"/g, "&quot;")}" loading="lazy" onclick="openImage(this.src)" alt="Foto segnalazione">`).join('') + 
+          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` + 
+            immagini.map(img => `<img src="${img}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') + 
             `</div>`
           : '';
 
@@ -3054,8 +3106,8 @@
         
         const immagini = estraiTutteLeFoto(group.fotoObj);
         const imagesHtml = immagini.length > 0 
-          ? `<div class="mapPopupPhotos">` + 
-            immagini.map(img => `<img src="${String(img).replace(/"/g, "&quot;")}" loading="lazy" onclick="openImage(this.src)" alt="Foto segnalazione">`).join('') + 
+          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` + 
+            immagini.map(img => `<img src="${img}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') + 
             `</div>`
           : '';
 
