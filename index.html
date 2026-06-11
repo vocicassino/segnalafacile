@@ -2391,10 +2391,15 @@
       if (elLuoghi) elLuoghi.textContent = uniquePlaces;
       if (elPunti) elPunti.textContent = totalPoints;
 
-      let allItems = [
-        ...segs.map(x => ({...x, __type:"segnalazione"})),
-        ...luoghi.map(x => ({...x, __type:"luogo"}))
-      ];
+      const articoli = Array.isArray(window.ARTICOLI_VOCI)
+  ? window.ARTICOLI_VOCI
+  : (typeof ARTICOLI_VOCI !== "undefined" && Array.isArray(ARTICOLI_VOCI) ? ARTICOLI_VOCI : []);
+
+let allItems = [
+  ...segs.map(x => ({...x, __type:"segnalazione"})),
+  ...luoghi.map(x => ({...x, __type:"luogo"})),
+  ...articoli.map(x => ({...x, __type:"articolo"}))
+];
 
       allItems.sort((a, b) => {
         const dateA = parseDateString(a.dataStr || a.when);
