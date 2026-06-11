@@ -303,39 +303,60 @@
   }
 
   async function loadData() {
-    document.getElementById("luoghiList").innerHTML = "Estrazione dati...";
-    document.getElementById("segnalazioniList").innerHTML = "Estrazione dati...";
+    const luoghiList = document.getElementById("luoghiList");
+    const segnalazioniList = document.getElementById("segnalazioniList");
+    if (luoghiList) luoghiList.innerHTML = "Estrazione dati...";
+    if (segnalazioniList) segnalazioniList.innerHTML = "Estrazione dati...";
 
-    // Recupero Telemetria
-      try {
-        const resTel = await fetch(WORKER_URL + "/api/telemetry");
-        const dataTel = await resTel.json();
-        if (dataTel.ok && dataTel.data) {
-          document.getElementById("statVisitatori").innerText = dataTel.data.visitatori || 0;
-          document.getElementById("statInstallazioni").innerText = dataTel.data.installazioni || 0;
-        }
-      } catch(e) { console.log("Errore caricamento telemetria"); }
-    
+    // Recupero Telemetria: non deve bloccare l'admin se fallisce
+    try {
+      const resTel = await fetch(WORKER_URL + "/api/telemetry?t=" + Date.now());
+      const dataTel = await resTel.json();
+      if (dataTel.ok && dataTel.data) {
+        const v = document.getElementById("statVisitatori");
+        const i = document.getElementById("statInstallazioni");
+        if (v) v.innerText = dataTel.data.visitatori || 0;
+        if (i) i.innerText = dataTel.data.installazioni || 0;
+      }
+    } catch(e) {
+      console.log("Errore caricamento telemetria:", e);
+    }
+
+    // Dati principali: qui mostriamo l'errore vero invece del messaggio generico
     try {
       const res = await fetch(WORKER_URL + "/api/public-data?t=" + Date.now());
-      const data = await res.json();
-      
-      if (!data.ok) throw new Error("Errore caricamento dati");
-      
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; }
+      catch { throw new Error("Risposta Worker non JSON: " + text.slice(0, 160)); }
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || data.detail || ("HTTP " + res.status));
+      }
+
       allData.luoghi = data.luoghi || [];
       allData.segnalazioni = data.segnalazioni || [];
 
-      buildTimeframeOptions();
-      renderAnalytics();
+      try { buildTimeframeOptions(); } catch(e) { console.log("Errore timeframe:", e); }
+      try { renderAnalytics(); } catch(e) { console.log("Errore analytics:", e); }
 
-      renderFilters("luoghi");
-      renderFilters("segnalazioni");
-      updateListView("luoghi");
-      updateListView("segnalazioni");
-      loadArticles();
+      try { renderFilters("luoghi"); } catch(e) { console.log("Errore filtri luoghi:", e); }
+      try { renderFilters("segnalazioni"); } catch(e) { console.log("Errore filtri segnalazioni:", e); }
+      try { updateListView("luoghi"); } catch(e) { console.log("Errore lista luoghi:", e); }
+      try { updateListView("segnalazioni"); } catch(e) { console.log("Errore lista segnalazioni:", e); }
+
+      // Gli articoli sono separati: se falliscono non devono bloccare il resto dell'admin
+      try {
+        if (typeof loadArticles === "function") loadArticles();
+      } catch(e) {
+        console.log("Errore caricamento articoli:", e);
+      }
 
     } catch (e) {
-      alert("Errore di connessione all'infrastruttura.");
+      console.error("Errore infrastruttura:", e);
+      if (luoghiList) luoghiList.innerHTML = "<p style='color:#ff4d4f;'>Errore caricamento dati: " + (e.message || e) + "</p>";
+      if (segnalazioniList) segnalazioniList.innerHTML = "<p style='color:#ff4d4f;'>Errore caricamento dati: " + (e.message || e) + "</p>";
+      alert("Errore infrastruttura: " + (e.message || e));
     }
   }
 
