@@ -1100,6 +1100,14 @@
       nav.bottom a span{font-size:10px;}
     }
 
+  
+
+    /* FIX ICONE NAV E CLICK */
+    .navIco, .navIco path{ fill: currentColor !important; stroke: none !important; }
+    nav.bottom a{ pointer-events:auto; }
+    nav.bottom{ pointer-events:none; }
+    nav.bottom .inner, nav.bottom a{ pointer-events:auto; }
+
   </style>
 </head>
 
@@ -2829,12 +2837,10 @@
     function formatArticleText(raw){
       const safe = articleSafe(raw || "");
       return safe
-        .split(/
-{2,}/)
+        .split(/\n{2,}/)
         .map(p => p.trim())
         .filter(Boolean)
-        .map(p => `<p>${p.replace(/
-/g, '<br>')}</p>`)
+        .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
         .join("") || `<p>Nessun testo completo disponibile per questo articolo. Puoi comunque aprire la fonte originale.</p>`;
     }
 
