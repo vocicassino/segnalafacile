@@ -1280,7 +1280,7 @@
         <div class="heroTop">
           <div>
             <h1>La tua Città.</h1>
-            <p>Segnala problemi, scopri luoghi e leggi le recensioni della community.</p>
+            <p>Segnala problemi, scopri attività locali, offerte e servizi utili per Cassino.</p>
           </div>
           <video class="heroCover" autoplay loop muted playsinline poster="icons/hero.jpg">
             <source src="vocidicassino.mp4" type="video/mp4">
@@ -1292,7 +1292,7 @@
         </div>
 
         <div class="btnRow">
-          <a class="btn ghost" href="#/places">⭐ Scopri Luoghi</a>
+          <a class="btn ghost" href="#/attivita">🏪 Scopri attività</a>
           <a class="btn ghost" href="#/articoli">📰 Articoli</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
           <a class="btn ghost" href="#/install">📲 Come installarla</a>
@@ -1318,7 +1318,7 @@
           <div>
             <div class="homeKicker">Mappa live della città</div>
             <div class="homeMapTitle">📍 Cosa succede vicino a te</div>
-            <div class="hint" style="margin:4px 0 0">Segnalazioni recenti, luoghi utili e punti aggiornati dalla community.</div>
+            <div class="hint" style="margin:4px 0 0">Segnalazioni recenti, attività utili e punti aggiornati dalla community.</div>
           </div>
           <a class="btn small primary" href="#/map">🗺️ Apri mappa interattiva</a>
         </div>
@@ -1330,7 +1330,7 @@
             <em>Apri sulla mappa</em>
           </a>
           <a class="homeStatBox homeStatLink" href="#/places" title="Vai ai luoghi consigliati">
-            <span>⭐ Luoghi</span>
+            <span>🏪 Attività</span>
             <strong id="homeStatLuoghi">0</strong>
             <em>Vedi recensioni</em>
           </a>
@@ -1368,7 +1368,7 @@
               <div class="homeQuickRow">
                 <a class="btn primary" href="#/map">🗺️ Apri mappa interattiva</a>
                 <a class="btn ghost" href="#/report">📣 Nuova segnalazione</a>
-                <a class="btn ghost" href="#/places">⭐ Scopri luoghi</a>
+                <a class="btn ghost" href="#/attivita">🏪 Attività locali</a>
                 <a class="btn ghost" href="#/articoli">📰 Articoli</a>
               </div>
             </div>
@@ -1729,6 +1729,142 @@
       </div>
     </section>
 
+
+    <section id="view-attivita" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-weight:980;font-size:22px">🏪 Attività locali</div>
+            <div class="hint" style="margin:6px 0 0">Vetrine digitali, offerte, contatti e servizi utili per Cassino.</div>
+          </div>
+          <a class="btn primary small" href="#/area-attivita">🔐 Gestisci la tua attività</a>
+        </div>
+
+        <div style="border:1px solid rgba(25,195,125,.28);background:rgba(25,195,125,.09);border-radius:22px;padding:14px;margin-bottom:14px;">
+          <strong>Sei un’attività locale?</strong>
+          <div class="hint" style="margin-top:6px">Puoi avere una scheda su Segnala Facile con foto, descrizione, offerta, telefono, WhatsApp e posizione.</div>
+          <div class="btnRow" style="margin-top:10px">
+            <a class="btn ghost small" href="#/area-attivita">🔐 Ho già il codice</a>
+            <a class="btn primary small" href="mailto:vocidicassino@proton.me?subject=Richiesta%20scheda%20attivit%C3%A0%20Segnala%20Facile">📩 Richiedi inserimento</a>
+          </div>
+        </div>
+
+        <div class="row" style="align-items:end;margin-bottom:12px;">
+          <div>
+            <label>Cerca attività</label>
+            <input id="activitySearch" type="text" placeholder="Cerca per nome, categoria, offerta..." oninput="renderAttivita()">
+          </div>
+          <div>
+            <label>Categoria</label>
+            <select id="activityCategoryFilter" onchange="renderAttivita()">
+              <option value="">Tutte</option>
+              <option value="ristorante">🍕 Ristoranti</option>
+              <option value="bar">☕ Bar</option>
+              <option value="negozio">🛍️ Negozi</option>
+              <option value="professionista">💼 Professionisti</option>
+              <option value="palestra">🏋️ Palestre</option>
+              <option value="bb">🏨 B&B</option>
+              <option value="servizi">🧰 Servizi</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="attivita-list" class="list">
+          <div class="hint" style="text-align:center;">Caricamento attività...</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-offerte" class="grid hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-weight:980;font-size:22px">🎁 Offerte locali</div>
+            <div class="hint" style="margin:6px 0 0">Promozioni pubblicate dalle attività presenti su Segnala Facile.</div>
+          </div>
+          <a class="btn ghost small" href="#/attivita">🏪 Tutte le attività</a>
+        </div>
+        <div id="offerte-list" class="list">
+          <div class="hint" style="text-align:center;">Caricamento offerte...</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-area-attivita" class="grid hidden">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+          <div>
+            <h2 style="margin:0">🔐 Area attività</h2>
+            <div class="hint" style="margin-top:6px">Accesso riservato ai titolari già registrati su Segnala Facile.</div>
+          </div>
+          <a class="btn small ghost" href="#/attivita">← Attività</a>
+        </div>
+
+        <div id="activityLoginBox" style="margin-top:16px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.16);border-radius:22px;padding:14px;">
+          <label>Email attività</label>
+          <input id="activityLoginEmail" type="email" placeholder="email usata per la scheda">
+          <label>Codice accesso</label>
+          <input id="activityLoginCode" type="text" placeholder="es. SF-ABCDEFGH">
+          <button class="btn primary" type="button" onclick="loginAttivita()" style="width:100%;margin-top:10px;">🔓 Entra nella scheda</button>
+          <div class="hint">Il codice viene assegnato dall’amministrazione della piattaforma. Non viene mostrata nessuna identità personale del gestore di Voci di Cassino.</div>
+        </div>
+
+        <div id="activityEditorBox" class="hidden" style="margin-top:16px;border:1px solid rgba(25,195,125,.28);background:rgba(25,195,125,.08);border-radius:22px;padding:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:980;font-size:18px" id="activityEditorTitle">Scheda attività</div>
+              <div class="hint" id="activityEditorPlan" style="margin-top:4px"></div>
+            </div>
+            <button class="btn ghost small" type="button" onclick="logoutAttivita()">Esci</button>
+          </div>
+
+          <label>Descrizione</label>
+          <textarea id="activityEditDescrizione" placeholder="Descrivi la tua attività"></textarea>
+
+          <div class="row">
+            <div>
+              <label>Telefono</label>
+              <input id="activityEditTelefono" type="tel" placeholder="Telefono">
+            </div>
+            <div>
+              <label>WhatsApp</label>
+              <input id="activityEditWhatsapp" type="tel" placeholder="Numero WhatsApp">
+            </div>
+          </div>
+
+          <label>Indirizzo</label>
+          <input id="activityEditIndirizzo" type="text" placeholder="Via, numero, città">
+
+          <label>Orari</label>
+          <textarea id="activityEditOrari" placeholder="Es. Lun-Sab 09:00-13:00 / 16:00-20:00"></textarea>
+
+          <label>Offerta / promozione attiva</label>
+          <textarea id="activityEditOfferta" placeholder="Es. Sconto 10% questa settimana"></textarea>
+
+          <div class="row">
+            <div>
+              <label>Latitudine</label>
+              <input id="activityEditLat" type="text" placeholder="es. 41.492">
+            </div>
+            <div>
+              <label>Longitudine</label>
+              <input id="activityEditLng" type="text" placeholder="es. 13.831">
+            </div>
+          </div>
+
+          <label>Foto scheda</label>
+          <div class="btnRow">
+            <button class="btn ghost small" type="button" onclick="document.getElementById('activityEditPhotoInput').click()">📷 Cambia foto</button>
+            <button class="btn danger small" type="button" onclick="clearActivityEditPhotos()">Rimuovi foto selezionate</button>
+            <input id="activityEditPhotoInput" type="file" accept="image/*" multiple class="hidden">
+          </div>
+          <div id="activityEditPhotoPreview" class="gallery-grid"></div>
+
+          <button class="btn primary" type="button" onclick="saveAttivitaSelf()" style="width:100%;margin-top:18px;">💾 Salva modifiche</button>
+        </div>
+      </div>
+    </section>
+
     <section id="view-my" class="grid hidden">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
@@ -1955,8 +2091,8 @@
       <a href="#/" data-nav="home" class="active" aria-label="Home"><span class="navEmoji">🏠</span><span>Home</span></a>
       <a href="#/articoli" data-nav="articoli" aria-label="Articoli"><span class="navEmoji">📰</span><span>Articoli</span></a>
       <a href="#/report" data-nav="report" aria-label="Segnala"><span class="navEmoji">📣</span><span>Segnala</span></a>
-      <a href="#/places" data-nav="places" aria-label="Luoghi"><span class="navEmoji">⭐</span><span>Luoghi</span></a>
-      <a href="#/my" data-nav="my" aria-label="Storico"><span class="navEmoji">🗂️</span><span>Storico</span></a>
+      <a href="#/attivita" data-nav="attivita" aria-label="Attività"><span class="navEmoji">🏪</span><span>Attività</span></a>
+      <a href="#/offerte" data-nav="offerte" aria-label="Offerte"><span class="navEmoji">🎁</span><span>Offerte</span></a>
       <a href="#/map" data-nav="map" aria-label="Mappa"><span class="navEmoji">🗺️</span><span>Mappa</span></a>
     </div>
   </nav>
@@ -1978,6 +2114,7 @@
 
     window.publicSegnalazioni = [];
     window.publicLuoghi = [];
+    window.publicAttivita = [];
 
     const catInfo = { 
       verde:   { color: '#19c37d', emoji: '🌳' }, 
@@ -1992,6 +2129,11 @@
       pasticceria:{ color: '#e74c3c', emoji: '🧁' },
       bar:        { color: '#e74c3c', emoji: '🍺' },
       negozio:    { color: '#9b59b6', emoji: '🛍️' },
+      professionista:{ color: '#2d7dff', emoji: '💼' },
+      palestra:   { color: '#19c37d', emoji: '🏋️' },
+      bb:         { color: '#8e44ad', emoji: '🏨' },
+      servizi:    { color: '#2d7dff', emoji: '🧰' },
+      attivita:   { color: '#19c37d', emoji: '🏪' },
       cultura:    { color: '#f39c12', emoji: '📚' },
       monumento:  { color: '#f39c12', emoji: '🏛️' },
       natura:     { color: '#2ecc71', emoji: '☘️' },
@@ -2451,7 +2593,7 @@
     }
     document.getElementById("bannerClose").addEventListener("click", () => banner.classList.add("hidden"));
 
-    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place', 'chat', 'install', 'articoli'];
+    const views = ['home', 'report', 'success', 'my', 'map', 'contacts', 'places', 'add-place', 'chat', 'install', 'articoli', 'attivita', 'offerte', 'area-attivita'];
     function route(){
       const hash = (location.hash || "#/").replace("#/", "");
       const target = views.includes(hash) ? hash : 'home';
@@ -2462,12 +2604,15 @@
       });
       
       document.querySelectorAll("nav a[data-nav]").forEach(a => {
-        a.classList.toggle("active", a.dataset.nav === target || (target==='add-place' && a.dataset.nav==='places'));
+        a.classList.toggle("active", a.dataset.nav === target || (target==='add-place' && a.dataset.nav==='places') || (target==='area-attivita' && a.dataset.nav==='attivita'));
       });
 
       if(target === "home") renderHomeFeaturedArticles();
       if(target === "my") renderList();
       if(target === "places") renderPublicPlaces();
+      if(target === "attivita") renderAttivita();
+      if(target === "offerte") renderOfferte();
+      if(target === "area-attivita") renderActivityArea();
       if(target === "articoli") renderArticles();
       if(target === "chat") initChatLive();
       if(target === "map") { 
@@ -2530,6 +2675,7 @@
         if(data.ok) {
           window.publicSegnalazioni = data.segnalazioni || [];
           window.publicLuoghi = data.luoghi || [];
+          window.publicAttivita = data.attivita || [];
 
           const localReps = loadReports();
           let cacheChanged = false;
@@ -2570,6 +2716,8 @@
 
           refreshPublicMaps();
           if(location.hash === '#/places') renderPublicPlaces();
+          if(location.hash === '#/attivita') renderAttivita();
+          if(location.hash === '#/offerte') renderOfferte();
           if(location.hash === '#/my') renderList();
           updateMiniFeed();
           updateHomeOverview(); 
@@ -2593,7 +2741,7 @@
       const feed = document.getElementById("miniFeed");
       if (!feed) return;
       
-      let allItems = [...window.publicSegnalazioni, ...window.publicLuoghi];
+      let allItems = [...window.publicSegnalazioni, ...window.publicLuoghi, ...window.publicAttivita];
       if (allItems.length === 0) return;
       
       allItems.sort((a, b) => {
@@ -2604,12 +2752,13 @@
       
       const latest = allItems[0]; 
       const isSegnalazione = latest.titolo !== undefined;
+      const isAttivita = latest.email_gestore !== undefined || latest.piano !== undefined;
       const titolo = isSegnalazione ? latest.titolo : latest.nome;
       const cat = latest.categoria || "altro";
       
       let emoji = "🔔";
       if (isSegnalazione) emoji = (catInfo[cat] || catInfo.altro).emoji;
-      else emoji = (placeCatInfo[cat] || placeCatInfo.altro).emoji;
+      else emoji = isAttivita ? "🏪" : (placeCatInfo[cat] || placeCatInfo.altro).emoji;
 
       document.getElementById("feedIcon").innerText = emoji;
       document.getElementById("feedTitle").innerText = titolo;
@@ -2622,6 +2771,8 @@
             const lat = latest.lat || (latest.geo && latest.geo.lat);
             const lng = latest.lng || (latest.geo && latest.geo.lng);
             if(lat && lng) focusOnMap(lat, lng);
+         } else if(isAttivita) {
+            location.hash = "#/attivita";
          } else {
             const safeKey = latest.nome.toLowerCase().replace(/[^a-z0-9]/g, '-');
             openPlaceCard(safeKey);
@@ -2633,6 +2784,7 @@
     function updateHomeOverview() {
       const segs = Array.isArray(window.publicSegnalazioni) ? window.publicSegnalazioni : [];
       const luoghi = Array.isArray(window.publicLuoghi) ? window.publicLuoghi : [];
+      const attivita = Array.isArray(window.publicAttivita) ? window.publicAttivita : [];
 
       const htmlSafe = (v) => String(v ?? "").replace(/[&<>"']/g, m => ({
         "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
@@ -2648,6 +2800,11 @@
 
       const openRecentItem = (item) => {
         if (!item) return;
+
+        if (item.__type === "attivita") {
+          location.hash = "#/attivita";
+          return;
+        }
 
         if (item.__type === "luogo") {
           const safeKey = String(item.nome || "").toLowerCase().replace(/[^a-z0-9]/g, "-");
@@ -2679,7 +2836,7 @@
       };
 
       const activeSegs = segs.filter(s => s.status !== "resolved").length;
-      const uniquePlaces = new Set(luoghi.map(l => String(l.nome || "").trim().toLowerCase()).filter(Boolean)).size || luoghi.length;
+      const uniquePlaces = new Set((attivita.length ? attivita : luoghi).map(l => String(l.nome || "").trim().toLowerCase()).filter(Boolean)).size || (attivita.length ? attivita.length : luoghi.length);
       const segPoints = segs.filter(readCoords).length;
       const placePoints = new Set(
         luoghi.filter(readCoords).map(l => String(l.nome || (l.lat + "," + l.lng)).trim().toLowerCase())
@@ -2698,6 +2855,7 @@
 
       let allItems = [
         ...segs.map(x => ({...x, __type:"segnalazione"})),
+        ...attivita.map(x => ({...x, __type:"attivita"})),
         ...luoghi.map(x => ({...x, __type:"luogo"}))
       ];
 
@@ -2731,7 +2889,7 @@
           const info = isSeg ? (catInfo[cat] || catInfo.altro) : (placeCatInfo[cat] || placeCatInfo.altro);
           const title = item.titolo || item.nome || "Aggiornamento";
           const date = String(item.dataStr || item.when || "").split(",")[0] || "data non disponibile";
-          const label = isSeg ? "Segnalazione" : "Luogo";
+          const label = item.__type === "attivita" ? "Attività" : (isSeg ? "Segnalazione" : "Luogo");
           return `
             <button class="homeRecentItem" type="button" data-recent-index="${index}">
               <span class="homeRecentEmoji">${info.emoji}</span>
@@ -2968,6 +3126,216 @@
        placePhotos = [];
        document.getElementById("placePhotoPreview").innerHTML = "";
     };
+
+
+    let currentActivitySession = null;
+    let activityEditPhotos = [];
+
+    function sfSafe(v) {
+      return String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"}[m]));
+    }
+
+    function sfPhotoArray(value) {
+      if (!value) return [];
+      if (Array.isArray(value)) return value.filter(Boolean);
+      const s = String(value || "").trim();
+      if (!s) return [];
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+        if (parsed) return [String(parsed)];
+      } catch(e) {}
+      return [s];
+    }
+
+    function pianoLabel(piano) {
+      const p = String(piano || "base").toLowerCase();
+      if (p === "premium") return "🥇 Premium";
+      if (p === "plus") return "🥈 Plus";
+      return "🥉 Base";
+    }
+
+    function renderAttivita() {
+      const box = document.getElementById("attivita-list");
+      if (!box) return;
+      const q = String(document.getElementById("activitySearch")?.value || "").trim().toLowerCase();
+      const cat = String(document.getElementById("activityCategoryFilter")?.value || "").trim();
+      let items = Array.isArray(window.publicAttivita) ? [...window.publicAttivita] : [];
+      if (cat) items = items.filter(a => String(a.categoria || "") === cat);
+      if (q) items = items.filter(a => [a.nome, a.categoria, a.descrizione, a.indirizzo, a.offerta].join(" ").toLowerCase().includes(q));
+      items.sort((a,b) => (Number(b.in_evidenza||0)-Number(a.in_evidenza||0)) || String(b.piano||"").localeCompare(String(a.piano||"")) || String(a.nome||"").localeCompare(String(b.nome||"")));
+      if (!items.length) {
+        box.innerHTML = `<div class="emptyState"><div class="emptyIcon">🏪</div><p>Nessuna attività disponibile in questo momento.</p></div>`;
+        return;
+      }
+      box.innerHTML = items.map(a => {
+        const info = placeCatInfo[a.categoria] || placeCatInfo.attivita || placeCatInfo.altro;
+        const photos = sfPhotoArray(a.foto);
+        const img = photos[0] ? `<img src="${sfSafe(photos[0])}" onclick="openImage(this.src)" style="width:96px;height:96px;object-fit:cover;border-radius:18px;border:1px solid rgba(255,255,255,.14);cursor:pointer;">` : `<div style="width:96px;height:96px;border-radius:18px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:34px;background:rgba(0,0,0,.18);">${info.emoji}</div>`;
+        const maps = (a.lat && a.lng) ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lat + "," + a.lng)}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((a.indirizzo || "") + " Cassino")}`;
+        const phone = String(a.telefono || "").replace(/\s+/g, "");
+        const wa = String(a.whatsapp || a.telefono || "").replace(/\D/g, "");
+        return `
+          <div class="item" style="border-left:5px solid ${info.color};">
+            <div class="item-top">
+              ${img}
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <h3 style="margin:0;font-size:20px;">${info.emoji} ${sfSafe(a.nome)}</h3>
+                  ${Number(a.in_evidenza) ? `<span class="pill" style="border-color:#ff9f43;color:#ffcf80;">⭐ In evidenza</span>` : ``}
+                  <span class="pill">${pianoLabel(a.piano)}</span>
+                </div>
+                <div class="hint" style="margin-top:6px">${sfSafe(a.categoria || "attività")} ${a.indirizzo ? " • " + sfSafe(a.indirizzo) : ""}</div>
+                ${a.descrizione ? `<p style="white-space:pre-wrap;line-height:1.45;margin:10px 0 0;">${sfSafe(a.descrizione)}</p>` : ``}
+                ${a.orari ? `<div class="hint"><strong>🕒 Orari:</strong> ${sfSafe(a.orari)}</div>` : ``}
+                ${a.offerta ? `<div style="margin-top:10px;padding:10px;border-radius:16px;border:1px solid rgba(255,159,67,.34);background:rgba(255,159,67,.10);"><strong>🎁 Offerta:</strong><br>${sfSafe(a.offerta)}</div>` : ``}
+                <div class="btnRow">
+                  ${phone ? `<a class="btn ghost small" href="tel:${sfSafe(phone)}">📞 Chiama</a>` : ``}
+                  ${wa ? `<a class="btn ghost small" target="_blank" href="https://wa.me/39${sfSafe(wa.replace(/^39/, ""))}">💬 WhatsApp</a>` : ``}
+                  <a class="btn primary small" target="_blank" href="${maps}">🧭 Indicazioni</a>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    function renderOfferte() {
+      const box = document.getElementById("offerte-list");
+      if (!box) return;
+      const items = (Array.isArray(window.publicAttivita) ? window.publicAttivita : []).filter(a => String(a.offerta || "").trim());
+      if (!items.length) {
+        box.innerHTML = `<div class="emptyState"><div class="emptyIcon">🎁</div><p>Non ci sono offerte pubblicate in questo momento.</p><p class="hint">Quando un’attività inserisce una promozione, comparirà qui.</p></div>`;
+        return;
+      }
+      box.innerHTML = items.map(a => {
+        const info = placeCatInfo[a.categoria] || placeCatInfo.attivita || placeCatInfo.altro;
+        return `<div class="item" style="border-left:5px solid #ff9f43;">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;">
+            <div>
+              <h3 style="margin:0">🎁 ${sfSafe(a.nome)}</h3>
+              <div class="hint" style="margin-top:4px">${info.emoji} ${sfSafe(a.categoria || "attività")} • ${pianoLabel(a.piano)}</div>
+            </div>
+            ${Number(a.in_evidenza) ? `<span class="pill" style="border-color:#ff9f43;color:#ffcf80;">⭐ In evidenza</span>` : ``}
+          </div>
+          <p style="font-size:16px;line-height:1.45;white-space:pre-wrap;margin:12px 0;">${sfSafe(a.offerta)}</p>
+          <div class="btnRow">
+            <a class="btn ghost small" href="#/attivita">🏪 Vedi attività</a>
+            ${a.whatsapp || a.telefono ? `<a class="btn primary small" target="_blank" href="https://wa.me/39${sfSafe(String(a.whatsapp || a.telefono).replace(/\D/g, "").replace(/^39/, ""))}">💬 Contatta</a>` : ``}
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderActivityArea() {
+      const saved = localStorage.getItem("sf_activity_session");
+      if (saved && !currentActivitySession) {
+        try { currentActivitySession = JSON.parse(saved); } catch(e) { currentActivitySession = null; }
+      }
+      if (currentActivitySession?.attivita && currentActivitySession?.token) showActivityEditor(currentActivitySession.attivita);
+    }
+
+    async function loginAttivita() {
+      const email = document.getElementById("activityLoginEmail").value.trim();
+      const codice = document.getElementById("activityLoginCode").value.trim();
+      if (!email || !codice) return showBanner("error", "Inserisci email e codice accesso.");
+      try {
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/attivita-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, codice_accesso: codice })
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || "Accesso non valido");
+        currentActivitySession = { token: data.token, attivita: data.attivita };
+        localStorage.setItem("sf_activity_session", JSON.stringify(currentActivitySession));
+        showActivityEditor(data.attivita);
+        showBanner("success", "Accesso effettuato.");
+      } catch(e) {
+        showBanner("error", "Accesso non riuscito: " + (e.message || e));
+      }
+    }
+
+    function showActivityEditor(a) {
+      if (!a) return;
+      document.getElementById("activityLoginBox")?.classList.add("hidden");
+      document.getElementById("activityEditorBox")?.classList.remove("hidden");
+      document.getElementById("activityEditorTitle").textContent = a.nome || "Scheda attività";
+      document.getElementById("activityEditorPlan").textContent = `${pianoLabel(a.piano)} • scheda ${Number(a.attiva) === 1 ? "attiva" : "non attiva"}`;
+      document.getElementById("activityEditDescrizione").value = a.descrizione || "";
+      document.getElementById("activityEditTelefono").value = a.telefono || "";
+      document.getElementById("activityEditWhatsapp").value = a.whatsapp || "";
+      document.getElementById("activityEditIndirizzo").value = a.indirizzo || "";
+      document.getElementById("activityEditOrari").value = a.orari || "";
+      document.getElementById("activityEditOfferta").value = a.offerta || "";
+      document.getElementById("activityEditLat").value = a.lat || "";
+      document.getElementById("activityEditLng").value = a.lng || "";
+      activityEditPhotos = sfPhotoArray(a.foto);
+      renderActivityEditPhotos();
+    }
+
+    function logoutAttivita() {
+      currentActivitySession = null;
+      localStorage.removeItem("sf_activity_session");
+      document.getElementById("activityEditorBox")?.classList.add("hidden");
+      document.getElementById("activityLoginBox")?.classList.remove("hidden");
+      showBanner("info", "Sei uscito dall’area attività.");
+    }
+
+    function renderActivityEditPhotos() {
+      const box = document.getElementById("activityEditPhotoPreview");
+      if (!box) return;
+      box.innerHTML = activityEditPhotos.map(src => `<img class="gallery-img" src="${sfSafe(src.dataUrl || src)}" onclick="openImage(this.src)">`).join("");
+    }
+
+    function clearActivityEditPhotos() {
+      activityEditPhotos = [];
+      renderActivityEditPhotos();
+    }
+
+    async function saveAttivitaSelf() {
+      if (!currentActivitySession?.attivita?.id || !currentActivitySession?.token) return showBanner("error", "Devi effettuare l’accesso.");
+      const id = currentActivitySession.attivita.id;
+      const payload = {
+        descrizione: document.getElementById("activityEditDescrizione").value.trim(),
+        telefono: document.getElementById("activityEditTelefono").value.trim(),
+        whatsapp: document.getElementById("activityEditWhatsapp").value.trim(),
+        indirizzo: document.getElementById("activityEditIndirizzo").value.trim(),
+        orari: document.getElementById("activityEditOrari").value.trim(),
+        offerta: document.getElementById("activityEditOfferta").value.trim(),
+        lat: document.getElementById("activityEditLat").value.trim(),
+        lng: document.getElementById("activityEditLng").value.trim(),
+        foto: JSON.stringify(activityEditPhotos)
+      };
+      try {
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/attivita-self/" + encodeURIComponent(id), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "X-Activity-Token": currentActivitySession.token },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || "Salvataggio non riuscito");
+        currentActivitySession.attivita = data.attivita;
+        localStorage.setItem("sf_activity_session", JSON.stringify(currentActivitySession));
+        window.publicAttivita = window.publicAttivita.map(a => a.id === data.attivita.id ? data.attivita : a);
+        showActivityEditor(data.attivita);
+        renderAttivita();
+        renderOfferte();
+        showBanner("success", "Scheda aggiornata correttamente.");
+      } catch(e) {
+        showBanner("error", "Errore salvataggio: " + (e.message || e));
+      }
+    }
+
+    document.getElementById("activityEditPhotoInput")?.addEventListener("change", async (e) => {
+      for (const f of Array.from(e.target.files || [])) {
+        if (activityEditPhotos.length >= 3) { showBanner("error", "Massimo 3 foto per scheda."); break; }
+        const d = await fileToDataUrl(f);
+        activityEditPhotos.push({ dataUrl: d, name: f.name, type: f.type || "image/jpeg" });
+      }
+      renderActivityEditPhotos();
+      e.target.value = "";
+    });
 
     let articlesCache = [];
     let articleReaderCurrentImage = "";

@@ -271,6 +271,122 @@
 
 
     <div class="card">
+      <div class="section-header" onclick="toggleSection('attivitaSection', 'attivitaIcon')">
+        <h2>Gestione Attività 🏪</h2>
+        <span id="attivitaIcon" class="section-icon">▼</span>
+      </div>
+      <div id="attivitaSection" class="section-content">
+        <div style="background:#070c18;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:15px;margin-bottom:15px;">
+          <h3 id="activityAdminFormTitle" style="margin-top:0;color:#eaf0ff;">➕ Nuova attività</h3>
+          <input type="hidden" id="activityAdminId" value="">
+
+          <div class="archive-form-grid">
+            <div>
+              <label>Nome attività</label>
+              <input type="text" id="activityAdminNome" placeholder="Es. Pizzeria da Claudio">
+            </div>
+            <div>
+              <label>Categoria</label>
+              <select id="activityAdminCategoria">
+                <option value="ristorante">🍕 Ristorante</option>
+                <option value="bar">☕ Bar</option>
+                <option value="negozio">🛍️ Negozio</option>
+                <option value="professionista">💼 Professionista</option>
+                <option value="palestra">🏋️ Palestra</option>
+                <option value="bb">🏨 B&B</option>
+                <option value="servizi">🧰 Servizi</option>
+                <option value="attivita">🏪 Altro</option>
+              </select>
+            </div>
+            <div>
+              <label>Email gestore</label>
+              <input type="text" id="activityAdminEmail" placeholder="email per accesso attività">
+            </div>
+            <div>
+              <label>Codice accesso</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="text" id="activityAdminCode" placeholder="SF-ABCDEFGH" style="margin:0;">
+                <button type="button" onclick="generateActivityAdminCode()">🔑</button>
+              </div>
+            </div>
+            <div>
+              <label>Piano</label>
+              <select id="activityAdminPiano">
+                <option value="base">Base - 5€/mese</option>
+                <option value="plus">Plus - 10€/mese</option>
+                <option value="premium">Premium - 20€/mese</option>
+              </select>
+            </div>
+            <div>
+              <label>Stato scheda</label>
+              <select id="activityAdminAttiva">
+                <option value="1">✅ Attiva</option>
+                <option value="0">⛔ Non attiva</option>
+              </select>
+            </div>
+            <div>
+              <label>In evidenza</label>
+              <select id="activityAdminEvidenza">
+                <option value="0">No</option>
+                <option value="1">⭐ Sì</option>
+              </select>
+            </div>
+            <div>
+              <label>Telefono</label>
+              <input type="text" id="activityAdminTelefono" placeholder="Telefono">
+            </div>
+            <div>
+              <label>WhatsApp</label>
+              <input type="text" id="activityAdminWhatsapp" placeholder="Numero WhatsApp">
+            </div>
+            <div>
+              <label>Indirizzo</label>
+              <input type="text" id="activityAdminIndirizzo" placeholder="Via, numero, città">
+            </div>
+            <div>
+              <label>Latitudine</label>
+              <input type="text" id="activityAdminLat" placeholder="41.492">
+            </div>
+            <div>
+              <label>Longitudine</label>
+              <input type="text" id="activityAdminLng" placeholder="13.831">
+            </div>
+            <div class="full">
+              <label>Descrizione</label>
+              <textarea id="activityAdminDescrizione" placeholder="Descrizione attività"></textarea>
+            </div>
+            <div class="full">
+              <label>Orari</label>
+              <textarea id="activityAdminOrari" placeholder="Es. Lun-Sab 09:00-13:00 / 16:00-20:00"></textarea>
+            </div>
+            <div class="full">
+              <label>Offerta attiva</label>
+              <textarea id="activityAdminOfferta" placeholder="Promozione o messaggio commerciale"></textarea>
+            </div>
+            <div class="full">
+              <label>Foto attività</label>
+              <div class="photo-manager">
+                <div class="photo-manager-note">Puoi caricare fino a 3 foto. Verranno salvate su Supabase come le altre immagini dell’app.</div>
+                <button type="button" onclick="document.getElementById('activityAdminPhotoInput').click()">📷 Carica foto</button>
+                <button type="button" class="btn-danger" onclick="clearActivityAdminPhotos()">Svuota foto</button>
+                <input type="file" id="activityAdminPhotoInput" accept="image/*" multiple style="display:none" onchange="handleActivityAdminPhotoUpload(this)">
+                <div id="activityAdminPhotoPreview" class="photo-grid"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+            <button class="btn-success" onclick="saveActivityAdmin()">💾 Salva attività</button>
+            <button class="btn-secondary" onclick="clearActivityAdminForm()">🧹 Pulisci</button>
+            <button onclick="loadAttivitaAdmin()">🔄 Aggiorna lista</button>
+          </div>
+        </div>
+
+        <div id="attivitaAdminList">Caricamento attività...</div>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="section-header" onclick="toggleSection('articoliSection', 'articoliIcon')">
         <h2>Gestione Articoli 📰</h2>
         <span id="articoliIcon" class="section-icon">▼</span>
@@ -513,6 +629,9 @@
       if (sectionId === "articoliSection") {
         loadArticles();
       }
+      if (sectionId === "attivitaSection") {
+        loadAttivitaAdmin();
+      }
     }
   }
 
@@ -520,7 +639,7 @@
   const ADMIN_PIN = "2026";
   const WORKER_API_KEY = "SF-Secure-Key-2026";
   let apiKey = "";
-  let allData = { luoghi: [], segnalazioni: [], articoli: [] };
+  let allData = { luoghi: [], segnalazioni: [], articoli: [], attivita: [] };
   
   let filterLuoghi = "Tutte";
   let filterSegnalazioni = "Tutte";
@@ -534,6 +653,8 @@
   let archiveMap = null;
   let archiveMarker = null;
   let chatAdminData = [];
+  let activityAdminPhotos = [];
+  let activityAdminLoaded = false;
 
   // Parser robusto per le date
   function parseDateString(dStr) {
@@ -565,6 +686,7 @@
     loadData();
     loadArchiveData();
     loadChatAdminData();
+    loadAttivitaAdmin();
   }
 
   async function loadData() {
@@ -1093,6 +1215,230 @@
         alert("Errore: " + (result.error || "Non Autorizzato"));
       }
     } catch (e) { alert("Errore di connessione."); }
+  }
+
+
+  // ==========================================
+  // GESTIONE ATTIVITÀ COMMERCIALI
+  // ==========================================
+
+  function adminActivitySafe(v) {
+    return String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"}[m]));
+  }
+
+  function adminActivityPhotos(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.filter(Boolean);
+    const s = String(value || "").trim();
+    if (!s) return [];
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean);
+      if (parsed) return [String(parsed)];
+    } catch(e) {}
+    return [s];
+  }
+
+  function generateActivityAdminCode() {
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "SF-";
+    for (let i = 0; i < 8; i++) code += alphabet[Math.floor(Math.random() * alphabet.length)];
+    document.getElementById("activityAdminCode").value = code;
+  }
+
+  function planText(p) {
+    p = String(p || "base").toLowerCase();
+    if (p === "premium") return "🥇 Premium";
+    if (p === "plus") return "🥈 Plus";
+    return "🥉 Base";
+  }
+
+  async function loadAttivitaAdmin() {
+    const box = document.getElementById("attivitaAdminList");
+    if (box) box.innerHTML = "Caricamento attività...";
+    if (!apiKey) return;
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/attivita?t=" + Date.now(), {
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Errore caricamento attività");
+      allData.attivita = data.attivita || [];
+      activityAdminLoaded = true;
+      renderAttivitaAdmin();
+    } catch(e) {
+      if (box) box.innerHTML = `<p style="color:#ff8d8f;">Errore attività: ${adminActivitySafe(e.message || e)}</p>`;
+    }
+  }
+
+  function renderAttivitaAdmin() {
+    const box = document.getElementById("attivitaAdminList");
+    if (!box) return;
+    const items = allData.attivita || [];
+    if (!items.length) {
+      box.innerHTML = "<p style='color:#a9b6db;'>Nessuna attività registrata.</p>";
+      return;
+    }
+    box.innerHTML = items.map(a => {
+      const photos = adminActivityPhotos(a.foto);
+      const mini = photos.length ? `<div class="mini-photos">${photos.slice(0,3).map(src => `<img src="${adminActivitySafe(src)}">`).join("")}</div>` : "";
+      const stato = Number(a.attiva) === 1 ? '<span class="archive-badge ok">✅ Attiva</span>' : '<span class="archive-badge off">⛔ Non attiva</span>';
+      const evidenza = Number(a.in_evidenza) === 1 ? '<span class="archive-badge warn">⭐ Evidenza</span>' : '';
+      return `
+        <div class="list-item">
+          <div class="details">
+            <h3>🏪 ${adminActivitySafe(a.nome)}</h3>
+            <p>${stato} ${evidenza} <span class="archive-badge">${planText(a.piano)}</span> <span class="archive-badge">${adminActivitySafe(a.categoria || "attività")}</span></p>
+            <p style="margin-top:6px;">📧 ${adminActivitySafe(a.email_gestore || "email non inserita")} • 🔑 <b>${adminActivitySafe(a.codice_accesso || "codice mancante")}</b></p>
+            <p style="margin-top:6px;color:#a9b6db;">📍 ${adminActivitySafe(a.indirizzo || "indirizzo non inserito")}</p>
+            ${a.offerta ? `<p style="margin-top:6px;color:#ffcf80;">🎁 ${adminActivitySafe(a.offerta)}</p>` : ""}
+            ${mini}
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:flex-start;">
+            <button onclick="editActivityAdmin('${adminActivitySafe(a.id)}')">✏️ Modifica</button>
+            <button class="btn-danger" onclick="deleteActivityAdmin('${adminActivitySafe(a.id)}')">🗑️ Elimina</button>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  function clearActivityAdminForm() {
+    document.getElementById("activityAdminFormTitle").innerText = "➕ Nuova attività";
+    document.getElementById("activityAdminId").value = "";
+    ["Nome","Email","Code","Telefono","Whatsapp","Indirizzo","Lat","Lng"].forEach(k => {
+      const el = document.getElementById("activityAdmin" + k);
+      if (el) el.value = "";
+    });
+    document.getElementById("activityAdminCategoria").value = "ristorante";
+    document.getElementById("activityAdminPiano").value = "base";
+    document.getElementById("activityAdminAttiva").value = "1";
+    document.getElementById("activityAdminEvidenza").value = "0";
+    document.getElementById("activityAdminDescrizione").value = "";
+    document.getElementById("activityAdminOrari").value = "";
+    document.getElementById("activityAdminOfferta").value = "";
+    activityAdminPhotos = [];
+    renderActivityAdminPhotos();
+  }
+
+  function editActivityAdmin(id) {
+    const a = (allData.attivita || []).find(x => x.id === id);
+    if (!a) return alert("Attività non trovata.");
+    document.getElementById("activityAdminFormTitle").innerText = "✏️ Modifica attività";
+    document.getElementById("activityAdminId").value = a.id || "";
+    document.getElementById("activityAdminNome").value = a.nome || "";
+    document.getElementById("activityAdminCategoria").value = a.categoria || "attivita";
+    document.getElementById("activityAdminEmail").value = a.email_gestore || "";
+    document.getElementById("activityAdminCode").value = a.codice_accesso || "";
+    document.getElementById("activityAdminPiano").value = a.piano || "base";
+    document.getElementById("activityAdminAttiva").value = String(Number(a.attiva) === 1 ? 1 : 0);
+    document.getElementById("activityAdminEvidenza").value = String(Number(a.in_evidenza) === 1 ? 1 : 0);
+    document.getElementById("activityAdminTelefono").value = a.telefono || "";
+    document.getElementById("activityAdminWhatsapp").value = a.whatsapp || "";
+    document.getElementById("activityAdminIndirizzo").value = a.indirizzo || "";
+    document.getElementById("activityAdminLat").value = a.lat || "";
+    document.getElementById("activityAdminLng").value = a.lng || "";
+    document.getElementById("activityAdminDescrizione").value = a.descrizione || "";
+    document.getElementById("activityAdminOrari").value = a.orari || "";
+    document.getElementById("activityAdminOfferta").value = a.offerta || "";
+    activityAdminPhotos = adminActivityPhotos(a.foto);
+    renderActivityAdminPhotos();
+    document.getElementById("activityAdminNome").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function collectActivityAdminPayload() {
+    return {
+      nome: document.getElementById("activityAdminNome").value.trim(),
+      categoria: document.getElementById("activityAdminCategoria").value,
+      email_gestore: document.getElementById("activityAdminEmail").value.trim(),
+      codice_accesso: document.getElementById("activityAdminCode").value.trim(),
+      piano: document.getElementById("activityAdminPiano").value,
+      attiva: document.getElementById("activityAdminAttiva").value === "1",
+      in_evidenza: document.getElementById("activityAdminEvidenza").value === "1",
+      telefono: document.getElementById("activityAdminTelefono").value.trim(),
+      whatsapp: document.getElementById("activityAdminWhatsapp").value.trim(),
+      indirizzo: document.getElementById("activityAdminIndirizzo").value.trim(),
+      lat: document.getElementById("activityAdminLat").value.trim(),
+      lng: document.getElementById("activityAdminLng").value.trim(),
+      descrizione: document.getElementById("activityAdminDescrizione").value.trim(),
+      orari: document.getElementById("activityAdminOrari").value.trim(),
+      offerta: document.getElementById("activityAdminOfferta").value.trim(),
+      foto: JSON.stringify(activityAdminPhotos)
+    };
+  }
+
+  async function saveActivityAdmin() {
+    const id = document.getElementById("activityAdminId").value.trim();
+    const payload = collectActivityAdminPayload();
+    if (!payload.nome) return alert("Inserisci il nome dell’attività.");
+    if (!payload.codice_accesso) generateActivityAdminCode(), payload.codice_accesso = document.getElementById("activityAdminCode").value.trim();
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/attivita" + (id ? "/" + encodeURIComponent(id) : ""), {
+        method: id ? "PUT" : "POST",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "Errore salvataggio attività");
+      alert(id ? "Attività aggiornata." : "Attività creata. Codice: " + (result.codice_accesso || payload.codice_accesso));
+      clearActivityAdminForm();
+      await loadAttivitaAdmin();
+    } catch(e) {
+      alert("Errore: " + (e.message || e));
+    }
+  }
+
+  async function deleteActivityAdmin(id) {
+    if (!confirm("Eliminare definitivamente questa attività?")) return;
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/attivita/" + encodeURIComponent(id), {
+        method: "DELETE",
+        headers: { "X-Api-Key": apiKey }
+      });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || "Errore eliminazione");
+      await loadAttivitaAdmin();
+    } catch(e) {
+      alert("Errore: " + (e.message || e));
+    }
+  }
+
+  function renderActivityAdminPhotos() {
+    const box = document.getElementById("activityAdminPhotoPreview");
+    if (!box) return;
+    if (!activityAdminPhotos.length) {
+      box.innerHTML = `<p style="color:#a9b6db;font-size:12px;">Nessuna foto caricata.</p>`;
+      return;
+    }
+    box.innerHTML = activityAdminPhotos.map((src, i) => `
+      <div class="photo-tile">
+        <img src="${adminActivitySafe(src.dataUrl || src)}" />
+        <button type="button" onclick="removeActivityAdminPhoto(${i})">×</button>
+      </div>
+    `).join("");
+  }
+
+  function removeActivityAdminPhoto(index) {
+    activityAdminPhotos.splice(index, 1);
+    renderActivityAdminPhotos();
+  }
+
+  function clearActivityAdminPhotos() {
+    activityAdminPhotos = [];
+    renderActivityAdminPhotos();
+  }
+
+  async function handleActivityAdminPhotoUpload(input) {
+    const files = Array.from(input.files || []);
+    for (const f of files) {
+      if (activityAdminPhotos.length >= 3) {
+        alert("Massimo 3 foto per attività.");
+        break;
+      }
+      const resized = await resizeImageFile(f, 1100, 0.82);
+      activityAdminPhotos.push({ dataUrl: resized, name: f.name, type: "image/jpeg" });
+    }
+    input.value = "";
+    renderActivityAdminPhotos();
   }
 
   document.getElementById("apiKeyInput")?.addEventListener("keydown", function(e) {
@@ -1863,6 +2209,15 @@
   window.handleArticleImageUpload = handleArticleImageUpload;
   window.removeArticleImage = removeArticleImage;
   window.clearArticleUploadedImageIfUrlChanged = clearArticleUploadedImageIfUrlChanged;
+  window.loadAttivitaAdmin = loadAttivitaAdmin;
+  window.saveActivityAdmin = saveActivityAdmin;
+  window.editActivityAdmin = editActivityAdmin;
+  window.deleteActivityAdmin = deleteActivityAdmin;
+  window.clearActivityAdminForm = clearActivityAdminForm;
+  window.generateActivityAdminCode = generateActivityAdminCode;
+  window.handleActivityAdminPhotoUpload = handleActivityAdminPhotoUpload;
+  window.removeActivityAdminPhoto = removeActivityAdminPhoto;
+  window.clearActivityAdminPhotos = clearActivityAdminPhotos;
 
 
 </script>
