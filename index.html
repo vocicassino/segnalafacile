@@ -1894,8 +1894,8 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:980;font-size:18px">Mappa segnalazioni e luoghi</div>
-            <div class="hint" style="margin:6px 0 0">Dati condivisi dalla community.</div>
+            <div style="font-weight:980;font-size:18px">Mappa segnalazioni, luoghi e attività</div>
+            <div class="hint" style="margin:6px 0 0">Dati condivisi dalla community e dalle attività locali.</div>
           </div>
           <button class="btn small ghost" onclick="fetchPublicData()" type="button">🔄 Sincronizza</button>
         </div>
@@ -1914,6 +1914,11 @@
                 <option value="pasticceria">🧁 Pasticceria</option>
                 <option value="bar">🍺 Bar</option>
                 <option value="negozio">🛍️ Negozi</option>
+                <option value="professionista">💼 Professionisti</option>
+                <option value="palestra">🏋️ Palestre</option>
+                <option value="bb">🏨 B&B</option>
+                <option value="servizi">🧰 Servizi</option>
+                <option value="attivita">🏪 Altre attività</option>
                 <option value="cultura">📚 Cultura</option>
                 <option value="monumento">🏛️ Monumenti</option>
                 <option value="parco">🌳 Parchi</option>
@@ -3784,6 +3789,57 @@
         if(layerMain) L.marker([group.lat, group.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
         if(layerHome) L.marker([group.lat, group.lng], {icon}).addTo(layerHome);
         bounds.push([group.lat, group.lng]);
+      });
+
+
+
+      const mapAttivita = Array.isArray(window.publicAttivita) ? window.publicAttivita : [];
+      mapAttivita.forEach(a => {
+        const lat = parseFloat(a.lat || (a.geo && a.geo.lat));
+        const lng = parseFloat(a.lng || (a.geo && a.geo.lng));
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const cat = a.categoria || "attivita";
+        if (mapFilter !== "all" && cat !== mapFilter) return;
+
+        const info = placeCatInfo[cat] || placeCatInfo.attivita || placeCatInfo.altro;
+        const borderColor = Number(a.in_evidenza) ? '#ff9f43' : info.color;
+        const iconHtml = `<div style="background:rgba(10,16,32,.94); border:2px solid ${borderColor}; border-radius:12px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:19px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">${info.emoji}</div>`;
+        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[38,38], iconAnchor:[19,19], popupAnchor:[0,-19] });
+
+        const immagini = sfPhotoArray(a.foto);
+        const imagesHtml = immagini.length > 0
+          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` +
+            immagini.map(img => `<img src="${sfSafe(img)}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') +
+            `</div>`
+          : '';
+
+        const phone = String(a.telefono || '').replace(/\s+/g, '');
+        const wa = String(a.whatsapp || a.telefono || '').replace(/\D/g, '').replace(/^39/, '');
+        const directions = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lng)}`;
+        const badge = Number(a.in_evidenza)
+          ? `<span style="display:inline-block;margin-bottom:6px;background:rgba(255,159,67,.18);color:#ffcf80;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,159,67,.4);font-size:11px;font-weight:900;">⭐ In evidenza</span>`
+          : '';
+
+        const popupHtml = `
+          <div style="min-width:210px; max-width:270px; max-height:330px; overflow-y:auto; padding-right:5px;">
+            ${badge}
+            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${sfSafe(a.nome || 'Attività')}</b>
+            <small style="color:#a9b6db;">${sfSafe(a.categoria || 'attività')} • ${pianoLabel(a.piano)}</small>
+            ${imagesHtml}
+            ${a.indirizzo ? `<div style="margin-top:8px;font-size:12px;color:#a9b6db;">📍 ${sfSafe(a.indirizzo)}</div>` : ''}
+            ${a.offerta ? `<div style="margin-top:8px;padding:8px;border-radius:12px;border:1px solid rgba(255,159,67,.34);background:rgba(255,159,67,.10);font-size:13px;"><b>🎁 Offerta</b><br>${sfSafe(a.offerta)}</div>` : ''}
+            ${a.descrizione ? `<p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${sfSafe(a.descrizione)}</p>` : ''}
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+              ${phone ? `<a class="btn ghost small" href="tel:${sfSafe(phone)}" style="text-decoration:none; padding:8px;">📞</a>` : ''}
+              ${wa ? `<a class="btn ghost small" target="_blank" href="https://wa.me/39${sfSafe(wa)}" style="text-decoration:none; padding:8px;">💬</a>` : ''}
+              <a class="btn primary small" href="${directions}" target="_blank" style="text-decoration:none; padding:8px; flex:1;">🧭 Raggiungi</a>
+            </div>
+          </div>`;
+
+        if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
+        if(layerHome) L.marker([lat, lng], {icon}).addTo(layerHome);
+        bounds.push([lat, lng]);
       });
 
       const validBounds = bounds.filter(b => {
