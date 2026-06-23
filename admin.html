@@ -107,6 +107,12 @@
     .coord-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px; background:rgba(25,195,125,.10); border:1px solid rgba(25,195,125,.35); color:#d9fff0; font-size:12px; font-weight:800; }
     .leaflet-container { font-family: system-ui, sans-serif; }
 
+    .activity-location-box { border:1px solid rgba(45,125,255,0.28); background:rgba(45,125,255,0.08); border-radius:12px; padding:12px; margin-top:4px; }
+    .activity-location-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; }
+    .activity-location-line { color:#d9fff0; font-size:12px; font-weight:800; line-height:1.35; padding:8px 10px; border-radius:10px; background:rgba(25,195,125,.10); border:1px solid rgba(25,195,125,.24); margin-top:10px; }
+    #activityAdminMap { height:360px; width:100%; border-radius:12px; overflow:hidden; background:#07101f; border:1px solid rgba(255,255,255,.12); }
+
+
 
 
     /* MODERAZIONE CHAT LIVE */
@@ -339,17 +345,19 @@
               <label>WhatsApp</label>
               <input type="text" id="activityAdminWhatsapp" placeholder="Numero WhatsApp">
             </div>
-            <div>
-              <label>Indirizzo</label>
-              <input type="text" id="activityAdminIndirizzo" placeholder="Via, numero, città">
-            </div>
-            <div>
-              <label>Latitudine</label>
-              <input type="text" id="activityAdminLat" placeholder="41.492">
-            </div>
-            <div>
-              <label>Longitudine</label>
-              <input type="text" id="activityAdminLng" placeholder="13.831">
+            <div class="full">
+              <label>Indirizzo attività</label>
+              <div class="activity-location-box">
+                <input type="text" id="activityAdminIndirizzo" placeholder="Es. Via Roma 10, Cassino">
+                <input type="hidden" id="activityAdminLat">
+                <input type="hidden" id="activityAdminLng">
+                <div class="activity-location-actions">
+                  <button type="button" onclick="geocodeActivityAdminAddress()">🔎 Trova indirizzo</button>
+                  <button type="button" onclick="openActivityAdminMapPicker()">🗺️ Scegli punto su mappa</button>
+                  <button type="button" onclick="useActivityAdminCurrentPosition()">📍 Usa posizione attuale</button>
+                </div>
+                <div id="activityAdminLocationLine" class="activity-location-line">Nessun punto mappa selezionato.</div>
+              </div>
             </div>
             <div class="full">
               <label>Descrizione</label>
@@ -534,6 +542,24 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<div class="modal-overlay" id="activityAdminMapOverlay">
+  <div class="modal" style="max-width:760px;">
+    <h3>🗺️ Scegli posizione attività</h3>
+    <p class="archive-map-help">Cerca l’indirizzo preciso oppure clicca direttamente sulla mappa. Poi premi “Usa questa posizione”.</p>
+    <div class="archive-map-actions">
+      <input type="text" id="activityAdminMapSearch" placeholder="Es. Via Roma 10, Cassino" onkeydown="if(event.key==='Enter'){event.preventDefault(); searchActivityAdminMapAddress();}">
+      <button type="button" onclick="searchActivityAdminMapAddress()">🔎 Cerca</button>
+      <button type="button" onclick="centerActivityAdminMapCassino()">🎯 Cassino</button>
+    </div>
+    <div id="activityAdminMap"></div>
+    <div id="activityAdminMapLine" class="activity-location-line" style="margin-top:10px;">Nessun punto selezionato.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:flex-end;">
+      <button type="button" class="btn-secondary" onclick="closeActivityAdminMapPicker()">Annulla</button>
+      <button type="button" class="btn-success" onclick="useActivityAdminPickedPoint()">✅ Usa questa posizione</button>
+    </div>
   </div>
 </div>
 
@@ -1239,6 +1265,144 @@
     return [s];
   }
 
+
+  function activityAdminCoordsValid(lat, lng) {
+    const la = Number(lat), ln = Number(lng);
+    return Number.isFinite(la) && Number.isFinite(ln) && !(la === 0 && ln === 0);
+  }
+
+  function renderActivityAdminLocationLine() {
+    const line = document.getElementById("activityAdminLocationLine");
+    if (!line) return;
+    const lat = document.getElementById("activityAdminLat")?.value || "";
+    const lng = document.getElementById("activityAdminLng")?.value || "";
+    const indirizzo = document.getElementById("activityAdminIndirizzo")?.value || "";
+    if (activityAdminCoordsValid(lat, lng)) {
+      line.innerHTML = `✅ Punto mappa selezionato: <b>${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}</b>`;
+    } else if (indirizzo.trim()) {
+      line.textContent = "ℹ️ Indirizzo inserito. Premi “Trova indirizzo” oppure salva: l’app proverà a trovare il punto automaticamente.";
+    } else {
+      line.textContent = "Nessun punto mappa selezionato.";
+    }
+  }
+
+  function setActivityAdminCoords(lat, lng, label) {
+    const la = Number(lat), ln = Number(lng);
+    if (!Number.isFinite(la) || !Number.isFinite(ln)) return false;
+    document.getElementById("activityAdminLat").value = la.toFixed(6);
+    document.getElementById("activityAdminLng").value = ln.toFixed(6);
+    if (label && !document.getElementById("activityAdminIndirizzo").value.trim()) document.getElementById("activityAdminIndirizzo").value = label;
+    renderActivityAdminLocationLine();
+    return true;
+  }
+
+  function buildActivityAdminAddressQuery(q) {
+    q = String(q || "").trim();
+    if (!q) return "";
+    if (!/cassino|frosinone|italia|italy/i.test(q)) q += ", Cassino, FR, Italia";
+    return q;
+  }
+
+  async function geocodeActivityAddress(query) {
+    const q = buildActivityAdminAddressQuery(query);
+    if (!q) return null;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&q=${encodeURIComponent(q)}`;
+    const res = await fetch(url, { headers: { "Accept": "application/json" } });
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) return null;
+    return { lat: Number(data[0].lat), lng: Number(data[0].lon), label: data[0].display_name || q };
+  }
+
+  async function reverseActivityAddress(lat, lng) {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`;
+      const res = await fetch(url, { headers: { "Accept": "application/json" } });
+      const data = await res.json();
+      return data?.display_name || "";
+    } catch { return ""; }
+  }
+
+  async function geocodeActivityAdminAddress() {
+    const address = document.getElementById("activityAdminIndirizzo")?.value.trim() || "";
+    if (!address) return alert("Inserisci prima l’indirizzo dell’attività.");
+    try {
+      const pos = await geocodeActivityAddress(address);
+      if (!pos || !activityAdminCoordsValid(pos.lat, pos.lng)) return alert("Indirizzo non trovato. Prova con via, numero civico e città, oppure scegli il punto sulla mappa.");
+      setActivityAdminCoords(pos.lat, pos.lng, pos.label);
+      alert("Punto mappa trovato e collegato alla scheda.");
+    } catch(e) {
+      alert("Errore durante la ricerca dell’indirizzo. Puoi scegliere il punto manualmente sulla mappa.");
+    }
+  }
+
+  function useActivityAdminCurrentPosition() {
+    if (!navigator.geolocation) return alert("Geolocalizzazione non disponibile su questo dispositivo.");
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      setActivityAdminCoords(pos.coords.latitude, pos.coords.longitude);
+      const label = await reverseActivityAddress(pos.coords.latitude, pos.coords.longitude);
+      if (label && !document.getElementById("activityAdminIndirizzo").value.trim()) document.getElementById("activityAdminIndirizzo").value = label;
+      renderActivityAdminLocationLine();
+    }, () => alert("Non riesco a leggere la posizione. Controlla i permessi del browser."), { enableHighAccuracy: true, timeout: 12000 });
+  }
+
+  let activityAdminMap = null, activityAdminMarker = null, activityAdminPicked = null;
+
+  function openActivityAdminMapPicker() {
+    const overlay = document.getElementById("activityAdminMapOverlay");
+    overlay.style.display = "flex";
+    document.getElementById("activityAdminMapSearch").value = document.getElementById("activityAdminIndirizzo")?.value || "";
+    if (!activityAdminMap) {
+      activityAdminMap = L.map("activityAdminMap").setView([41.492, 13.831], 13);
+      const street = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", { maxZoom: 20 });
+      const hybrid = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { maxZoom: 20 });
+      street.addTo(activityAdminMap);
+      L.control.layers({ "🗺️ Strade": street, "🛰️ Satellite": hybrid }, null, { position: "bottomleft" }).addTo(activityAdminMap);
+      activityAdminMap.on("click", (e) => setActivityAdminPickedPoint(e.latlng.lat, e.latlng.lng));
+    }
+    setTimeout(() => {
+      activityAdminMap.invalidateSize();
+      const lat = document.getElementById("activityAdminLat")?.value || "";
+      const lng = document.getElementById("activityAdminLng")?.value || "";
+      if (activityAdminCoordsValid(lat, lng)) setActivityAdminPickedPoint(Number(lat), Number(lng), false);
+    }, 120);
+  }
+
+  function closeActivityAdminMapPicker() {
+    document.getElementById("activityAdminMapOverlay").style.display = "none";
+  }
+
+  function centerActivityAdminMapCassino() {
+    activityAdminMap?.setView([41.492, 13.831], 13);
+  }
+
+  function setActivityAdminPickedPoint(lat, lng, center = true, label = "") {
+    const la = Number(lat), ln = Number(lng);
+    if (!Number.isFinite(la) || !Number.isFinite(ln)) return;
+    activityAdminPicked = { lat: la, lng: ln, label };
+    document.getElementById("activityAdminMapLine").textContent = `Punto selezionato: ${la.toFixed(6)}, ${ln.toFixed(6)}`;
+    if (activityAdminMarker) activityAdminMarker.remove();
+    activityAdminMarker = L.marker([la, ln]).addTo(activityAdminMap);
+    if (center) activityAdminMap.setView([la, ln], 18);
+  }
+
+  async function searchActivityAdminMapAddress() {
+    const q = document.getElementById("activityAdminMapSearch")?.value.trim() || "";
+    if (!q) return alert("Scrivi un indirizzo da cercare.");
+    try {
+      const pos = await geocodeActivityAddress(q);
+      if (!pos || !activityAdminCoordsValid(pos.lat, pos.lng)) return alert("Indirizzo non trovato. Prova ad aggiungere Cassino e il numero civico.");
+      setActivityAdminPickedPoint(pos.lat, pos.lng, true, pos.label);
+    } catch(e) {
+      alert("Errore durante la ricerca dell’indirizzo.");
+    }
+  }
+
+  function useActivityAdminPickedPoint() {
+    if (!activityAdminPicked) return alert("Seleziona prima un punto sulla mappa.");
+    setActivityAdminCoords(activityAdminPicked.lat, activityAdminPicked.lng, activityAdminPicked.label || "");
+    closeActivityAdminMapPicker();
+  }
+
   function generateActivityAdminCode() {
     const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "SF-";
@@ -1318,6 +1482,7 @@
     document.getElementById("activityAdminOfferta").value = "";
     activityAdminPhotos = [];
     renderActivityAdminPhotos();
+    renderActivityAdminLocationLine();
   }
 
   function editActivityAdmin(id) {
@@ -1337,6 +1502,7 @@
     document.getElementById("activityAdminIndirizzo").value = a.indirizzo || "";
     document.getElementById("activityAdminLat").value = a.lat || "";
     document.getElementById("activityAdminLng").value = a.lng || "";
+    renderActivityAdminLocationLine();
     document.getElementById("activityAdminDescrizione").value = a.descrizione || "";
     document.getElementById("activityAdminOrari").value = a.orari || "";
     document.getElementById("activityAdminOfferta").value = a.offerta || "";
@@ -1368,6 +1534,15 @@
 
   async function saveActivityAdmin() {
     const id = document.getElementById("activityAdminId").value.trim();
+    const addr = document.getElementById("activityAdminIndirizzo").value.trim();
+    const latNow = document.getElementById("activityAdminLat").value.trim();
+    const lngNow = document.getElementById("activityAdminLng").value.trim();
+    if (addr && !activityAdminCoordsValid(latNow, lngNow)) {
+      try {
+        const pos = await geocodeActivityAddress(addr);
+        if (pos && activityAdminCoordsValid(pos.lat, pos.lng)) setActivityAdminCoords(pos.lat, pos.lng, pos.label);
+      } catch(e) {}
+    }
     const payload = collectActivityAdminPayload();
     if (!payload.nome) return alert("Inserisci il nome dell’attività.");
     if (!payload.codice_accesso) generateActivityAdminCode(), payload.codice_accesso = document.getElementById("activityAdminCode").value.trim();
@@ -2197,6 +2372,12 @@
     }
   }
 
+  document.getElementById("activityAdminIndirizzo")?.addEventListener("input", () => {
+    document.getElementById("activityAdminLat").value = "";
+    document.getElementById("activityAdminLng").value = "";
+    renderActivityAdminLocationLine();
+  });
+
   window.previewArticle = previewArticle;
   window.saveArticle = saveArticle;
   window.clearArticleForm = clearArticleForm;
@@ -2218,6 +2399,13 @@
   window.handleActivityAdminPhotoUpload = handleActivityAdminPhotoUpload;
   window.removeActivityAdminPhoto = removeActivityAdminPhoto;
   window.clearActivityAdminPhotos = clearActivityAdminPhotos;
+  window.geocodeActivityAdminAddress = geocodeActivityAdminAddress;
+  window.useActivityAdminCurrentPosition = useActivityAdminCurrentPosition;
+  window.openActivityAdminMapPicker = openActivityAdminMapPicker;
+  window.closeActivityAdminMapPicker = closeActivityAdminMapPicker;
+  window.searchActivityAdminMapAddress = searchActivityAdminMapAddress;
+  window.centerActivityAdminMapCassino = centerActivityAdminMapCassino;
+  window.useActivityAdminPickedPoint = useActivityAdminPickedPoint;
 
 
 </script>

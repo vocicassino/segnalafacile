@@ -1832,25 +1832,22 @@
             </div>
           </div>
 
-          <label>Indirizzo</label>
-          <input id="activityEditIndirizzo" type="text" placeholder="Via, numero, città">
+          <label>Indirizzo attività</label>
+          <input id="activityEditIndirizzo" type="text" placeholder="Es. Via Roma 10, Cassino">
+          <div class="btnRow" style="margin-top:10px">
+            <button class="btn ghost small" type="button" onclick="geocodeActivityEditAddress()">🔎 Trova indirizzo</button>
+            <button class="btn ghost small" type="button" onclick="openMapPicker('activity')">🗺️ Scegli punto su mappa</button>
+            <button class="btn ghost small" type="button" onclick="useActivityCurrentPosition()">📍 Usa posizione attuale</button>
+          </div>
+          <div class="hint" id="activityEditLocationLine" style="margin-top:8px">Nessun punto mappa selezionato.</div>
+          <input id="activityEditLat" type="hidden">
+          <input id="activityEditLng" type="hidden">
 
           <label>Orari</label>
           <textarea id="activityEditOrari" placeholder="Es. Lun-Sab 09:00-13:00 / 16:00-20:00"></textarea>
 
           <label>Offerta / promozione attiva</label>
           <textarea id="activityEditOfferta" placeholder="Es. Sconto 10% questa settimana"></textarea>
-
-          <div class="row">
-            <div>
-              <label>Latitudine</label>
-              <input id="activityEditLat" type="text" placeholder="es. 41.492">
-            </div>
-            <div>
-              <label>Longitudine</label>
-              <input id="activityEditLng" type="text" placeholder="es. 13.831">
-            </div>
-          </div>
 
           <label>Foto scheda</label>
           <div class="btnRow">
@@ -1894,8 +1891,8 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div>
-            <div style="font-weight:980;font-size:18px">Mappa segnalazioni, luoghi e attività</div>
-            <div class="hint" style="margin:6px 0 0">Dati condivisi dalla community e dalle attività locali.</div>
+            <div style="font-weight:980;font-size:18px">Mappa segnalazioni e luoghi</div>
+            <div class="hint" style="margin:6px 0 0">Dati condivisi dalla community.</div>
           </div>
           <button class="btn small ghost" onclick="fetchPublicData()" type="button">🔄 Sincronizza</button>
         </div>
@@ -1914,11 +1911,6 @@
                 <option value="pasticceria">🧁 Pasticceria</option>
                 <option value="bar">🍺 Bar</option>
                 <option value="negozio">🛍️ Negozi</option>
-                <option value="professionista">💼 Professionisti</option>
-                <option value="palestra">🏋️ Palestre</option>
-                <option value="bb">🏨 B&B</option>
-                <option value="servizi">🧰 Servizi</option>
-                <option value="attivita">🏪 Altre attività</option>
                 <option value="cultura">📚 Cultura</option>
                 <option value="monumento">🏛️ Monumenti</option>
                 <option value="parco">🌳 Parchi</option>
@@ -2052,7 +2044,14 @@
         <h3 id="mapPickerTitle">Inserisci la posizione a mano</h3>
         <button class="modalClose" id="mapPickerClose" type="button">✕</button>
       </div>
-      <div class="hint" style="margin:0">Tocca sulla mappa per piazzare il PIN. Poi premi “Usa questa posizione”.</div>
+      <div class="hint" style="margin:0">Tocca sulla mappa per piazzare il PIN oppure cerca l’indirizzo preciso. Poi premi “Usa questa posizione”.</div>
+      <div class="row" style="margin-top:10px;align-items:end;">
+        <div style="flex:1 1 320px;">
+          <label style="margin-top:0">Cerca indirizzo o attività</label>
+          <input id="mapPickerSearch" type="text" placeholder="Es. Via Roma 10, Cassino" onkeydown="if(event.key==='Enter'){event.preventDefault(); searchMapPickerAddress();}">
+        </div>
+        <button class="btn ghost" id="btnMapPickerSearch" type="button">🔎 Cerca</button>
+      </div>
       <div id="mapPicker" class="mapPickerBox"></div>
       <div class="btnRow" style="margin-top:12px">
         <button class="btn primary" id="btnUsePicked" type="button">✅ Usa questa posizione</button>
@@ -3275,6 +3274,7 @@
       document.getElementById("activityEditOfferta").value = a.offerta || "";
       document.getElementById("activityEditLat").value = a.lat || "";
       document.getElementById("activityEditLng").value = a.lng || "";
+      renderActivityEditLocationLine();
       activityEditPhotos = sfPhotoArray(a.foto);
       renderActivityEditPhotos();
     }
@@ -3301,6 +3301,19 @@
     async function saveAttivitaSelf() {
       if (!currentActivitySession?.attivita?.id || !currentActivitySession?.token) return showBanner("error", "Devi effettuare l’accesso.");
       const id = currentActivitySession.attivita.id;
+      const addressBeforeSave = document.getElementById("activityEditIndirizzo").value.trim();
+      let latBeforeSave = document.getElementById("activityEditLat").value.trim();
+      let lngBeforeSave = document.getElementById("activityEditLng").value.trim();
+      if (addressBeforeSave && !activityCoordsValid(latBeforeSave, lngBeforeSave)) {
+        try {
+          const pos = await geocodeAddress(addressBeforeSave);
+          if (pos && activityCoordsValid(pos.lat, pos.lng)) {
+            setActivityEditCoords(pos.lat, pos.lng, pos.label);
+            latBeforeSave = document.getElementById("activityEditLat").value.trim();
+            lngBeforeSave = document.getElementById("activityEditLng").value.trim();
+          }
+        } catch(e) {}
+      }
       const payload = {
         descrizione: document.getElementById("activityEditDescrizione").value.trim(),
         telefono: document.getElementById("activityEditTelefono").value.trim(),
@@ -3308,8 +3321,8 @@
         indirizzo: document.getElementById("activityEditIndirizzo").value.trim(),
         orari: document.getElementById("activityEditOrari").value.trim(),
         offerta: document.getElementById("activityEditOfferta").value.trim(),
-        lat: document.getElementById("activityEditLat").value.trim(),
-        lng: document.getElementById("activityEditLng").value.trim(),
+        lat: latBeforeSave,
+        lng: lngBeforeSave,
         foto: JSON.stringify(activityEditPhotos)
       };
       try {
@@ -3331,6 +3344,12 @@
         showBanner("error", "Errore salvataggio: " + (e.message || e));
       }
     }
+
+    document.getElementById("activityEditIndirizzo")?.addEventListener("input", () => {
+      document.getElementById("activityEditLat").value = "";
+      document.getElementById("activityEditLng").value = "";
+      renderActivityEditLocationLine();
+    });
 
     document.getElementById("activityEditPhotoInput")?.addEventListener("change", async (e) => {
       for (const f of Array.from(e.target.files || [])) {
@@ -3791,57 +3810,6 @@
         bounds.push([group.lat, group.lng]);
       });
 
-
-
-      const mapAttivita = Array.isArray(window.publicAttivita) ? window.publicAttivita : [];
-      mapAttivita.forEach(a => {
-        const lat = parseFloat(a.lat || (a.geo && a.geo.lat));
-        const lng = parseFloat(a.lng || (a.geo && a.geo.lng));
-        if (isNaN(lat) || isNaN(lng)) return;
-
-        const cat = a.categoria || "attivita";
-        if (mapFilter !== "all" && cat !== mapFilter) return;
-
-        const info = placeCatInfo[cat] || placeCatInfo.attivita || placeCatInfo.altro;
-        const borderColor = Number(a.in_evidenza) ? '#ff9f43' : info.color;
-        const iconHtml = `<div style="background:rgba(10,16,32,.94); border:2px solid ${borderColor}; border-radius:12px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:19px; box-shadow:0 8px 20px rgba(0,0,0,0.6);">${info.emoji}</div>`;
-        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[38,38], iconAnchor:[19,19], popupAnchor:[0,-19] });
-
-        const immagini = sfPhotoArray(a.foto);
-        const imagesHtml = immagini.length > 0
-          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` +
-            immagini.map(img => `<img src="${sfSafe(img)}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') +
-            `</div>`
-          : '';
-
-        const phone = String(a.telefono || '').replace(/\s+/g, '');
-        const wa = String(a.whatsapp || a.telefono || '').replace(/\D/g, '').replace(/^39/, '');
-        const directions = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lng)}`;
-        const badge = Number(a.in_evidenza)
-          ? `<span style="display:inline-block;margin-bottom:6px;background:rgba(255,159,67,.18);color:#ffcf80;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,159,67,.4);font-size:11px;font-weight:900;">⭐ In evidenza</span>`
-          : '';
-
-        const popupHtml = `
-          <div style="min-width:210px; max-width:270px; max-height:330px; overflow-y:auto; padding-right:5px;">
-            ${badge}
-            <b style="font-size:15px; display:block; margin-bottom:4px;">${info.emoji} ${sfSafe(a.nome || 'Attività')}</b>
-            <small style="color:#a9b6db;">${sfSafe(a.categoria || 'attività')} • ${pianoLabel(a.piano)}</small>
-            ${imagesHtml}
-            ${a.indirizzo ? `<div style="margin-top:8px;font-size:12px;color:#a9b6db;">📍 ${sfSafe(a.indirizzo)}</div>` : ''}
-            ${a.offerta ? `<div style="margin-top:8px;padding:8px;border-radius:12px;border:1px solid rgba(255,159,67,.34);background:rgba(255,159,67,.10);font-size:13px;"><b>🎁 Offerta</b><br>${sfSafe(a.offerta)}</div>` : ''}
-            ${a.descrizione ? `<p style="margin:10px 0; font-size:13px; line-height:1.5; white-space:pre-wrap;">${sfSafe(a.descrizione)}</p>` : ''}
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
-              ${phone ? `<a class="btn ghost small" href="tel:${sfSafe(phone)}" style="text-decoration:none; padding:8px;">📞</a>` : ''}
-              ${wa ? `<a class="btn ghost small" target="_blank" href="https://wa.me/39${sfSafe(wa)}" style="text-decoration:none; padding:8px;">💬</a>` : ''}
-              <a class="btn primary small" href="${directions}" target="_blank" style="text-decoration:none; padding:8px; flex:1;">🧭 Raggiungi</a>
-            </div>
-          </div>`;
-
-        if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
-        if(layerHome) L.marker([lat, lng], {icon}).addTo(layerHome);
-        bounds.push([lat, lng]);
-      });
-
       const validBounds = bounds.filter(b => {
         const lat = parseFloat(b[0]);
         const lng = parseFloat(b[1]);
@@ -4079,10 +4047,118 @@
       finally{ document.getElementById("btnSendPlace").disabled = false; }
     });
 
+
+    function activityCoordsValid(lat, lng) {
+      const la = Number(lat), ln = Number(lng);
+      return Number.isFinite(la) && Number.isFinite(ln) && !(la === 0 && ln === 0);
+    }
+
+    function renderActivityEditLocationLine() {
+      const line = document.getElementById("activityEditLocationLine");
+      if (!line) return;
+      const lat = document.getElementById("activityEditLat")?.value || "";
+      const lng = document.getElementById("activityEditLng")?.value || "";
+      const indirizzo = document.getElementById("activityEditIndirizzo")?.value || "";
+      if (activityCoordsValid(lat, lng)) {
+        line.innerHTML = `✅ Punto mappa selezionato: <b>${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}</b>`;
+      } else if (indirizzo.trim()) {
+        line.textContent = "ℹ️ Indirizzo inserito. Premi “Trova indirizzo” oppure salva: l’app proverà a trovare il punto automaticamente.";
+      } else {
+        line.textContent = "Nessun punto mappa selezionato.";
+      }
+    }
+
+    function setActivityEditCoords(lat, lng, label) {
+      const la = Number(lat), ln = Number(lng);
+      if (!Number.isFinite(la) || !Number.isFinite(ln)) return false;
+      const latEl = document.getElementById("activityEditLat");
+      const lngEl = document.getElementById("activityEditLng");
+      if (latEl) latEl.value = la.toFixed(6);
+      if (lngEl) lngEl.value = ln.toFixed(6);
+      if (label && !document.getElementById("activityEditIndirizzo").value.trim()) {
+        document.getElementById("activityEditIndirizzo").value = label;
+      }
+      renderActivityEditLocationLine();
+      return true;
+    }
+
+    function buildCassinoAddressQuery(q) {
+      q = String(q || "").trim();
+      if (!q) return "";
+      if (!/cassino|frosinone|italia|italy/i.test(q)) q += ", Cassino, FR, Italia";
+      return q;
+    }
+
+    async function geocodeAddress(query) {
+      const q = buildCassinoAddressQuery(query);
+      if (!q) return null;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, { headers: { "Accept": "application/json" } });
+      const data = await res.json();
+      if (!Array.isArray(data) || !data.length) return null;
+      return { lat: Number(data[0].lat), lng: Number(data[0].lon), label: data[0].display_name || q };
+    }
+
+    async function reverseGeocode(lat, lng) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`;
+        const res = await fetch(url, { headers: { "Accept": "application/json" } });
+        const data = await res.json();
+        return data?.display_name || "";
+      } catch { return ""; }
+    }
+
+    async function geocodeActivityEditAddress() {
+      const address = document.getElementById("activityEditIndirizzo")?.value.trim() || "";
+      if (!address) return showBanner("error", "Inserisci prima l’indirizzo dell’attività.");
+      showBanner("info", "Cerco l’indirizzo sulla mappa...");
+      try {
+        const pos = await geocodeAddress(address);
+        if (!pos || !activityCoordsValid(pos.lat, pos.lng)) return showBanner("error", "Indirizzo non trovato. Prova con via, numero civico e città, oppure scegli il punto sulla mappa.");
+        setActivityEditCoords(pos.lat, pos.lng, pos.label);
+        showBanner("success", "Punto mappa trovato e collegato alla scheda.");
+      } catch(e) {
+        showBanner("error", "Errore durante la ricerca dell’indirizzo. Puoi scegliere il punto manualmente sulla mappa.");
+      }
+    }
+
+    function useActivityCurrentPosition() {
+      if (!navigator.geolocation) return showBanner("error", "Geolocalizzazione non disponibile su questo dispositivo.");
+      showBanner("info", "Sto rilevando la posizione attuale...");
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        setActivityEditCoords(pos.coords.latitude, pos.coords.longitude);
+        const label = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        if (label && !document.getElementById("activityEditIndirizzo").value.trim()) document.getElementById("activityEditIndirizzo").value = label;
+        renderActivityEditLocationLine();
+        showBanner("success", "Posizione attuale collegata alla scheda.");
+      }, () => showBanner("error", "Non riesco a leggere la posizione. Controlla i permessi del browser."), { enableHighAccuracy: true, timeout: 12000 });
+    }
+
+    async function searchMapPickerAddress() {
+      const input = document.getElementById("mapPickerSearch");
+      const q = input?.value.trim() || "";
+      if (!q) return showBanner("error", "Scrivi un indirizzo da cercare.");
+      try {
+        const pos = await geocodeAddress(q);
+        if (!pos || !activityCoordsValid(pos.lat, pos.lng)) return showBanner("error", "Indirizzo non trovato. Prova ad aggiungere Cassino e il numero civico.");
+        picked = { lat: pos.lat, lng: pos.lng, label: pos.label };
+        document.getElementById("pickedLine").textContent = `Punto trovato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
+        if (pickedMarker) pickedMarker.remove();
+        pickedMarker = L.marker([picked.lat, picked.lng]).addTo(mapPicker);
+        mapPicker.setView([picked.lat, picked.lng], 18);
+      } catch(e) {
+        showBanner("error", "Errore durante la ricerca dell’indirizzo.");
+      }
+    }
+
     let mapPicker = null, picked = null, pickedMarker = null, activePickerTarget = null;
 
     function openMapPicker(target){
       activePickerTarget = target;
+      const searchInput = document.getElementById("mapPickerSearch");
+      if (searchInput) {
+        searchInput.value = target === "activity" ? (document.getElementById("activityEditIndirizzo")?.value || "") : "";
+      }
       document.getElementById("mapPickerOverlay").style.display = "flex";
       if(!mapPicker){
         mapPicker = L.map("mapPicker").setView([41.492, 13.831], 13);
@@ -4099,11 +4175,25 @@
           pickedMarker = L.marker([picked.lat, picked.lng]).addTo(mapPicker);
         });
       }
-      setTimeout(() => mapPicker.invalidateSize(), 100);
+      setTimeout(() => {
+        mapPicker.invalidateSize();
+        if (target === "activity") {
+          const lat = document.getElementById("activityEditLat")?.value || "";
+          const lng = document.getElementById("activityEditLng")?.value || "";
+          if (activityCoordsValid(lat, lng)) {
+            picked = { lat: Number(lat), lng: Number(lng) };
+            document.getElementById("pickedLine").textContent = `Punto selezionato: ${picked.lat.toFixed(6)}, ${picked.lng.toFixed(6)}`;
+            if (pickedMarker) pickedMarker.remove();
+            pickedMarker = L.marker([picked.lat, picked.lng]).addTo(mapPicker);
+            mapPicker.setView([picked.lat, picked.lng], 17);
+          }
+        }
+      }, 100);
     }
 
     document.getElementById("btnGeoPick")?.addEventListener("click", () => openMapPicker("report"));
     document.getElementById("btnPlaceGeoPick")?.addEventListener("click", () => openMapPicker("place"));
+    document.getElementById("btnMapPickerSearch")?.addEventListener("click", searchMapPickerAddress);
     document.getElementById("mapPickerClose")?.addEventListener("click", () => document.getElementById("mapPickerOverlay").style.display="none");
     document.getElementById("btnCenterCassino")?.addEventListener("click", () => mapPicker?.setView([41.492, 13.831], 13));
 
@@ -4111,6 +4201,10 @@
       if(!picked) return showBanner("error", "Seleziona un punto sulla mappa.");
       if(activePickerTarget === "report") { geo = { ...picked, mode: "pick" }; renderGeo(); }
       if(activePickerTarget === "place") { placeGeo = { ...picked }; document.getElementById("placeGeoLine").textContent = `📍 Posizione: ${placeGeo.lat.toFixed(5)}, ${placeGeo.lng.toFixed(5)}`; }
+      if(activePickerTarget === "activity") {
+        setActivityEditCoords(picked.lat, picked.lng, picked.label || "");
+        if (picked.label && !document.getElementById("activityEditIndirizzo")?.value.trim()) document.getElementById("activityEditIndirizzo").value = picked.label;
+      }
       document.getElementById("mapPickerOverlay").style.display="none";
     });
 
