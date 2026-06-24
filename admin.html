@@ -317,11 +317,65 @@
             </div>
             <div>
               <label>Piano</label>
-              <select id="activityAdminPiano">
+              <select id="activityAdminPiano" onchange="updateActivityAdminPaymentPreview()">
                 <option value="base">Base - 5€/mese</option>
                 <option value="plus">Plus - 10€/mese</option>
                 <option value="premium">Premium - 20€/mese</option>
               </select>
+            </div>
+            <div>
+              <label>Stato pagamento</label>
+              <select id="activityAdminStatoPagamento">
+                <option value="da_verificare">🟡 Da verificare</option>
+                <option value="pagato">✅ Pagato</option>
+                <option value="scaduto">⛔ Scaduto</option>
+                <option value="omaggio">🎁 Omaggio</option>
+              </select>
+            </div>
+            <div>
+              <label>Inizio abbonamento</label>
+              <input type="date" id="activityAdminStart">
+            </div>
+            <div>
+              <label>Scadenza abbonamento</label>
+              <input type="date" id="activityAdminEnd">
+            </div>
+            <div>
+              <label>Ultimo pagamento</label>
+              <input type="date" id="activityAdminUltimoPagamento">
+            </div>
+            <div>
+              <label>Metodo pagamento</label>
+              <select id="activityAdminMetodoPagamento">
+                <option value="manuale">Manuale</option>
+                <option value="contanti">Contanti</option>
+                <option value="paypal">PayPal</option>
+                <option value="satispay">Satispay</option>
+                <option value="bonifico">Bonifico</option>
+                <option value="omaggio">Omaggio</option>
+              </select>
+            </div>
+            <div>
+              <label>Link pagamento PayPal/Satispay</label>
+              <input type="text" id="activityAdminPagamentoUrl" placeholder="https://... (facoltativo)">
+            </div>
+            <div>
+              <label>Importo previsto</label>
+              <input type="text" id="activityAdminImportoPreview" readonly>
+            </div>
+            <div class="full">
+              <label>Note abbonamento</label>
+              <textarea id="activityAdminNoteAbbonamento" placeholder="Es. pagato fino al..., rinnovo da sollecitare, accordo speciale..."></textarea>
+            </div>
+            <div class="full" style="border:1px solid rgba(255,159,67,.25);background:rgba(255,159,67,.08);border-radius:12px;padding:12px;">
+              <strong>💳 Gestione rinnovi</strong>
+              <div class="photo-manager-note">Usa questi pulsanti dopo aver selezionato o creato una scheda. Il rinnovo registra anche lo storico pagamento.</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" onclick="activitySetMonthlySubscription()">📅 Imposta/Rinnova 30 giorni</button>
+                <button type="button" class="btn-success" onclick="registerActivityPaymentAdmin()">💰 Registra pagamento</button>
+                <button type="button" onclick="checkActivitySubscriptionAlerts(true)">🔔 Avviso Telegram scadenze</button>
+              </div>
+              <div id="activityPaymentHistory" class="photo-manager-note" style="margin-top:10px;">Storico pagamenti non caricato.</div>
             </div>
             <div>
               <label>Stato scheda</label>
@@ -1508,6 +1562,123 @@
     }
   }
 
+  function activityAdminDateOnly(v) {
+    const s = String(v || "").trim();
+    const m = /^(\d{4}-\d{2}-\d{2})/.exec(s);
+    return m ? m[1] : "";
+  }
+
+  function activityAdminTodayISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function activityAdminAddMonths(dateStr, months) {
+    const d = new Date((activityAdminDateOnly(dateStr) || activityAdminTodayISO()) + "T00:00:00");
+    d.setMonth(d.getMonth() + Number(months || 1));
+    return d.toISOString().slice(0, 10);
+  }
+
+  function activityAdminPlanPrice(piano) {
+    const p = String(piano || "base").toLowerCase();
+    if (p === "premium") return 20;
+    if (p === "plus") return 10;
+    return 5;
+  }
+
+  function updateActivityAdminPaymentPreview() {
+    const el = document.getElementById("activityAdminImportoPreview");
+    if (el) el.value = activityAdminPlanPrice(document.getElementById("activityAdminPiano")?.value || "base") + " €/mese";
+  }
+
+  function activityAdminSubscriptionBadge(a) {
+    const today = activityAdminTodayISO();
+    const scad = activityAdminDateOnly(a?.abbonamento_scadenza);
+    const stato = String(a?.stato_pagamento || "da_verificare");
+    if (scad && scad < today) return '<span class="archive-badge off">⛔ Abbonamento scaduto</span>';
+    if (stato === "pagato") return '<span class="archive-badge ok">💳 Pagato</span>';
+    if (stato === "omaggio") return '<span class="archive-badge ok">🎁 Omaggio</span>';
+    if (stato === "scaduto") return '<span class="archive-badge off">⛔ Scaduto</span>';
+    return '<span class="archive-badge warn">🟡 Da verificare</span>';
+  }
+
+  function activitySetMonthlySubscription() {
+    const today = activityAdminTodayISO();
+    const currentEnd = activityAdminDateOnly(document.getElementById("activityAdminEnd")?.value);
+    const baseDate = currentEnd && currentEnd >= today ? currentEnd : today;
+    document.getElementById("activityAdminStart").value = today;
+    document.getElementById("activityAdminEnd").value = activityAdminAddMonths(baseDate, 1);
+    document.getElementById("activityAdminUltimoPagamento").value = today;
+    document.getElementById("activityAdminStatoPagamento").value = "pagato";
+    document.getElementById("activityAdminAttiva").value = "1";
+    updateActivityAdminPaymentPreview();
+  }
+
+  async function registerActivityPaymentAdmin() {
+    const id = document.getElementById("activityAdminId").value.trim();
+    if (!id) return alert("Prima salva o seleziona una scheda attività, poi registra il pagamento.");
+    activitySetMonthlySubscription();
+    const payload = {
+      attivita_id: id,
+      piano: document.getElementById("activityAdminPiano").value,
+      importo: activityAdminPlanPrice(document.getElementById("activityAdminPiano").value),
+      metodo: document.getElementById("activityAdminMetodoPagamento").value,
+      periodo_da: document.getElementById("activityAdminStart").value,
+      periodo_a: document.getElementById("activityAdminEnd").value,
+      note: document.getElementById("activityAdminNoteAbbonamento").value.trim()
+    };
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/attivita-pagamenti", {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Errore registrazione pagamento");
+      alert("Pagamento registrato e abbonamento rinnovato fino al " + (data.attivita?.abbonamento_scadenza || payload.periodo_a));
+      await loadAttivitaAdmin();
+      await loadActivityPaymentsAdmin(id);
+    } catch(e) {
+      alert("Errore pagamento: " + (e.message || e));
+    }
+  }
+
+  async function loadActivityPaymentsAdmin(id) {
+    const box = document.getElementById("activityPaymentHistory");
+    if (!box || !id || !apiKey) return;
+    box.innerHTML = "Caricamento storico pagamenti...";
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/attivita-pagamenti-list", {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ attivita_id: id })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Errore storico pagamenti");
+      const list = data.pagamenti || [];
+      if (!list.length) {
+        box.innerHTML = "Nessun pagamento registrato per questa attività.";
+        return;
+      }
+      box.innerHTML = `<b>Storico pagamenti</b><br>` + list.slice(0, 8).map(p => `💶 ${adminActivitySafe(p.importo || "")}€ • ${adminActivitySafe(p.metodo || "")} • ${adminActivitySafe(p.periodo_da || "")} → ${adminActivitySafe(p.periodo_a || "")}`).join("<br>");
+    } catch(e) {
+      box.innerHTML = "Errore caricamento storico: " + adminActivitySafe(e.message || e);
+    }
+  }
+
+  async function checkActivitySubscriptionAlerts(sendTelegram) {
+    if (!apiKey) return alert("Accedi prima all’admin.");
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/attivita-scadenze?days=7" + (sendTelegram ? "&send=1" : ""), {
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Errore controllo scadenze");
+      alert(`Scadute: ${(data.expired || []).length}\nIn scadenza entro 7 giorni: ${(data.expiring || []).length}${sendTelegram ? "\nAvviso inviato su Telegram se ci sono scadenze." : ""}`);
+    } catch(e) {
+      alert("Errore scadenze: " + (e.message || e));
+    }
+  }
+
   function renderAttivitaAdmin() {
     const box = document.getElementById("attivitaAdminList");
     if (!box) return;
@@ -1527,6 +1698,7 @@
             <h3>🏪 ${adminActivitySafe(a.nome)}</h3>
             <p>${stato} ${evidenza} <span class="archive-badge">${planText(a.piano)}</span> <span class="archive-badge">${adminActivitySafe(a.categoria || "attività")}</span></p>
             <p style="margin-top:6px;">📧 ${adminActivitySafe(a.email_gestore || "email non inserita")} • 🔑 <b>${adminActivitySafe(a.codice_accesso || "codice mancante")}</b></p>
+            <p style="margin-top:6px;">${activityAdminSubscriptionBadge(a)} ${a.abbonamento_scadenza ? " • scadenza " + adminActivitySafe(a.abbonamento_scadenza) : " • nessuna scadenza"}</p>
             <p style="margin-top:6px;color:#a9b6db;">📍 ${adminActivitySafe(a.indirizzo || "indirizzo non inserito")}</p>
             ${a.offerta ? `<p style="margin-top:6px;color:#ffcf80;">🎁 ${adminActivitySafe(a.offerta)}</p>` : ""}
             ${mini}
@@ -1548,8 +1720,18 @@
     });
     document.getElementById("activityAdminCategoria").value = "ristorante";
     document.getElementById("activityAdminPiano").value = "base";
+    document.getElementById("activityAdminStatoPagamento").value = "da_verificare";
+    document.getElementById("activityAdminStart").value = "";
+    document.getElementById("activityAdminEnd").value = "";
+    document.getElementById("activityAdminUltimoPagamento").value = "";
+    document.getElementById("activityAdminMetodoPagamento").value = "manuale";
+    document.getElementById("activityAdminPagamentoUrl").value = "";
+    document.getElementById("activityAdminNoteAbbonamento").value = "";
     document.getElementById("activityAdminAttiva").value = "1";
     document.getElementById("activityAdminEvidenza").value = "0";
+    updateActivityAdminPaymentPreview();
+    const hist = document.getElementById("activityPaymentHistory");
+    if (hist) hist.innerHTML = "Storico pagamenti non caricato.";
     document.getElementById("activityAdminDescrizione").value = "";
     document.getElementById("activityAdminOrari").value = "";
     document.getElementById("activityAdminOfferta").value = "";
@@ -1568,6 +1750,15 @@
     document.getElementById("activityAdminEmail").value = a.email_gestore || "";
     document.getElementById("activityAdminCode").value = a.codice_accesso || "";
     document.getElementById("activityAdminPiano").value = a.piano || "base";
+    document.getElementById("activityAdminStatoPagamento").value = a.stato_pagamento || "da_verificare";
+    document.getElementById("activityAdminStart").value = activityAdminDateOnly(a.abbonamento_inizio);
+    document.getElementById("activityAdminEnd").value = activityAdminDateOnly(a.abbonamento_scadenza);
+    document.getElementById("activityAdminUltimoPagamento").value = activityAdminDateOnly(a.ultimo_pagamento);
+    document.getElementById("activityAdminMetodoPagamento").value = a.metodo_pagamento || "manuale";
+    document.getElementById("activityAdminPagamentoUrl").value = a.pagamento_url || "";
+    document.getElementById("activityAdminNoteAbbonamento").value = a.note_abbonamento || "";
+    updateActivityAdminPaymentPreview();
+    loadActivityPaymentsAdmin(a.id);
     document.getElementById("activityAdminAttiva").value = String(Number(a.attiva) === 1 ? 1 : 0);
     document.getElementById("activityAdminEvidenza").value = String(Number(a.in_evidenza) === 1 ? 1 : 0);
     document.getElementById("activityAdminTelefono").value = a.telefono || "";
@@ -1591,6 +1782,13 @@
       email_gestore: document.getElementById("activityAdminEmail").value.trim(),
       codice_accesso: document.getElementById("activityAdminCode").value.trim(),
       piano: document.getElementById("activityAdminPiano").value,
+      abbonamento_inizio: document.getElementById("activityAdminStart").value,
+      abbonamento_scadenza: document.getElementById("activityAdminEnd").value,
+      stato_pagamento: document.getElementById("activityAdminStatoPagamento").value,
+      ultimo_pagamento: document.getElementById("activityAdminUltimoPagamento").value,
+      metodo_pagamento: document.getElementById("activityAdminMetodoPagamento").value,
+      pagamento_url: document.getElementById("activityAdminPagamentoUrl").value.trim(),
+      note_abbonamento: document.getElementById("activityAdminNoteAbbonamento").value.trim(),
       attiva: document.getElementById("activityAdminAttiva").value === "1",
       in_evidenza: document.getElementById("activityAdminEvidenza").value === "1",
       telefono: document.getElementById("activityAdminTelefono").value.trim(),
@@ -2463,6 +2661,11 @@
   window.handleArticleImageUpload = handleArticleImageUpload;
   window.removeArticleImage = removeArticleImage;
   window.clearArticleUploadedImageIfUrlChanged = clearArticleUploadedImageIfUrlChanged;
+
+  window.activitySetMonthlySubscription = activitySetMonthlySubscription;
+  window.registerActivityPaymentAdmin = registerActivityPaymentAdmin;
+  window.checkActivitySubscriptionAlerts = checkActivitySubscriptionAlerts;
+  window.updateActivityAdminPaymentPreview = updateActivityAdminPaymentPreview;
   window.loadAttivitaAdmin = loadAttivitaAdmin;
   window.saveActivityAdmin = saveActivityAdmin;
   window.editActivityAdmin = editActivityAdmin;

@@ -2064,6 +2064,13 @@
           </select>
         </div>
       </div>
+      <label>Piano di interesse</label>
+      <select id="reqActivityPlan">
+        <option value="da_valutare">Da valutare insieme</option>
+        <option value="base">Base - 5€/mese</option>
+        <option value="plus">Plus - 10€/mese</option>
+        <option value="premium">Premium - 20€/mese</option>
+      </select>
       <label>Indirizzo preciso</label>
       <input id="reqActivityAddress" type="text" placeholder="Via, numero civico, Cassino">
       <div class="row">
@@ -3202,6 +3209,26 @@
       return [s];
     }
 
+    function publicDateOnly(v) {
+      const s = String(v || "").trim();
+      const m = /^(\d{4}-\d{2}-\d{2})/.exec(s);
+      return m ? m[1] : "";
+    }
+
+    function publicTodayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function activitySubscriptionLine(a) {
+      const scad = publicDateOnly(a?.abbonamento_scadenza);
+      const stato = String(a?.stato_pagamento || "da_verificare");
+      if (!scad) return "💳 Abbonamento da verificare";
+      if (scad < publicTodayISO()) return "⛔ Abbonamento scaduto";
+      if (stato === "pagato") return `✅ Abbonamento attivo fino al ${scad}`;
+      if (stato === "omaggio") return `🎁 Omaggio attivo fino al ${scad}`;
+      return `🟡 Abbonamento da verificare fino al ${scad}`;
+    }
+
     function pianoLabel(piano) {
       const p = String(piano || "base").toLowerCase();
       if (p === "premium") return "🥇 Premium";
@@ -3296,6 +3323,7 @@
       const payload = {
         nome: document.getElementById("reqActivityName")?.value.trim() || "",
         categoria: document.getElementById("reqActivityCategory")?.value || "attivita",
+        piano: document.getElementById("reqActivityPlan")?.value || "da_valutare",
         indirizzo: document.getElementById("reqActivityAddress")?.value.trim() || "",
         referente: document.getElementById("reqActivityRef")?.value.trim() || "",
         telefono: document.getElementById("reqActivityPhone")?.value.trim() || "",
@@ -3316,6 +3344,7 @@
         ["reqActivityName","reqActivityAddress","reqActivityRef","reqActivityPhone","reqActivityEmail","reqActivityMessage"].forEach(id => {
           const el = document.getElementById(id); if (el) el.value = "";
         });
+        const planEl = document.getElementById("reqActivityPlan"); if (planEl) planEl.value = "da_valutare";
         closeActivityRequestModal();
         showBanner("success", "Richiesta inviata correttamente su Telegram.");
       } catch(e) {
@@ -3357,7 +3386,8 @@
       document.getElementById("activityLoginBox")?.classList.add("hidden");
       document.getElementById("activityEditorBox")?.classList.remove("hidden");
       document.getElementById("activityEditorTitle").textContent = a.nome || "Scheda attività";
-      document.getElementById("activityEditorPlan").textContent = `${pianoLabel(a.piano)} • scheda ${Number(a.attiva) === 1 ? "attiva" : "non attiva"}`;
+      const payLink = a.pagamento_url ? ` • <a href="${sfSafe(a.pagamento_url)}" target="_blank" style="color:#8eb9ff;font-weight:900;">💳 Paga/Rinnova</a>` : "";
+      document.getElementById("activityEditorPlan").innerHTML = `${pianoLabel(a.piano)} • scheda ${Number(a.attiva) === 1 ? "attiva" : "non attiva"}<br>${activitySubscriptionLine(a)}${payLink}`;
       document.getElementById("activityEditDescrizione").value = a.descrizione || "";
       document.getElementById("activityEditTelefono").value = a.telefono || "";
       document.getElementById("activityEditWhatsapp").value = a.whatsapp || "";
