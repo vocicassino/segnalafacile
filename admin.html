@@ -1296,21 +1296,91 @@
     return true;
   }
 
-  function buildActivityAdminAddressQuery(q) {
-    q = String(q || "").trim();
-    if (!q) return "";
-    if (!/cassino|frosinone|italia|italy/i.test(q)) q += ", Cassino, FR, Italia";
-    return q;
+  function buildActivityAdminAddressQueries(q) {
+    const raw = String(q || "").trim().replace(/\s+/g, " ");
+    if (!raw) return [];
+
+    const queries = [];
+    const add = (v) => {
+      const x = String(v || "").trim().replace(/\s+/g, " ");
+      if (x && !queries.some(y => y.toLowerCase() === x.toLowerCase())) queries.push(x);
+    };
+
+    add(raw);
+    if (!/cassino|frosinone|fr|lazio|italia|italy/i.test(raw)) {
+      add(`${raw}, Cassino, Frosinone, Lazio, Italia`);
+      add(`${raw}, 03043 Cassino FR, Italia`);
+      add(`${raw}, Cassino, Italia`);
+    } else if (!/italia|italy/i.test(raw)) {
+      add(`${raw}, Frosinone, Lazio, Italia`);
+      add(`${raw}, Italia`);
+    }
+
+    // Alcune vie su OpenStreetMap possono essere salvate in forma abbreviata.
+    if (/benedetto\s+croce/i.test(raw)) {
+      add(raw.replace(/benedetto\s+croce/ig, "B. Croce"));
+      add("Via B. Croce, Cassino, Frosinone, Lazio, Italia");
+      add("Benedetto Croce, Cassino, Frosinone, Lazio, Italia");
+    }
+
+    return queries;
+  }
+
+  function scoreActivityGeocodeResult(item) {
+    const label = String(item?.display_name || "").toLowerCase();
+    let score = 0;
+    if (label.includes("cassino")) score += 10;
+    if (label.includes("frosinone")) score += 4;
+    if (label.includes("lazio")) score += 2;
+    if (label.includes("italia") || label.includes("italy")) score += 1;
+    if (item?.class === "highway" || item?.type === "residential" || item?.type === "road") score += 2;
+    return score;
   }
 
   async function geocodeActivityAddress(query) {
-    const q = buildActivityAdminAddressQuery(query);
-    if (!q) return null;
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&q=${encodeURIComponent(q)}`;
-    const res = await fetch(url, { headers: { "Accept": "application/json" } });
-    const data = await res.json();
-    if (!Array.isArray(data) || !data.length) return null;
-    return { lat: Number(data[0].lat), lng: Number(data[0].lon), label: data[0].display_name || q };
+    const queries = buildActivityAdminAddressQueries(query);
+    if (!queries.length) return null;
+
+    const streetOnly = String(query || "").split(",")[0].trim();
+    const requests = [];
+
+    for (const q of queries) requests.push({ mode: "q", q });
+    if (streetOnly) requests.push({ mode: "structured", street: streetOnly });
+
+    for (const req of requests) {
+      const params = new URLSearchParams();
+      params.set("format", "jsonv2");
+      params.set("limit", "5");
+      params.set("countrycodes", "it");
+      params.set("addressdetails", "1");
+      // Aiuta Nominatim a preferire la zona di Cassino senza bloccare la ricerca.
+      params.set("viewbox", "13.70,41.58,13.95,41.40");
+
+      if (req.mode === "structured") {
+        params.set("street", req.street);
+        params.set("city", "Cassino");
+        params.set("county", "Frosinone");
+        params.set("state", "Lazio");
+        params.set("country", "Italia");
+      } else {
+        params.set("q", req.q);
+      }
+
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, { headers: { "Accept": "application/json" } });
+        const data = await res.json();
+        if (!Array.isArray(data) || !data.length) continue;
+        data.sort((a, b) => scoreActivityGeocodeResult(b) - scoreActivityGeocodeResult(a));
+        const best = data[0];
+        const lat = Number(best.lat);
+        const lng = Number(best.lon);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          return { lat, lng, label: best.display_name || (req.q || req.street) };
+        }
+      } catch(e) {}
+    }
+
+    return null;
   }
 
   async function reverseActivityAddress(lat, lng) {
@@ -1327,7 +1397,10 @@
     if (!address) return alert("Inserisci prima l’indirizzo dell’attività.");
     try {
       const pos = await geocodeActivityAddress(address);
-      if (!pos || !activityAdminCoordsValid(pos.lat, pos.lng)) return alert("Indirizzo non trovato. Prova con via, numero civico e città, oppure scegli il punto sulla mappa.");
+      if (!pos || !activityAdminCoordsValid(pos.lat, pos.lng)) {
+        openActivityAdminMapPicker();
+        return alert("Indirizzo non trovato automaticamente. Ho aperto la mappa: clicca sul punto preciso dell’attività e premi ‘Usa questa posizione’.");
+      }
       setActivityAdminCoords(pos.lat, pos.lng, pos.label);
       alert("Punto mappa trovato e collegato alla scheda.");
     } catch(e) {
@@ -1390,7 +1463,7 @@
     if (!q) return alert("Scrivi un indirizzo da cercare.");
     try {
       const pos = await geocodeActivityAddress(q);
-      if (!pos || !activityAdminCoordsValid(pos.lat, pos.lng)) return alert("Indirizzo non trovato. Prova ad aggiungere Cassino e il numero civico.");
+      if (!pos || !activityAdminCoordsValid(pos.lat, pos.lng)) return alert("Indirizzo non trovato automaticamente. Clicca direttamente sulla mappa per scegliere il punto preciso.");
       setActivityAdminPickedPoint(pos.lat, pos.lng, true, pos.label);
     } catch(e) {
       alert("Errore durante la ricerca dell’indirizzo.");
