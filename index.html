@@ -1745,7 +1745,7 @@
           <div class="hint" style="margin-top:6px">Puoi avere una scheda su Segnala Facile con foto, descrizione, offerta, telefono, WhatsApp e posizione.</div>
           <div class="btnRow" style="margin-top:10px">
             <a class="btn ghost small" href="#/area-attivita">🔐 Ho già il codice</a>
-            <a class="btn primary small" href="mailto:vocidicassino@proton.me?subject=Richiesta%20scheda%20attivit%C3%A0%20Segnala%20Facile">📩 Richiedi inserimento</a>
+            <button class="btn primary small" type="button" onclick="openActivityRequestModal()">📩 Richiedi inserimento</button>
           </div>
         </div>
 
@@ -2036,6 +2036,55 @@
 
       </div>
     </section>
+  </div>
+
+  <div class="modalOverlay" id="activityRequestOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="activityRequestTitle">
+      <div class="modalHeader">
+        <h3 id="activityRequestTitle">📩 Richiedi inserimento attività</h3>
+        <button class="modalClose" type="button" onclick="closeActivityRequestModal()">✕</button>
+      </div>
+      <div class="hint" style="margin:0 0 12px;">Compila la richiesta: arriverà direttamente su Telegram al canale già configurato di Segnala Facile.</div>
+      <div class="row">
+        <div>
+          <label>Nome attività *</label>
+          <input id="reqActivityName" type="text" placeholder="Es. Pizzeria, bar, palestra...">
+        </div>
+        <div>
+          <label>Categoria</label>
+          <select id="reqActivityCategory">
+            <option value="attivita">Attività</option>
+            <option value="ristorante">Ristorante</option>
+            <option value="bar">Bar</option>
+            <option value="palestra">Palestra</option>
+            <option value="negozio">Negozio</option>
+            <option value="professionista">Professionista</option>
+            <option value="servizio">Servizio</option>
+            <option value="beb">B&B / Alloggio</option>
+          </select>
+        </div>
+      </div>
+      <label>Indirizzo preciso</label>
+      <input id="reqActivityAddress" type="text" placeholder="Via, numero civico, Cassino">
+      <div class="row">
+        <div>
+          <label>Nome referente</label>
+          <input id="reqActivityRef" type="text" placeholder="Nome di chi richiede">
+        </div>
+        <div>
+          <label>Telefono / WhatsApp *</label>
+          <input id="reqActivityPhone" type="tel" placeholder="Numero per essere ricontattato">
+        </div>
+      </div>
+      <label>Email</label>
+      <input id="reqActivityEmail" type="email" placeholder="email attività o referente">
+      <label>Messaggio</label>
+      <textarea id="reqActivityMessage" placeholder="Scrivi eventuali dettagli: offerta, orari, piano richiesto, note..."></textarea>
+      <div class="btnRow">
+        <button class="primary" type="button" onclick="sendActivityInsertionRequest()">📨 Invia richiesta</button>
+        <button class="ghost" type="button" onclick="closeActivityRequestModal()">Annulla</button>
+      </div>
+    </div>
   </div>
 
   <div class="modalOverlay" id="mapPickerOverlay" aria-hidden="true">
@@ -2718,6 +2767,7 @@
 
           if(cacheChanged) saveReports(validLocalReps);
 
+          await resolvePublicActivityCoordsForMap();
           refreshPublicMaps();
           if(location.hash === '#/places') renderPublicPlaces();
           if(location.hash === '#/attivita') renderAttivita();
@@ -3231,6 +3281,48 @@
       }).join("");
     }
 
+    function openActivityRequestModal() {
+      const overlay = document.getElementById("activityRequestOverlay");
+      if (overlay) overlay.style.display = "flex";
+      setTimeout(() => document.getElementById("reqActivityName")?.focus(), 80);
+    }
+
+    function closeActivityRequestModal() {
+      const overlay = document.getElementById("activityRequestOverlay");
+      if (overlay) overlay.style.display = "none";
+    }
+
+    async function sendActivityInsertionRequest() {
+      const payload = {
+        nome: document.getElementById("reqActivityName")?.value.trim() || "",
+        categoria: document.getElementById("reqActivityCategory")?.value || "attivita",
+        indirizzo: document.getElementById("reqActivityAddress")?.value.trim() || "",
+        referente: document.getElementById("reqActivityRef")?.value.trim() || "",
+        telefono: document.getElementById("reqActivityPhone")?.value.trim() || "",
+        email: document.getElementById("reqActivityEmail")?.value.trim() || "",
+        messaggio: document.getElementById("reqActivityMessage")?.value.trim() || "",
+        fonte: "App Segnala Facile"
+      };
+      if (!payload.nome) return showBanner("error", "Inserisci il nome dell’attività.");
+      if (!payload.telefono && !payload.email) return showBanner("error", "Inserisci almeno telefono/WhatsApp oppure email.");
+      try {
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/attivita-richiesta", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) throw new Error(data.error || "Invio non riuscito");
+        ["reqActivityName","reqActivityAddress","reqActivityRef","reqActivityPhone","reqActivityEmail","reqActivityMessage"].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = "";
+        });
+        closeActivityRequestModal();
+        showBanner("success", "Richiesta inviata correttamente su Telegram.");
+      } catch(e) {
+        showBanner("error", "Errore invio richiesta: " + (e.message || e));
+      }
+    }
+
     function renderActivityArea() {
       const saved = localStorage.getItem("sf_activity_session");
       if (saved && !currentActivitySession) {
@@ -3673,6 +3765,42 @@
       }
     }
 
+    async function resolvePublicActivityCoordsForMap() {
+      const list = Array.isArray(window.publicAttivita) ? window.publicAttivita : [];
+      if (!list.length) return;
+      const cacheKey = "sf_activity_geo_cache_v1";
+      let cache = {};
+      try { cache = JSON.parse(localStorage.getItem(cacheKey) || "{}"); } catch(e) { cache = {}; }
+      let changed = false;
+      let processed = 0;
+      for (const a of list) {
+        if (activityCoordsValid(a.lat, a.lng)) continue;
+        const address = String(a.indirizzo || "").trim();
+        if (!address) continue;
+        const k = String(a.id || a.nome || address).toLowerCase();
+        if (cache[k] && activityCoordsValid(cache[k].lat, cache[k].lng)) {
+          a.lat = cache[k].lat;
+          a.lng = cache[k].lng;
+          changed = true;
+          continue;
+        }
+        if (processed >= 3) continue;
+        processed++;
+        try {
+          const pos = await geocodeAddress(address);
+          if (pos && activityCoordsValid(pos.lat, pos.lng)) {
+            a.lat = Number(pos.lat).toFixed(6);
+            a.lng = Number(pos.lng).toFixed(6);
+            cache[k] = { lat: a.lat, lng: a.lng, label: pos.label || address, ts: Date.now() };
+            changed = true;
+          }
+        } catch(e) {}
+      }
+      if (changed) {
+        try { localStorage.setItem(cacheKey, JSON.stringify(cache)); } catch(e) {}
+      }
+    }
+
     function refreshPublicMaps() {
       if(layerMain) layerMain.clearLayers();
       if(layerHome) layerHome.clearLayers();
@@ -3808,6 +3936,50 @@
         if(layerMain) L.marker([group.lat, group.lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
         if(layerHome) L.marker([group.lat, group.lng], {icon}).addTo(layerHome);
         bounds.push([group.lat, group.lng]);
+      });
+
+
+      // Marker attività commerciali
+      const mapActivities = Array.isArray(window.publicAttivita) ? window.publicAttivita : [];
+      mapActivities.forEach(a => {
+        const lat = parseFloat(a.lat);
+        const lng = parseFloat(a.lng);
+        if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return;
+
+        const cat = a.categoria || "attivita";
+        if (mapFilter !== "all" && cat !== mapFilter && mapFilter !== "attivita") return;
+        const info = placeCatInfo[cat] || placeCatInfo.attivita || placeCatInfo.altro;
+        const isPremium = String(a.piano || "").toLowerCase() === "premium";
+        const isPlus = String(a.piano || "").toLowerCase() === "plus";
+        const border = Number(a.in_evidenza) || isPremium ? "#ff9f43" : (isPlus ? "#19c37d" : "#ffffff");
+        const iconHtml = `<div style="background:${info.color || '#19c37d'}; border:2px solid ${border}; border-radius:10px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:19px; box-shadow:0 8px 22px rgba(0,0,0,0.65);">${info.emoji || '🏪'}</div>`;
+        const icon = L.divIcon({ html: iconHtml, className: '', iconSize:[36,36], iconAnchor:[18,18], popupAnchor:[0,-18] });
+        const immagini = estraiTutteLeFoto(a);
+        const imagesHtml = immagini.length > 0
+          ? `<div style="display:flex; gap:4px; overflow-x:auto; margin-top:8px;">` +
+            immagini.map(img => `<img src="${img}" style="height:80px; width:80px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; flex-shrink:0;" onclick="openImage(this.src)">`).join('') +
+            `</div>`
+          : '';
+        const phone = String(a.telefono || "").replace(/\s+/g, "");
+        const wa = String(a.whatsapp || a.telefono || "").replace(/\D/g, "").replace(/^39/, "");
+        const popupHtml = `
+          <div style="min-width:220px; max-width:280px; max-height:340px; overflow-y:auto; padding-right:5px;">
+            <b style="font-size:16px; display:block; margin-bottom:4px;">${info.emoji || '🏪'} ${sfSafe(a.nome || 'Attività')}</b>
+            <div style="color:#a9b6db; font-size:12px; margin-bottom:6px;">${sfSafe(a.categoria || 'attività')} • ${pianoLabel(a.piano)}</div>
+            ${Number(a.in_evidenza) ? `<div style="margin-bottom:6px;"><span style="background:rgba(255,159,67,.16);color:#ffcf80;border:1px solid rgba(255,159,67,.38);padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;">⭐ In evidenza</span></div>` : ``}
+            ${imagesHtml}
+            ${a.indirizzo ? `<p style="margin:8px 0 0;font-size:13px;"><b>📍</b> ${sfSafe(a.indirizzo)}</p>` : ``}
+            ${a.offerta ? `<div style="margin-top:8px;padding:8px;border-radius:12px;border:1px solid rgba(255,159,67,.34);background:rgba(255,159,67,.10);font-size:13px;"><b>🎁 Offerta:</b><br>${sfSafe(a.offerta)}</div>` : ``}
+            ${a.descrizione ? `<p style="margin:8px 0 0;font-size:13px;line-height:1.45;white-space:pre-wrap;">${sfSafe(a.descrizione)}</p>` : ``}
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+              ${phone ? `<a class="btn ghost small" href="tel:${sfSafe(phone)}" style="padding:8px;">📞 Chiama</a>` : ``}
+              ${wa ? `<a class="btn ghost small" target="_blank" href="https://wa.me/39${sfSafe(wa)}" style="padding:8px;">💬 WhatsApp</a>` : ``}
+              <a class="btn primary small" target="_blank" href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" style="padding:8px;">🧭 Raggiungi</a>
+            </div>
+          </div>`;
+        if(layerMain) L.marker([lat, lng], {icon}).bindPopup(popupHtml).addTo(layerMain);
+        if(layerHome) L.marker([lat, lng], {icon}).addTo(layerHome);
+        bounds.push([lat, lng]);
       });
 
       const validBounds = bounds.filter(b => {
