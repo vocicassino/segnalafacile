@@ -1498,6 +1498,22 @@
       .activity-tab-panel.active{max-height:48vh;}
     }
 
+
+    /* FIX FOTO ARTICOLI PUBBLICI */
+    img.articleCover,
+    .homeFeaturedArticleThumb img,
+    .articleReaderHero img{
+      color:transparent!important;
+      font-size:0!important;
+      text-indent:-9999px!important;
+    }
+    .articleCoverPlaceholder,
+    .homeFeaturedArticleThumb.fallback{
+      color:#eaf0ff!important;
+      text-indent:0!important;
+      font-size:42px!important;
+    }
+
   </style>
 </head>
 
@@ -3947,12 +3963,37 @@
       return a?.dataStr || a?.data || a?.createdAt || a?.created_at || "Data non indicata";
     }
 
-    function articleImageUrl(a){
-      const foto = a?.foto;
-      if (typeof foto === "string" && foto.trim().startsWith("[")) {
-        try { const arr = JSON.parse(foto); if (arr && arr[0]) return arr[0]; } catch(e) {}
+    function firstArticleImageCandidate(value){
+      if (!value) return "";
+      if (Array.isArray(value)) return firstArticleImageCandidate(value[0]);
+      if (typeof value === "object") return firstArticleImageCandidate(value.url || value.src || value.dataUrl || value.publicUrl);
+      let s = String(value || "").trim();
+      if (!s) return "";
+      if (s.startsWith("[") || s.startsWith("{")) {
+        try { return firstArticleImageCandidate(JSON.parse(s)); } catch(e) {}
       }
-      return a?.immagine || a?.image || a?.cover || a?.foto || "";
+      // Accetto solo sorgenti immagine reali. Se il campo contiene testo o HTML, lo ignoro.
+      if (/^(https?:\/\/|data:image\/|blob:|\/)/i.test(s)) return s;
+      return "";
+    }
+
+    function articleImageUrl(a){
+      return firstArticleImageCandidate(
+        a?.immagine || a?.image || a?.cover || a?.foto || a?.foto_url || a?.image_url || a?.thumbnail || ""
+      );
+    }
+
+    function articleImageSrcAttr(v){
+      return String(v || "").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function handleBrokenArticleImage(img, placeholderClass = "articleCoverPlaceholder"){
+      try{
+        const div = document.createElement("div");
+        div.className = placeholderClass;
+        div.textContent = "📰";
+        img.replaceWith(div);
+      }catch(e){}
     }
 
     async function fetchArticlesList() {
@@ -4023,11 +4064,11 @@
       const categoria = a.categoria || "Aggiornamento";
       const descrizione = articleSafe(getArticlePreviewText(a, opts.previewMax || 240));
       const url = articleSafe(a.url || a.link || "#");
-      const img = articleSafe(articleImageUrl(a));
+      const img = articleImageUrl(a);
       const idx = Number.isInteger(a.__index) ? a.__index : articlesCache.indexOf(a);
       const id = articleDomId(a);
       const cover = img
-        ? `<img class="articleCover" src="${img}" alt="${titolo}" loading="lazy" onclick="openImage(this.src)" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'articleCoverPlaceholder',textContent:'📰'}))">`
+        ? `<img class="articleCover" src="${articleImageSrcAttr(img)}" alt="" loading="lazy" onclick="openImage(this.src)" onerror="handleBrokenArticleImage(this)">`
         : `<div class="articleCoverPlaceholder">📰</div>`;
 
       return `
@@ -4110,7 +4151,7 @@
       box.innerHTML = items.map((a) => {
         const img = articleImageUrl(a);
         const thumb = img
-          ? `<span class="homeFeaturedArticleThumb"><img src="${articleSafe(img)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='📰'"></span>`
+          ? `<span class="homeFeaturedArticleThumb"><img src="${articleImageSrcAttr(img)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('fallback');this.parentElement.innerHTML='📰'"></span>`
           : `<span class="homeFeaturedArticleThumb">📰</span>`;
         return `
           <button class="homeFeaturedArticleRow" type="button" onclick="openArticleReaderByIndex(${a.__index})">

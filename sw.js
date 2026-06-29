@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-home-orari-v1";
+const CACHE_NAME = "segnalafacile-foto-articoli-v1";
 const ASSETS = [
   "./",
   "./index.html",
