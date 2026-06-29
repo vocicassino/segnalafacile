@@ -3963,6 +3963,25 @@
       return a?.dataStr || a?.data || a?.createdAt || a?.created_at || "Data non indicata";
     }
 
+
+    function stablePublicStorageUrl(src){
+      const raw = String(src || "").trim();
+      if (!/^https?:\/\//i.test(raw)) return raw;
+      try{
+        const u = new URL(raw);
+        if (u.pathname.includes("/storage/v1/object/sign/")) {
+          u.pathname = u.pathname.replace("/storage/v1/object/sign/", "/storage/v1/object/public/");
+          u.search = "";
+          return u.toString();
+        }
+        if (u.pathname.includes("/storage/v1/object/public/")) {
+          ["token","expires","expiresAt","signature","X-Amz-Signature","X-Amz-Expires","X-Amz-Credential"].forEach(k => u.searchParams.delete(k));
+          return u.toString();
+        }
+        return raw;
+      }catch(e){ return raw; }
+    }
+
     function firstArticleImageCandidate(value){
       if (!value) return "";
       if (Array.isArray(value)) return firstArticleImageCandidate(value[0]);
@@ -3978,9 +3997,9 @@
     }
 
     function articleImageUrl(a){
-      return firstArticleImageCandidate(
+      return stablePublicStorageUrl(firstArticleImageCandidate(
         a?.immagine || a?.image || a?.cover || a?.foto || a?.foto_url || a?.image_url || a?.thumbnail || ""
-      );
+      ));
     }
 
     function articleImageSrcAttr(v){
