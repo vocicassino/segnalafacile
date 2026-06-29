@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-vetrina-v1";
+const CACHE_NAME = "segnalafacile-cover-public-v2";
 const ASSETS = [
   "./",
   "./index.html",
