@@ -1907,7 +1907,7 @@
   async function handleActivityAdminCoverUpload(input) {
     const f = input.files?.[0];
     if (!f) return;
-    activityAdminCover = await resizeImageFile(f, 1400, 0.86);
+    activityAdminCover = await resizeImageToDataUrl(f, 1400, 0.86);
     input.value = "";
     renderActivityAdminCover();
   }
@@ -1950,7 +1950,7 @@
         alert("Massimo 8 foto per attività.");
         break;
       }
-      const resized = await resizeImageFile(f, 1100, 0.82);
+      const resized = await resizeImageToDataUrl(f, 1100, 0.82);
       activityAdminPhotos.push({ dataUrl: resized, name: f.name, type: "image/jpeg" });
     }
     input.value = "";
