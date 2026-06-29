@@ -1380,6 +1380,124 @@
       .activity-quick-actions{grid-template-columns:repeat(2, minmax(0,1fr))}
     }
 
+
+    /* FIX HOME ARTICOLI + SCROLL ORARI SCHEDA ATTIVITÀ */
+    .homeFeaturedCompactList{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    .homeFeaturedArticleRow{
+      width:100%;
+      display:grid;
+      grid-template-columns:82px minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
+      text-align:left;
+      padding:12px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.11);
+      background:
+        radial-gradient(220px 120px at 0% 0%, rgba(45,125,255,.18), transparent 62%),
+        rgba(5,12,25,.36);
+      color:inherit;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+      margin:0;
+      cursor:pointer;
+      transition:transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+    .homeFeaturedArticleRow:hover{
+      transform:translateY(-1px);
+      background:rgba(45,125,255,.10);
+      border-color:rgba(118,184,255,.28);
+    }
+    .homeFeaturedArticleThumb{
+      width:82px;
+      height:82px;
+      border-radius:18px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, rgba(45,125,255,.20), rgba(25,195,125,.12));
+      font-size:30px;
+      border:1px solid rgba(255,255,255,.10);
+      flex:0 0 auto;
+      color:#eaf0ff;
+    }
+    .homeFeaturedArticleThumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      font-size:0;
+      color:transparent;
+    }
+    .homeFeaturedArticleText{
+      min-width:0;
+    }
+    .homeFeaturedArticleText h3{
+      margin:7px 0 5px;
+      font-size:17px;
+      line-height:1.18;
+      letter-spacing:-.18px;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .homeFeaturedArticleText p{
+      margin:0;
+      color:#c8d5ea;
+      font-size:12.5px;
+      line-height:1.42;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .homeFeaturedArticleAction{
+      min-width:44px;
+      height:44px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(45,125,255,.18);
+      border:1px solid rgba(45,125,255,.32);
+      color:#fff;
+      font-weight:980;
+      font-size:18px;
+    }
+    .activity-detail-modal{
+      overscroll-behavior:contain;
+    }
+    .activity-tab-panel.active{
+      max-height:min(430px, 44vh);
+      overflow-y:auto;
+      overscroll-behavior:contain;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(118,184,255,.55) rgba(255,255,255,.06);
+    }
+    .activity-tab-panel.active::-webkit-scrollbar{width:8px;}
+    .activity-tab-panel.active::-webkit-scrollbar-thumb{background:rgba(118,184,255,.55);border-radius:999px;}
+    .activity-tab-panel.active::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:999px;}
+    .activity-tab-panel[data-actpanel="orari"] .activity-detail-text{
+      white-space:pre-line;
+      max-height:none;
+      overflow:visible;
+      padding-bottom:20px;
+    }
+    @media(max-width:640px){
+      .homeFeaturedArticleRow{
+        grid-template-columns:72px minmax(0,1fr);
+      }
+      .homeFeaturedArticleThumb{width:72px;height:72px;border-radius:16px;}
+      .homeFeaturedArticleAction{display:none;}
+      .homeFeaturedHead .btn{width:100%;}
+      .activity-tab-panel.active{max-height:48vh;}
+    }
+
   </style>
 </head>
 
@@ -3981,43 +4099,30 @@
         box.innerHTML = "⚠️ Articoli non disponibili al momento.";
         return;
       }
+
       const items = articlesCache.slice(0,3).map((a,index)=>({...a,__index:index}));
       if(!items.length){
         box.innerHTML = "📰 Nessun articolo in evidenza disponibile.";
         return;
       }
-      const main = items[0];
-      const mainImg = articleImageUrl(main);
-      const mainCover = mainImg
-        ? `<img class="homeFeaturedMainImg" src="${articleSafe(mainImg)}" onclick="openImage(this.src)" alt="${articleSafe(main.titolo || 'Articolo')}" loading="lazy">`
-        : `<div class="homeFeaturedPlaceholder">📰</div>`;
-      const side = items.slice(1).map((a) => {
-        const img = articleImageUrl(a);
-        const thumb = img ? `<img src="${articleSafe(img)}" alt="${articleSafe(a.titolo || 'Articolo')}">` : `<div class="homeFeaturedMiniIcon">📰</div>`;
-        return `<button class="homeFeaturedMini" type="button" onclick="openArticleReaderByIndex(${a.__index})">
-          ${thumb}
-          <span>${categoryBadgeHtml(a.categoria || 'Aggiornamento')}<strong>${articleSafe(a.titolo || 'Articolo Voci di Cassino')}</strong></span>
-        </button>`;
-      }).join("");
 
-      box.className = "homeFeaturedGrid";
-      box.innerHTML = `
-        <div class="homeFeaturedMain">
-          ${mainCover}
-          <div class="homeFeaturedMainBody">
-            <div>${categoryBadgeHtml(main.categoria || 'Aggiornamento')}</div>
-            <h3>${articleSafe(main.titolo || 'Articolo Voci di Cassino')}</h3>
-            <p>${articleSafe(getArticlePreviewText(main, 260) || 'Apri la lettura completa per leggere l’aggiornamento.')}</p>
-            <div class="articleCardActions">
-              <button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${main.__index})">📖 Leggi in app</button>
-              <a class="btn ghost small" href="#/articoli">📰 Tutti gli articoli</a>
-            </div>
-          </div>
-        </div>
-        <div class="homeFeaturedSide">
-          ${side || `<div class="homeFeaturedEmpty">Altri articoli compariranno qui.</div>`}
-        </div>
-      `;
+      box.className = "homeFeaturedCompactList";
+      box.innerHTML = items.map((a) => {
+        const img = articleImageUrl(a);
+        const thumb = img
+          ? `<span class="homeFeaturedArticleThumb"><img src="${articleSafe(img)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='📰'"></span>`
+          : `<span class="homeFeaturedArticleThumb">📰</span>`;
+        return `
+          <button class="homeFeaturedArticleRow" type="button" onclick="openArticleReaderByIndex(${a.__index})">
+            ${thumb}
+            <span class="homeFeaturedArticleText">
+              ${categoryBadgeHtml(a.categoria || 'Aggiornamento')}
+              <h3>${articleSafe(a.titolo || 'Articolo Voci di Cassino')}</h3>
+              <p>${articleSafe(getArticlePreviewText(a, 150) || 'Apri la lettura completa per leggere l’aggiornamento.')}</p>
+            </span>
+            <span class="homeFeaturedArticleAction">›</span>
+          </button>`;
+      }).join("");
     }
     document.addEventListener("input", (e) => {
       if (e.target && e.target.id === "articleSearch") renderArticles();
