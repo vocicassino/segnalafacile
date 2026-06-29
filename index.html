@@ -1257,6 +1257,129 @@
       nav.bottom a span:last-child{font-size:9.3px!important;}
     }
 
+
+    /* SCHEDE VETRINA ATTIVITÀ - stile premium */
+    .activity-card-lite{
+      overflow:hidden;
+      border-left:0 !important;
+      padding:0;
+      background:
+        radial-gradient(300px 130px at 20% 0%, rgba(45,125,255,.22), transparent 62%),
+        radial-gradient(300px 130px at 100% 0%, rgba(25,195,125,.16), transparent 58%),
+        rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:26px;
+      box-shadow:0 18px 42px rgba(0,0,0,.30);
+    }
+    .activity-lite-top{
+      display:grid;
+      grid-template-columns:108px 1fr;
+      gap:14px;
+      padding:16px;
+      align-items:start;
+    }
+    .activity-lite-cover{
+      width:108px;height:108px;border-radius:22px;object-fit:cover;
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:0 14px 28px rgba(0,0,0,.32);
+      background:rgba(0,0,0,.18);
+      display:flex;align-items:center;justify-content:center;font-size:38px;
+      flex:0 0 auto;
+    }
+    .activity-lite-title{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .activity-lite-title h3{margin:0;font-size:21px;line-height:1.12}
+    .activity-lite-promo{
+      margin-top:10px;padding:10px 12px;border-radius:18px;
+      border:1px solid rgba(255,159,67,.35);background:rgba(255,159,67,.10);
+      color:#fff;line-height:1.35;
+    }
+    .activity-lite-actions{padding:0 16px 16px;display:flex;gap:9px;flex-wrap:wrap}
+    .activity-detail-overlay{
+      position:fixed;inset:0;z-index:100000;display:none;
+      background:rgba(0,0,0,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+      padding:14px;align-items:center;justify-content:center;
+    }
+    .activity-detail-modal{
+      width:min(760px,100%);max-height:92vh;overflow:auto;
+      background:
+        radial-gradient(520px 220px at 18% 0%, rgba(45,125,255,.22), transparent 60%),
+        radial-gradient(460px 220px at 95% 10%, rgba(25,195,125,.16), transparent 58%),
+        linear-gradient(145deg, rgba(15,31,56,.97), rgba(6,10,20,.97));
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:30px;box-shadow:0 34px 90px rgba(0,0,0,.65);
+      overflow:hidden;position:relative;
+    }
+    .activity-detail-close{
+      position:absolute;right:14px;top:14px;z-index:3;
+      border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.45);
+      color:#fff;border-radius:16px;min-height:42px;padding:9px 12px;margin:0;
+    }
+    .activity-hero{
+      min-height:240px;position:relative;background-size:cover;background-position:center;
+      display:flex;align-items:flex-end;padding:18px;
+    }
+    .activity-hero::before{
+      content:"";position:absolute;inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.12), rgba(6,10,20,.92));
+    }
+    .activity-hero-content{position:relative;z-index:1;width:100%}
+    .activity-detail-title{font-size:30px;font-weight:980;line-height:1.05;margin:0 0 6px;letter-spacing:-.45px}
+    .activity-rating{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:#ffcf5a;font-weight:950}
+    .activity-address{color:#dbe7ff;font-size:14px;margin-top:7px;display:flex;gap:8px;align-items:flex-start}
+    .activity-quick-actions{
+      display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:9px;
+      padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.16);
+    }
+    .activity-quick-actions a,.activity-quick-actions button{
+      min-height:64px;border-radius:20px;display:flex;flex-direction:column;gap:6px;
+      align-items:center;justify-content:center;text-align:center;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+      color:#eaf0ff;text-decoration:none;font-weight:950;font-size:12px;margin:0;
+    }
+    .activity-quick-actions .ico{font-size:22px}
+    .activity-tabs{
+      display:flex;gap:6px;padding:12px 16px 0;background:rgba(0,0,0,.08);
+    }
+    .activity-tab{
+      flex:1;border-radius:16px 16px 0 0;border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);color:#a9b6db;margin:0;min-height:44px;
+    }
+    .activity-tab.active{background:rgba(45,125,255,.18);color:#fff;border-color:rgba(45,125,255,.38)}
+    .activity-tab-panel{padding:16px;display:none}
+    .activity-tab-panel.active{display:block}
+    .activity-detail-text{
+      line-height:1.55;font-size:15px;white-space:pre-wrap;color:#eaf0ff;
+      background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.10);
+      border-radius:22px;padding:14px;
+    }
+    .activity-gallery{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px;
+    }
+    .activity-gallery img{
+      width:100%;height:105px;object-fit:cover;border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 24px rgba(0,0,0,.24);cursor:pointer;
+    }
+    .activity-offer-box{
+      border:1px solid rgba(255,159,67,.40);background:
+        radial-gradient(240px 120px at 15% 0%, rgba(255,159,67,.22), transparent 60%),
+        rgba(255,159,67,.10);
+      border-radius:24px;padding:16px;line-height:1.45;
+    }
+    .activity-offer-title{font-size:20px;font-weight:980;margin-bottom:7px;color:#ffcf80}
+    .activity-premium-badge{
+      display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:8px 11px;
+      background:rgba(255,207,90,.14);border:1px solid rgba(255,207,90,.38);color:#ffdd7a;
+      font-size:12px;font-weight:980;
+    }
+    @media(max-width:620px){
+      .activity-lite-top{grid-template-columns:86px 1fr}
+      .activity-lite-cover{width:86px;height:86px;border-radius:18px}
+      .activity-hero{min-height:205px}
+      .activity-detail-title{font-size:25px}
+      .activity-quick-actions{grid-template-columns:repeat(2, minmax(0,1fr))}
+    }
+
   </style>
 </head>
 
@@ -1849,6 +1972,13 @@
           <label>Offerta / promozione attiva</label>
           <textarea id="activityEditOfferta" placeholder="Es. Sconto 10% questa settimana"></textarea>
 
+          <label>Titolo offerta</label>
+          <input type="text" id="activityEditTitoloOfferta" placeholder="Es. Offerta del mese" />
+          <label>Foto copertina</label>
+          <input type="file" id="activityEditCoverInput" accept="image/*" onchange="handleActivityCoverUpload(event)" />
+          <div id="activityEditCoverPreview" class="preview" style="display:flex;"></div>
+
+
           <label>Foto scheda</label>
           <div class="btnRow">
             <button class="btn ghost small" type="button" onclick="document.getElementById('activityEditPhotoInput').click()">📷 Cambia foto</button>
@@ -2143,6 +2273,13 @@
           <button class="btn ghost" id="articleReaderReportBtn" type="button">📣 Invia una segnalazione</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="activity-detail-overlay" id="activityDetailOverlay" onclick="if(event.target.id==='activityDetailOverlay') closeActivityDetail()">
+    <div class="activity-detail-modal" id="activityDetailModal">
+      <button class="activity-detail-close" onclick="closeActivityDetail()">✕</button>
+      <div id="activityDetailContent"></div>
     </div>
   </div>
 
@@ -3236,6 +3373,107 @@
       return "🥉 Base";
     }
 
+
+    function activityCover(a) {
+      const cover = String(a.foto_copertina || "").trim();
+      if (cover) return cover;
+      const arr = sfPhotoArray(a.galleria_foto || a.foto);
+      return arr[0]?.dataUrl || arr[0] || "";
+    }
+
+    function activityGallery(a) {
+      const gallery = sfPhotoArray(a.galleria_foto);
+      const old = sfPhotoArray(a.foto);
+      const cover = activityCover(a);
+      const final = [];
+      if (cover) final.push(cover);
+      [...gallery, ...old].forEach(x => {
+        const src = x?.dataUrl || x;
+        if (src && !final.includes(src)) final.push(src);
+      });
+      return final.slice(0, 10);
+    }
+
+    function activityStars(a) {
+      const rating = Math.max(0, Math.min(5, Number(a.rating || 0)));
+      if (!rating) return "";
+      const full = Math.round(rating);
+      const stars = "★".repeat(full) + "☆".repeat(Math.max(0, 5-full));
+      const n = Number(a.numero_recensioni || 0);
+      return `<span>${stars}</span>${n ? `<span style="color:#dbe7ff">(${n})</span>` : ``}`;
+    }
+
+    function activityOfferTitle(a) {
+      return String(a.titolo_offerta || "").trim() || "Offerta del mese";
+    }
+
+    let currentActivityDetailId = null;
+    function openActivityDetail(id, tab = "descrizione") {
+      const a = (window.publicAttivita || []).find(x => String(x.id) === String(id));
+      if (!a) return showBanner("error", "Scheda attività non trovata.");
+      currentActivityDetailId = id;
+      const info = placeCatInfo[a.categoria] || placeCatInfo.attivita || placeCatInfo.altro;
+      const cover = activityCover(a);
+      const gallery = activityGallery(a);
+      const maps = (a.lat && a.lng) ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lat + "," + a.lng)}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((a.indirizzo || "") + " Cassino")}`;
+      const phone = String(a.telefono || "").replace(/\s+/g, "");
+      const wa = String(a.whatsapp || a.telefono || "").replace(/\D/g, "").replace(/^39/, "");
+      const ratingLine = activityStars(a);
+      const offerta = String(a.testo_offerta || a.offerta || "").trim();
+      const descr = String(a.descrizione || "").trim() || "Descrizione non ancora disponibile.";
+      const heroBg = cover ? `background-image:url('${sfSafe(cover)}')` : `background:linear-gradient(135deg, rgba(45,125,255,.35), rgba(25,195,125,.18));`;
+      document.getElementById("activityDetailContent").innerHTML = `
+        <div class="activity-hero" style="${heroBg}">
+          <div class="activity-hero-content">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px;">
+              <span class="activity-premium-badge">${pianoLabel(a.piano)}</span>
+              ${Number(a.in_evidenza) ? `<span class="activity-premium-badge">⭐ In evidenza</span>` : ``}
+            </div>
+            <h2 class="activity-detail-title">${info.emoji} ${sfSafe(a.nome)}</h2>
+            ${ratingLine ? `<div class="activity-rating">${ratingLine}</div>` : ``}
+            <div class="activity-address">📍 <span>${sfSafe(a.indirizzo || "Indirizzo non indicato")}</span></div>
+          </div>
+        </div>
+        <div class="activity-quick-actions">
+          ${phone ? `<a href="tel:${sfSafe(phone)}"><span class="ico">📞</span><span>Telefono</span></a>` : `<button disabled><span class="ico">📞</span><span>Telefono</span></button>`}
+          ${wa ? `<a target="_blank" href="https://wa.me/39${sfSafe(wa)}"><span class="ico">💬</span><span>WhatsApp</span></a>` : `<button disabled><span class="ico">💬</span><span>WhatsApp</span></button>`}
+          <button onclick="showActivityDetailTab('orari')"><span class="ico">🕒</span><span>Orari</span></button>
+          <a target="_blank" href="${maps}"><span class="ico">🧭</span><span>Indicazioni</span></a>
+        </div>
+        <div class="activity-tabs">
+          <button class="activity-tab" data-acttab="descrizione" onclick="showActivityDetailTab('descrizione')">Descrizione</button>
+          <button class="activity-tab" data-acttab="foto" onclick="showActivityDetailTab('foto')">Foto</button>
+          <button class="activity-tab" data-acttab="offerte" onclick="showActivityDetailTab('offerte')">Offerte</button>
+          <button class="activity-tab" data-acttab="orari" onclick="showActivityDetailTab('orari')">Orari</button>
+        </div>
+        <div class="activity-tab-panel" data-actpanel="descrizione">
+          <div class="activity-detail-text">${sfSafe(descr)}</div>
+        </div>
+        <div class="activity-tab-panel" data-actpanel="foto">
+          ${gallery.length ? `<div class="activity-gallery">${gallery.map(src => `<img src="${sfSafe(src?.dataUrl || src)}" onclick="openImage(this.src)">`).join("")}</div>` : `<div class="emptyState"><div class="emptyIcon">📸</div><p>Nessuna foto disponibile.</p></div>`}
+        </div>
+        <div class="activity-tab-panel" data-actpanel="offerte">
+          ${offerta ? `<div class="activity-offer-box"><div class="activity-offer-title">🎁 ${sfSafe(activityOfferTitle(a))}</div><div style="white-space:pre-wrap">${sfSafe(offerta)}</div></div>` : `<div class="emptyState"><div class="emptyIcon">🎁</div><p>Nessuna offerta attiva in questo momento.</p></div>`}
+        </div>
+        <div class="activity-tab-panel" data-actpanel="orari">
+          <div class="activity-detail-text">🕒 ${sfSafe(a.orari || "Orari non indicati.")}</div>
+        </div>
+      `;
+      document.getElementById("activityDetailOverlay").style.display = "flex";
+      showActivityDetailTab(tab);
+    }
+
+    function closeActivityDetail() {
+      const overlay = document.getElementById("activityDetailOverlay");
+      if (overlay) overlay.style.display = "none";
+    }
+
+    function showActivityDetailTab(tab) {
+      document.querySelectorAll(".activity-tab").forEach(b => b.classList.toggle("active", b.dataset.acttab === tab));
+      document.querySelectorAll(".activity-tab-panel").forEach(p => p.classList.toggle("active", p.dataset.actpanel === tab));
+    }
+
+
     function renderAttivita() {
       const box = document.getElementById("attivita-list");
       if (!box) return;
@@ -3243,7 +3481,7 @@
       const cat = String(document.getElementById("activityCategoryFilter")?.value || "").trim();
       let items = Array.isArray(window.publicAttivita) ? [...window.publicAttivita] : [];
       if (cat) items = items.filter(a => String(a.categoria || "") === cat);
-      if (q) items = items.filter(a => [a.nome, a.categoria, a.descrizione, a.indirizzo, a.offerta].join(" ").toLowerCase().includes(q));
+      if (q) items = items.filter(a => [a.nome, a.categoria, a.descrizione, a.indirizzo, a.offerta, a.testo_offerta, a.titolo_offerta].join(" ").toLowerCase().includes(q));
       items.sort((a,b) => (Number(b.in_evidenza||0)-Number(a.in_evidenza||0)) || String(b.piano||"").localeCompare(String(a.piano||"")) || String(a.nome||"").localeCompare(String(b.nome||"")));
       if (!items.length) {
         box.innerHTML = `<div class="emptyState"><div class="emptyIcon">🏪</div><p>Nessuna attività disponibile in questo momento.</p></div>`;
@@ -3251,31 +3489,33 @@
       }
       box.innerHTML = items.map(a => {
         const info = placeCatInfo[a.categoria] || placeCatInfo.attivita || placeCatInfo.altro;
-        const photos = sfPhotoArray(a.foto);
-        const img = photos[0] ? `<img src="${sfSafe(photos[0])}" onclick="openImage(this.src)" style="width:96px;height:96px;object-fit:cover;border-radius:18px;border:1px solid rgba(255,255,255,.14);cursor:pointer;">` : `<div style="width:96px;height:96px;border-radius:18px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:34px;background:rgba(0,0,0,.18);">${info.emoji}</div>`;
+        const cover = activityCover(a);
+        const img = cover ? `<img class="activity-lite-cover" src="${sfSafe(cover)}" onclick="openImage(this.src)">` : `<div class="activity-lite-cover">${info.emoji}</div>`;
+        const offerta = String(a.testo_offerta || a.offerta || "").trim();
         const maps = (a.lat && a.lng) ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.lat + "," + a.lng)}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((a.indirizzo || "") + " Cassino")}`;
         const phone = String(a.telefono || "").replace(/\s+/g, "");
-        const wa = String(a.whatsapp || a.telefono || "").replace(/\D/g, "");
+        const wa = String(a.whatsapp || a.telefono || "").replace(/\D/g, "").replace(/^39/, "");
+        const ratingLine = activityStars(a);
         return `
-          <div class="item" style="border-left:5px solid ${info.color};">
-            <div class="item-top">
+          <div class="item activity-card-lite">
+            <div class="activity-lite-top">
               ${img}
-              <div style="flex:1;min-width:0;">
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                  <h3 style="margin:0;font-size:20px;">${info.emoji} ${sfSafe(a.nome)}</h3>
+              <div style="min-width:0;">
+                <div class="activity-lite-title">
+                  <h3>${info.emoji} ${sfSafe(a.nome)}</h3>
                   ${Number(a.in_evidenza) ? `<span class="pill" style="border-color:#ff9f43;color:#ffcf80;">⭐ In evidenza</span>` : ``}
                   <span class="pill">${pianoLabel(a.piano)}</span>
                 </div>
-                <div class="hint" style="margin-top:6px">${sfSafe(a.categoria || "attività")} ${a.indirizzo ? " • " + sfSafe(a.indirizzo) : ""}</div>
-                ${a.descrizione ? `<p style="white-space:pre-wrap;line-height:1.45;margin:10px 0 0;">${sfSafe(a.descrizione)}</p>` : ``}
-                ${a.orari ? `<div class="hint"><strong>🕒 Orari:</strong> ${sfSafe(a.orari)}</div>` : ``}
-                ${a.offerta ? `<div style="margin-top:10px;padding:10px;border-radius:16px;border:1px solid rgba(255,159,67,.34);background:rgba(255,159,67,.10);"><strong>🎁 Offerta:</strong><br>${sfSafe(a.offerta)}</div>` : ``}
-                <div class="btnRow">
-                  ${phone ? `<a class="btn ghost small" href="tel:${sfSafe(phone)}">📞 Chiama</a>` : ``}
-                  ${wa ? `<a class="btn ghost small" target="_blank" href="https://wa.me/39${sfSafe(wa.replace(/^39/, ""))}">💬 WhatsApp</a>` : ``}
-                  <a class="btn primary small" target="_blank" href="${maps}">🧭 Indicazioni</a>
-                </div>
+                <div class="hint" style="margin-top:7px">${sfSafe(a.categoria || "attività")} ${a.indirizzo ? " • " + sfSafe(a.indirizzo) : ""}</div>
+                ${ratingLine ? `<div class="activity-rating" style="margin-top:7px">${ratingLine}</div>` : ``}
+                ${offerta ? `<div class="activity-lite-promo"><strong>🎁 ${sfSafe(activityOfferTitle(a))}</strong><br>${sfSafe(offerta).slice(0,160)}${offerta.length > 160 ? "…" : ""}</div>` : ``}
               </div>
+            </div>
+            <div class="activity-lite-actions">
+              <button class="btn primary small" onclick="openActivityDetail('${sfSafe(a.id)}')">✨ Apri scheda</button>
+              ${phone ? `<a class="btn ghost small" href="tel:${sfSafe(phone)}">📞 Chiama</a>` : ``}
+              ${wa ? `<a class="btn ghost small" target="_blank" href="https://wa.me/39${sfSafe(wa)}">💬 WhatsApp</a>` : ``}
+              <a class="btn ghost small" target="_blank" href="${maps}">🧭 Indicazioni</a>
             </div>
           </div>`;
       }).join("");
@@ -3301,7 +3541,7 @@
           </div>
           <p style="font-size:16px;line-height:1.45;white-space:pre-wrap;margin:12px 0;">${sfSafe(a.offerta)}</p>
           <div class="btnRow">
-            <a class="btn ghost small" href="#/attivita">🏪 Vedi attività</a>
+            <button class="btn ghost small" onclick="openActivityDetail(\'${sfSafe(a.id)}\', \'offerte\')">🏪 Apri scheda</button>
             ${a.whatsapp || a.telefono ? `<a class="btn primary small" target="_blank" href="https://wa.me/39${sfSafe(String(a.whatsapp || a.telefono).replace(/\D/g, "").replace(/^39/, ""))}">💬 Contatta</a>` : ``}
           </div>
         </div>`;
@@ -3393,7 +3633,9 @@
       document.getElementById("activityEditWhatsapp").value = a.whatsapp || "";
       document.getElementById("activityEditIndirizzo").value = a.indirizzo || "";
       document.getElementById("activityEditOrari").value = a.orari || "";
-      document.getElementById("activityEditOfferta").value = a.offerta || "";
+      document.getElementById("activityEditOfferta").value = a.testo_offerta || a.offerta || "";
+      if (document.getElementById("activityEditTitoloOfferta")) document.getElementById("activityEditTitoloOfferta").value = a.titolo_offerta || "";
+      renderActivityEditCoverPreview(a);
       document.getElementById("activityEditLat").value = a.lat || "";
       document.getElementById("activityEditLng").value = a.lng || "";
       renderActivityEditLocationLine();
@@ -3420,6 +3662,22 @@
       renderActivityEditPhotos();
     }
 
+
+    function renderActivityEditCoverPreview(a) {
+      const box = document.getElementById("activityEditCoverPreview");
+      if (!box) return;
+      const src = window.activityEditCoverDataUrl || a?.foto_copertina || activityCover(a || {});
+      box.innerHTML = src ? `<img class="gallery-img" src="${sfSafe(src)}" onclick="openImage(this.src)"><span class="hint">Foto copertina attuale</span>` : `<span class="hint">Nessuna copertina impostata.</span>`;
+    }
+
+    async function handleActivityCoverUpload(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      window.activityEditCoverDataUrl = await fileToDataUrl(file);
+      renderActivityEditCoverPreview(currentActivitySession?.attivita || {});
+    }
+
+
     async function saveAttivitaSelf() {
       if (!currentActivitySession?.attivita?.id || !currentActivitySession?.token) return showBanner("error", "Devi effettuare l’accesso.");
       const id = currentActivitySession.attivita.id;
@@ -3443,6 +3701,9 @@
         indirizzo: document.getElementById("activityEditIndirizzo").value.trim(),
         orari: document.getElementById("activityEditOrari").value.trim(),
         offerta: document.getElementById("activityEditOfferta").value.trim(),
+        titolo_offerta: document.getElementById("activityEditTitoloOfferta")?.value.trim() || "",
+        testo_offerta: document.getElementById("activityEditOfferta").value.trim(),
+        foto_copertina: window.activityEditCoverDataUrl || currentActivitySession.attivita.foto_copertina || "",
         lat: latBeforeSave,
         lng: lngBeforeSave,
         foto: JSON.stringify(activityEditPhotos)

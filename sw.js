@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-v9-abbonamenti-mappa-telegram";
+const CACHE_NAME = "segnalafacile-vetrina-v1";
 const ASSETS = [
   "./",
   "./index.html",

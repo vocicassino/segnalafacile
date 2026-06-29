@@ -425,10 +425,38 @@
               <label>Offerta attiva</label>
               <textarea id="activityAdminOfferta" placeholder="Promozione o messaggio commerciale"></textarea>
             </div>
+
+            <div>
+              <label>Titolo offerta</label>
+              <input type="text" id="activityAdminTitoloOfferta" placeholder="Es. Offerta del mese">
+            </div>
+            <div>
+              <label>Valutazione stelle</label>
+              <input type="text" id="activityAdminRating" placeholder="Es. 4.8">
+            </div>
+            <div>
+              <label>Numero recensioni</label>
+              <input type="text" id="activityAdminNumeroRecensioni" placeholder="Es. 128">
+            </div>
+            <div>
+              <label>Sottotitolo attività</label>
+              <input type="text" id="activityAdminSottotitolo" placeholder="Es. Bar elegante nel cuore di Cassino">
+            </div>
+            <div class="full">
+              <label>Foto copertina</label>
+              <div class="photo-manager">
+                <div class="photo-manager-note">Questa sarà l’immagine grande in alto nella scheda vetrina.</div>
+                <button type="button" onclick="document.getElementById('activityAdminCoverInput').click()">🖼️ Carica copertina</button>
+                <button type="button" class="btn-danger" onclick="clearActivityAdminCover()">Svuota copertina</button>
+                <input type="file" id="activityAdminCoverInput" accept="image/*" style="display:none" onchange="handleActivityAdminCoverUpload(this)">
+                <div id="activityAdminCoverPreview" class="photo-grid"></div>
+              </div>
+            </div>
+
             <div class="full">
               <label>Foto attività</label>
               <div class="photo-manager">
-                <div class="photo-manager-note">Puoi caricare fino a 3 foto. Verranno salvate su Supabase come le altre immagini dell’app.</div>
+                <div class="photo-manager-note">Puoi caricare più foto per la galleria della scheda vetrina. Verranno salvate su Supabase come le altre immagini dell’app.</div>
                 <button type="button" onclick="document.getElementById('activityAdminPhotoInput').click()">📷 Carica foto</button>
                 <button type="button" class="btn-danger" onclick="clearActivityAdminPhotos()">Svuota foto</button>
                 <input type="file" id="activityAdminPhotoInput" accept="image/*" multiple style="display:none" onchange="handleActivityAdminPhotoUpload(this)">
@@ -568,7 +596,7 @@
               <label>Foto archivio</label>
               <div class="photo-manager">
                 <input type="file" id="archivePhotoInput" accept="image/*" multiple onchange="addArchiveManualPhotosFromInput(this)">
-                <div class="photo-manager-note">Puoi caricare fino a 3 foto. Verranno salvate su Supabase, non su R2.</div>
+                <div class="photo-manager-note">Puoi caricare più foto per la galleria della scheda vetrina. Verranno salvate su Supabase, non su R2.</div>
                 <div id="archiveManualPreview" class="photo-grid"></div>
               </div>
             </div>
@@ -734,6 +762,7 @@
   let archiveMarker = null;
   let chatAdminData = [];
   let activityAdminPhotos = [];
+  let activityAdminCover = "";
   let activityAdminLoaded = false;
 
   // Parser robusto per le date
@@ -1688,8 +1717,9 @@
       return;
     }
     box.innerHTML = items.map(a => {
-      const photos = adminActivityPhotos(a.foto);
-      const mini = photos.length ? `<div class="mini-photos">${photos.slice(0,3).map(src => `<img src="${adminActivitySafe(src)}">`).join("")}</div>` : "";
+      const photos = adminActivityPhotos(a.galleria_foto || a.foto);
+      const cover = a.foto_copertina || (photos[0] || "");
+      const mini = cover ? `<div class="mini-photos"><img src="${adminActivitySafe(cover)}"></div>` : (photos.length ? `<div class="mini-photos">${photos.slice(0,3).map(src => `<img src="${adminActivitySafe(src)}">`).join("")}</div>` : "");
       const stato = Number(a.attiva) === 1 ? '<span class="archive-badge ok">✅ Attiva</span>' : '<span class="archive-badge off">⛔ Non attiva</span>';
       const evidenza = Number(a.in_evidenza) === 1 ? '<span class="archive-badge warn">⭐ Evidenza</span>' : '';
       return `
@@ -1700,7 +1730,7 @@
             <p style="margin-top:6px;">📧 ${adminActivitySafe(a.email_gestore || "email non inserita")} • 🔑 <b>${adminActivitySafe(a.codice_accesso || "codice mancante")}</b></p>
             <p style="margin-top:6px;">${activityAdminSubscriptionBadge(a)} ${a.abbonamento_scadenza ? " • scadenza " + adminActivitySafe(a.abbonamento_scadenza) : " • nessuna scadenza"}</p>
             <p style="margin-top:6px;color:#a9b6db;">📍 ${adminActivitySafe(a.indirizzo || "indirizzo non inserito")}</p>
-            ${a.offerta ? `<p style="margin-top:6px;color:#ffcf80;">🎁 ${adminActivitySafe(a.offerta)}</p>` : ""}
+            ${(a.testo_offerta || a.offerta) ? `<p style="margin-top:6px;color:#ffcf80;">🎁 ${adminActivitySafe(a.titolo_offerta || 'Offerta')} — ${adminActivitySafe(a.testo_offerta || a.offerta)}</p>` : ""}
             ${mini}
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:flex-start;">
@@ -1714,7 +1744,7 @@
   function clearActivityAdminForm() {
     document.getElementById("activityAdminFormTitle").innerText = "➕ Nuova attività";
     document.getElementById("activityAdminId").value = "";
-    ["Nome","Email","Code","Telefono","Whatsapp","Indirizzo","Lat","Lng"].forEach(k => {
+    ["Nome","Email","Code","Telefono","Whatsapp","Indirizzo","Lat","Lng","TitoloOfferta","Rating","NumeroRecensioni","Sottotitolo"].forEach(k => {
       const el = document.getElementById("activityAdmin" + k);
       if (el) el.value = "";
     });
@@ -1735,8 +1765,10 @@
     document.getElementById("activityAdminDescrizione").value = "";
     document.getElementById("activityAdminOrari").value = "";
     document.getElementById("activityAdminOfferta").value = "";
+    activityAdminCover = "";
     activityAdminPhotos = [];
     renderActivityAdminPhotos();
+    renderActivityAdminCover();
     renderActivityAdminLocationLine();
   }
 
@@ -1769,8 +1801,14 @@
     renderActivityAdminLocationLine();
     document.getElementById("activityAdminDescrizione").value = a.descrizione || "";
     document.getElementById("activityAdminOrari").value = a.orari || "";
-    document.getElementById("activityAdminOfferta").value = a.offerta || "";
-    activityAdminPhotos = adminActivityPhotos(a.foto);
+    document.getElementById("activityAdminOfferta").value = a.testo_offerta || a.offerta || "";
+    const elTit = document.getElementById("activityAdminTitoloOfferta"); if (elTit) elTit.value = a.titolo_offerta || "";
+    const elRat = document.getElementById("activityAdminRating"); if (elRat) elRat.value = a.rating || "";
+    const elNum = document.getElementById("activityAdminNumeroRecensioni"); if (elNum) elNum.value = a.numero_recensioni || "";
+    const elSub = document.getElementById("activityAdminSottotitolo"); if (elSub) elSub.value = a.sottotitolo || "";
+    activityAdminCover = a.foto_copertina || "";
+    activityAdminPhotos = adminActivityPhotos(a.galleria_foto || a.foto);
+    renderActivityAdminCover();
     renderActivityAdminPhotos();
     document.getElementById("activityAdminNome").scrollIntoView({ behavior: "smooth", block: "center" });
   }
@@ -1799,6 +1837,13 @@
       descrizione: document.getElementById("activityAdminDescrizione").value.trim(),
       orari: document.getElementById("activityAdminOrari").value.trim(),
       offerta: document.getElementById("activityAdminOfferta").value.trim(),
+      titolo_offerta: document.getElementById("activityAdminTitoloOfferta")?.value.trim() || "",
+      testo_offerta: document.getElementById("activityAdminOfferta").value.trim(),
+      rating: document.getElementById("activityAdminRating")?.value.trim() || "",
+      numero_recensioni: document.getElementById("activityAdminNumeroRecensioni")?.value.trim() || "",
+      sottotitolo: document.getElementById("activityAdminSottotitolo")?.value.trim() || "",
+      foto_copertina: activityAdminCover || "",
+      galleria_foto: JSON.stringify(activityAdminPhotos),
       foto: JSON.stringify(activityAdminPhotos)
     };
   }
@@ -1848,6 +1893,31 @@
     }
   }
 
+
+  function renderActivityAdminCover() {
+    const box = document.getElementById("activityAdminCoverPreview");
+    if (!box) return;
+    if (!activityAdminCover) {
+      box.innerHTML = `<p style="color:#a9b6db;font-size:12px;">Nessuna copertina caricata.</p>`;
+      return;
+    }
+    box.innerHTML = `<div class="photo-tile"><img src="${adminActivitySafe(activityAdminCover)}"><button onclick="clearActivityAdminCover()">×</button></div>`;
+  }
+
+  async function handleActivityAdminCoverUpload(input) {
+    const f = input.files?.[0];
+    if (!f) return;
+    activityAdminCover = await resizeImageFile(f, 1400, 0.86);
+    input.value = "";
+    renderActivityAdminCover();
+  }
+
+  function clearActivityAdminCover() {
+    activityAdminCover = "";
+    renderActivityAdminCover();
+  }
+
+
   function renderActivityAdminPhotos() {
     const box = document.getElementById("activityAdminPhotoPreview");
     if (!box) return;
@@ -1876,8 +1946,8 @@
   async function handleActivityAdminPhotoUpload(input) {
     const files = Array.from(input.files || []);
     for (const f of files) {
-      if (activityAdminPhotos.length >= 3) {
-        alert("Massimo 3 foto per attività.");
+      if (activityAdminPhotos.length >= 8) {
+        alert("Massimo 8 foto per attività.");
         break;
       }
       const resized = await resizeImageFile(f, 1100, 0.82);
