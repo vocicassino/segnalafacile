@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-url-signature-fix-v1";
+const CACHE_NAME = "segnalafacile-ai-v2";
 const ASSETS = [
   "./",
   "./index.html",

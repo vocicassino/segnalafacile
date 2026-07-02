@@ -197,6 +197,16 @@
       color:#ffe8b8;
     }
 
+
+
+    /* ASSISTENTE AI ADMIN */
+    .admin-ai-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+    .admin-ai-grid .full{grid-column:1/-1;}
+    .admin-ai-output{display:none;margin-top:14px;border:1px solid rgba(25,195,125,.35);background:rgba(25,195,125,.08);border-radius:12px;padding:12px;}
+    .admin-ai-output.active{display:block;}
+    .admin-ai-block{background:#070c18;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px;margin-top:10px;white-space:pre-wrap;line-height:1.45;color:#eaf0ff;}
+    @media(max-width:720px){.admin-ai-grid{grid-template-columns:1fr;}}
+
   </style>
 </head>
 <body>
@@ -251,6 +261,56 @@
       <h3 style="font-size:14px; margin-top:20px; margin-bottom:10px; color:#a9b6db;">Ripartizione Efficienza per Settore</h3>
       <div class="cat-perf-list" id="catPerfList">
         </div>
+    </div>
+
+
+
+    <div class="card">
+      <div class="section-header" onclick="toggleSection('aiAdminSection', 'aiAdminIcon')">
+        <h2>Assistente AI 🎙️</h2>
+        <span id="aiAdminIcon" class="section-icon">▼</span>
+      </div>
+      <div id="aiAdminSection" class="section-content">
+        <p style="color:#a9b6db;margin-top:0;">Genera velocemente testi per attività, articoli, post social e script avatar. Puoi copiare il risultato e usarlo negli articoli o nelle schede attività.</p>
+        <div class="admin-ai-grid">
+          <div>
+            <label>Modalità</label>
+            <select id="adminAiMode">
+              <option value="attivita">🏪 Promo attività</option>
+              <option value="articolo">📰 Articolo Voci di Cassino</option>
+              <option value="segnalazione">📍 Segnalazione corretta</option>
+              <option value="avatar">🎬 Script avatar</option>
+            </select>
+          </div>
+          <div>
+            <label>Stile</label>
+            <select id="adminAiTone">
+              <option value="professionale e chiaro">Professionale e chiaro</option>
+              <option value="forte e provocatorio">Forte e provocatorio</option>
+              <option value="commerciale e persuasivo">Commerciale e persuasivo</option>
+              <option value="istituzionale">Istituzionale</option>
+            </select>
+          </div>
+          <div>
+            <label>Titolo / attività / prodotto</label>
+            <input type="text" id="adminAiTitle" placeholder="Es. Pizzeria, articolo, prodotto...">
+          </div>
+          <div>
+            <label>Offerta / prezzo / tema</label>
+            <input type="text" id="adminAiOffer" placeholder="Es. sconto 20%, tema dell'articolo...">
+          </div>
+          <div class="full">
+            <label>Descrizione o appunti</label>
+            <textarea id="adminAiDescription" placeholder="Incolla qui informazioni, appunti, comunicato o descrizione..."></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+          <button type="button" onclick="adminAiGenerate()">✨ Genera</button>
+          <button type="button" onclick="adminAiLoadActivityForm()">🏪 Usa dati attività in modifica</button>
+          <button type="button" onclick="adminAiCopyAll()">📋 Copia tutto</button>
+        </div>
+        <div id="adminAiOutput" class="admin-ai-output"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -764,6 +824,66 @@
   let activityAdminPhotos = [];
   let activityAdminCover = "";
   let activityAdminLoaded = false;
+
+
+
+  // --- Assistente AI Admin ---
+  let adminAiLastText = "";
+  function adminAiSafe(v){ return String(v ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])); }
+  function adminAiVal(id){ return String(document.getElementById(id)?.value || "").trim(); }
+  function adminAiSet(id, value){ const el = document.getElementById(id); if(el) el.value = value || ""; }
+  function adminAiLoadActivityForm(){
+    adminAiSet("adminAiMode", "attivita");
+    adminAiSet("adminAiTitle", document.getElementById("activityAdminNome")?.value || "");
+    adminAiSet("adminAiOffer", document.getElementById("activityAdminTitoloOfferta")?.value || document.getElementById("activityAdminOfferta")?.value || "");
+    const parts = [
+      document.getElementById("activityAdminDescrizione")?.value || "",
+      document.getElementById("activityAdminIndirizzo")?.value ? "Indirizzo: " + document.getElementById("activityAdminIndirizzo").value : "",
+      document.getElementById("activityAdminOrari")?.value ? "Orari: " + document.getElementById("activityAdminOrari").value : "",
+      document.getElementById("activityAdminOfferta")?.value ? "Offerta: " + document.getElementById("activityAdminOfferta").value : ""
+    ].filter(Boolean);
+    adminAiSet("adminAiDescription", parts.join("\n"));
+    alert("Dati attività caricati nell'Assistente AI.");
+  }
+  function adminAiGenerate(){
+    const mode = adminAiVal("adminAiMode") || "attivita";
+    const tone = adminAiVal("adminAiTone") || "professionale";
+    const title = adminAiVal("adminAiTitle") || "Segnala Facile";
+    const offer = adminAiVal("adminAiOffer");
+    const desc = adminAiVal("adminAiDescription") || "Descrizione non inserita.";
+    let blocks = [];
+    if(mode === "articolo"){
+      blocks = [
+        ["Titolo", `${title}: Cassino ha bisogno di risposte concrete`],
+        ["Sottotitolo", `Una riflessione in stile ${tone}, partendo da fatti, segnalazioni e richieste dei cittadini.`],
+        ["Bozza articolo", `${title}\n\n${desc}\n\nIl punto non è alimentare polemiche, ma riportare al centro ciò che i cittadini vivono ogni giorno. Le segnalazioni non possono essere considerate fastidi: sono richieste di attenzione, sicurezza e rispetto per il territorio.\n\nVoci di Cassino continuerà a dare spazio alle voci dei cittadini, chiedendo risposte chiare e interventi verificabili.`],
+        ["Hashtag", "#VocidiCassino #Cassino #SegnalaFacile #Cittadini #Territorio"]
+      ];
+    } else if(mode === "segnalazione"){
+      blocks = [
+        ["Titolo corretto", title],
+        ["Testo segnalazione", `Si segnala quanto segue: ${desc}\n\nLa situazione richiede una verifica e un intervento, soprattutto se può creare disagio, degrado o pericolo per i cittadini.`]
+      ];
+    } else {
+      blocks = [
+        ["Descrizione professionale", `${title} è una proposta pensata per il territorio. ${desc}${offer ? "\n\nOfferta: " + offer : ""}`],
+        ["Slogan", `${title}: qualità, fiducia e presenza sul territorio.`],
+        ["Post Facebook", `✨ Scopri ${title}\n\n${desc}${offer ? "\n\n🎁 " + offer : ""}\n\nDisponibile su Segnala Facile / Voci di Cassino.`],
+        ["Script Avatar", `Ciao, oggi ti presento ${title}.\n\n${desc}\n\n${offer ? "In questo momento puoi approfittare di: " + offer + ".\n\n" : ""}Cerca la scheda su Segnala Facile e scopri tutti i dettagli.`]
+      ];
+    }
+    adminAiLastText = blocks.map(([h,t]) => `### ${h}\n${t}`).join("\n\n");
+    const out = document.getElementById("adminAiOutput");
+    if(out){
+      out.classList.add("active");
+      out.innerHTML = `<strong>✅ Risultato generato</strong>` + blocks.map(([h,t]) => `<div class="admin-ai-block"><b>${adminAiSafe(h)}</b>\n\n${adminAiSafe(t)}</div>`).join("");
+    }
+  }
+  async function adminAiCopyAll(){
+    if(!adminAiLastText) adminAiGenerate();
+    try { await navigator.clipboard.writeText(adminAiLastText); alert("Testo copiato."); }
+    catch(e){ alert("Copia non riuscita."); }
+  }
 
   // Parser robusto per le date
   function parseDateString(dStr) {
