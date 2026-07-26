@@ -516,7 +516,7 @@
             <div class="full">
               <label>Foto attività</label>
               <div class="photo-manager">
-                <div class="photo-manager-note">Puoi caricare più foto per la galleria della scheda vetrina. Verranno salvate su Supabase come le altre immagini dell’app.</div>
+                <div class="photo-manager-note">Puoi caricare più foto per la galleria della scheda vetrina. Verranno salvate su Cloudflare R2 come le altre immagini dell’app.</div>
                 <button type="button" onclick="document.getElementById('activityAdminPhotoInput').click()">📷 Carica foto</button>
                 <button type="button" class="btn-danger" onclick="clearActivityAdminPhotos()">Svuota foto</button>
                 <input type="file" id="activityAdminPhotoInput" accept="image/*" multiple style="display:none" onchange="handleActivityAdminPhotoUpload(this)">
@@ -610,14 +610,16 @@
 
     <div class="card">
       <div class="section-header" onclick="toggleSection('archivioSection', 'archivioIcon')">
-        <h2>Archivio Supabase 🗂️</h2>
+        <h2>Archivio Cloudflare 🗂️</h2>
         <span id="archivioIcon" class="section-icon">▼</span>
       </div>
       <div id="archivioSection" class="section-content">
         <div class="archive-toolbar">
           <button onclick="loadArchiveData()">🔄 Aggiorna Archivio</button>
+          <button type="button" onclick="migrateSupabaseToCloudflare()">🚚 Migra da Supabase</button>
           <a href="https://vocicassino.github.io/archivio-segnalafacile/" target="_blank" style="text-decoration:none;"><button type="button">🌐 Apri Archivio Pubblico</button></a>
         </div>
+        <div id="cloudMigrationStatus" style="color:#a9b6db;font-size:13px;margin:8px 0 14px;">Migrazione non avviata. Prima riattiva temporaneamente Supabase.</div>
 
         <div class="archive-manual-box">
           <h3 style="margin-top:0;">➕ Nuovo elemento archivio</h3>
@@ -666,7 +668,7 @@
               <label>Foto archivio</label>
               <div class="photo-manager">
                 <input type="file" id="archivePhotoInput" accept="image/*" multiple onchange="addArchiveManualPhotosFromInput(this)">
-                <div class="photo-manager-note">Puoi caricare più foto per la galleria della scheda vetrina. Verranno salvate su Supabase, non su R2.</div>
+                <div class="photo-manager-note">Puoi caricare più foto per la galleria della scheda vetrina. Verranno salvate su Cloudflare R2 e registrate in D1.</div>
                 <div id="archiveManualPreview" class="photo-grid"></div>
               </div>
             </div>
@@ -2209,8 +2211,68 @@
     }
   }
 
+  async function migrateSupabaseKind(kind, statusEl) {
+    let offset = 0;
+    const limit = 25;
+    let total = 0;
+    while (true) {
+      statusEl.textContent = `Migrazione ${kind}: elaborati ${total} elementi...`;
+      const res = await fetch(`${WORKER_URL}/api/migrate/supabase?kind=${encodeURIComponent(kind)}&offset=${offset}&limit=${limit}`, {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      total += Number(data.copied || 0);
+      offset = Number(data.nextOffset || offset + Number(data.read || 0));
+      if (data.done) break;
+    }
+    return total;
+  }
+
+  async function migrateD1MediaTableAdmin(table, statusEl) {
+    let offset = 0;
+    const limit = 20;
+    let updated = 0;
+    while (true) {
+      statusEl.textContent = `Copia immagini esistenti da ${table}: aggiornate ${updated} schede...`;
+      const res = await fetch(`${WORKER_URL}/api/migrate/d1-media?table=${encodeURIComponent(table)}&offset=${offset}&limit=${limit}`, {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      updated += Number(data.updated || 0);
+      offset = Number(data.nextOffset || offset + Number(data.read || 0));
+      if (data.done) break;
+    }
+    return updated;
+  }
+
+  async function migrateSupabaseToCloudflare() {
+    if (!apiKey) return alert("Inserisci prima la password/API key dell'admin.");
+    if (!confirm("Avviare la copia di archivio, foto e chat da Supabase a Cloudflare? Il progetto Supabase deve essere temporaneamente attivo.")) return;
+    const statusEl = document.getElementById("cloudMigrationStatus");
+    try {
+      statusEl.textContent = "Migrazione archivio in corso...";
+      const archiveCount = await migrateSupabaseKind("archive", statusEl);
+      statusEl.textContent = `Archivio copiato (${archiveCount}). Migrazione chat in corso...`;
+      const chatCount = await migrateSupabaseKind("chat", statusEl);
+      let recordUpdates = 0;
+      for (const table of ["articoli", "segnalazioni", "luoghi", "attivita"]) {
+        recordUpdates += await migrateD1MediaTableAdmin(table, statusEl);
+      }
+      statusEl.textContent = `✅ Migrazione completata: ${archiveCount} elementi archivio, ${chatCount} messaggi chat e ${recordUpdates} schede con immagini trasferite.`;
+      await loadArchiveData();
+      await loadChatAdminData();
+    } catch (e) {
+      statusEl.textContent = `❌ Migrazione interrotta: ${e.message || e}`;
+      alert("Errore migrazione: " + (e.message || e));
+    }
+  }
+
   // ==========================================
-  // ARCHIVIO SUPABASE INTEGRATO NELL'ADMIN
+  // ARCHIVIO CLOUDFLARE D1 + R2 INTEGRATO NELL'ADMIN
   // ==========================================
 
   function renderArchiveManualPhotos() {
@@ -2262,7 +2324,7 @@
     const list = document.getElementById("archiveList");
     const stats = document.getElementById("archiveStats");
     if (!list) return;
-    list.innerHTML = "Caricamento archivio Supabase...";
+    list.innerHTML = "Caricamento archivio Cloudflare...";
     if (stats) stats.innerText = "Sincronizzazione archivio...";
 
     try {
@@ -2290,7 +2352,7 @@
     if (stats) stats.innerHTML = `Totale: <b>${total}</b> • Visibili: <b>${visible}</b> • Da controllare: <b>${pending}</b>`;
 
     if (!archiveData.length) {
-      list.innerHTML = `<p style="color:#a9b6db;">Archivio Supabase vuoto.</p>`;
+      list.innerHTML = `<p style="color:#a9b6db;">Archivio Cloudflare vuoto.</p>`;
       return;
     }
 
@@ -2356,7 +2418,7 @@
   }
 
   async function deleteArchiveItem(id) {
-    if (!confirm("Eliminare questa scheda dall'archivio Supabase? La foto resterà eventualmente nello Storage come copia tecnica.")) return;
+    if (!confirm("Eliminare questa scheda dall'archivio Cloudflare? La foto resterà eventualmente nello Storage come copia tecnica.")) return;
     try {
       const res = await fetch(`${WORKER_URL}/api/archive/${id}`, {
         method: "DELETE",
@@ -2405,7 +2467,7 @@
       archiveManualPhotos = [];
       renderArchiveManualPhotos();
       await loadArchiveData();
-      alert("Elemento archiviato su Supabase.");
+      alert("Elemento archiviato su Cloudflare D1 + R2.");
     } catch (e) { alert("Errore: " + (e.message || e)); }
   }
 

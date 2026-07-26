@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-ai-v4-reel";
+const CACHE_NAME = "segnalafacile-cloudflare-v1";
 const ASSETS = [
   "./",
   "./index.html",
