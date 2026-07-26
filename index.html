@@ -3072,49 +3072,240 @@
        } catch(e) { return 0; }
     }
 
-    function updateMiniFeed() {
-      const feed = document.getElementById("miniFeed");
-      if (!feed) return;
-      
-      let allItems = [...window.publicSegnalazioni, ...window.publicLuoghi, ...window.publicAttivita];
-      if (allItems.length === 0) return;
-      
-      allItems.sort((a, b) => {
-        const dateA = parseDateString(a.dataStr || a.when);
-        const dateB = parseDateString(b.dataStr || b.when);
-        return dateB - dateA;
-      });
-      
-      const latest = allItems[0]; 
-      const isSegnalazione = latest.titolo !== undefined;
-      const isAttivita = latest.email_gestore !== undefined || latest.piano !== undefined;
-      const titolo = isSegnalazione ? latest.titolo : latest.nome;
-      const cat = latest.categoria || "altro";
-      
-      let emoji = "🔔";
-      if (isSegnalazione) emoji = (catInfo[cat] || catInfo.altro).emoji;
-      else emoji = isAttivita ? "🏪" : (placeCatInfo[cat] || placeCatInfo.altro).emoji;
+    function getHomeItemType(item) {
+  if (!item) return "";
 
-      document.getElementById("feedIcon").innerText = emoji;
-      document.getElementById("feedTitle").innerText = titolo;
-      document.getElementById("feedTime").innerText = "Ultima novità: " + (latest.dataStr || latest.when).split(",")[0];
-      
-      feed.classList.remove("hidden");
+  if (item.__type) return item.__type;
 
-      feed.onclick = () => {
-         if(isSegnalazione) {
-            const lat = latest.lat || (latest.geo && latest.geo.lat);
-            const lng = latest.lng || (latest.geo && latest.geo.lng);
-            if(lat && lng) focusOnMap(lat, lng);
-         } else if(isAttivita) {
-            location.hash = "#/attivita";
-         } else {
-            const safeKey = latest.nome.toLowerCase().replace(/[^a-z0-9]/g, '-');
-            openPlaceCard(safeKey);
-         }
-      };
+  if (
+    item.email_gestore !== undefined ||
+    item.piano !== undefined ||
+    item.telefono !== undefined
+  ) {
+    return "attivita";
+  }
+
+  if (item.titolo !== undefined) {
+    return "segnalazione";
+  }
+
+  return "luogo";
+}
+
+function getHomeItemCoords(item) {
+  if (!item) return null;
+
+  const lat = Number(
+    item.lat !== undefined && item.lat !== null
+      ? item.lat
+      : item.geo?.lat
+  );
+
+  const lng = Number(
+    item.lng !== undefined && item.lng !== null
+      ? item.lng
+      : item.geo?.lng
+  );
+
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    (lat === 0 && lng === 0)
+  ) {
+    return null;
+  }
+
+  return { lat, lng };
+}
+
+function openHomeLatestItem(item) {
+  if (!item) {
+    showBanner("info", "Nessun aggiornamento disponibile.");
+    return;
+  }
+
+  const type = getHomeItemType(item);
+
+  // ATTIVITÀ
+  if (type === "attivita") {
+    location.hash = "#/attivita";
+
+    setTimeout(() => {
+      try {
+        if (
+          item.id &&
+          typeof openActivityDetail === "function"
+        ) {
+          openActivityDetail(item.id);
+        }
+      } catch (error) {
+        console.log("Apertura attività:", error);
+      }
+    }, 500);
+
+    return;
+  }
+
+  // LUOGO O RECENSIONE
+  if (type === "luogo") {
+    const safeKey = String(item.nome || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    if (safeKey && typeof openPlaceCard === "function") {
+      openPlaceCard(safeKey);
+    } else {
+      location.hash = "#/places";
     }
 
+    return;
+  }
+
+  // SEGNALAZIONE
+  const coords = getHomeItemCoords(item);
+
+  location.hash = "#/map";
+
+  setTimeout(() => {
+    try {
+      ensureMaps();
+
+      if (!mapMain) return;
+
+      mapMain.invalidateSize();
+      refreshPublicMaps();
+
+      if (coords) {
+        mapMain.setView([coords.lat, coords.lng], 18);
+      } else {
+        showBanner(
+          "info",
+          "Questa segnalazione non ha coordinate precise. È stata aperta la mappa generale."
+        );
+      }
+    } catch (error) {
+      console.log("Apertura segnalazione sulla mappa:", error);
+      showBanner("error", "Non riesco ad aprire la mappa.");
+    }
+  }, 450);
+}
+
+function updateMiniFeed() {
+  const feed = document.getElementById("miniFeed");
+  if (!feed) return;
+
+  const segnalazioni = Array.isArray(window.publicSegnalazioni)
+    ? window.publicSegnalazioni
+    : [];
+
+  const luoghi = Array.isArray(window.publicLuoghi)
+    ? window.publicLuoghi
+    : [];
+
+  const attivita = Array.isArray(window.publicAttivita)
+    ? window.publicAttivita
+    : [];
+
+  const allItems = [
+    ...segnalazioni.map(item => ({
+      ...item,
+      __type: "segnalazione"
+    })),
+
+    ...attivita.map(item => ({
+      ...item,
+      __type: "attivita"
+    })),
+
+    ...luoghi.map(item => ({
+      ...item,
+      __type: "luogo"
+    }))
+  ];
+
+  if (!allItems.length) {
+    feed.classList.add("hidden");
+    feed.onclick = null;
+    feed.onkeydown = null;
+    return;
+  }
+
+  allItems.sort((a, b) => {
+    const dateA = parseDateString(a.dataStr || a.when);
+    const dateB = parseDateString(b.dataStr || b.when);
+    return dateB - dateA;
+  });
+
+  const latest = allItems[0];
+  const type = getHomeItemType(latest);
+  const titolo =
+    latest.titolo ||
+    latest.nome ||
+    "Nuovo aggiornamento";
+
+  const categoria = latest.categoria || "altro";
+
+  let emoji = "🔔";
+
+  if (type === "segnalazione") {
+    emoji = (catInfo[categoria] || catInfo.altro).emoji;
+  } else if (type === "attivita") {
+    emoji = "🏪";
+  } else {
+    emoji = (
+      placeCatInfo[categoria] ||
+      placeCatInfo.altro
+    ).emoji;
+  }
+
+  const data =
+    latest.dataStr ||
+    latest.when ||
+    latest.createdAt ||
+    "";
+
+  const dataBreve = String(data).split(",")[0];
+
+  const feedIcon = document.getElementById("feedIcon");
+  const feedTitle = document.getElementById("feedTitle");
+  const feedTime = document.getElementById("feedTime");
+
+  if (feedIcon) feedIcon.textContent = emoji;
+  if (feedTitle) feedTitle.textContent = titolo;
+
+  if (feedTime) {
+    feedTime.textContent = dataBreve
+      ? `Ultima novità: ${dataBreve}`
+      : "Ultima novità";
+  }
+
+  feed.classList.remove("hidden");
+
+  // Rende tutta la fascia cliccabile
+  feed.style.cursor = "pointer";
+  feed.setAttribute("role", "button");
+  feed.setAttribute("tabindex", "0");
+  feed.setAttribute(
+    "aria-label",
+    `Apri l'ultima novità: ${titolo}`
+  );
+
+  feed.onclick = () => {
+    openHomeLatestItem(latest);
+  };
+
+  // Funziona anche con tastiera
+  feed.onkeydown = event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openHomeLatestItem(latest);
+    }
+  };
+}
 
     function updateHomeOverview() {
       const segs = Array.isArray(window.publicSegnalazioni) ? window.publicSegnalazioni : [];
