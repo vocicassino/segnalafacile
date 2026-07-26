@@ -2752,37 +2752,69 @@
   async function previewArticle() {
     const url = document.getElementById("articleUrl")?.value.trim() || "";
     if (!url) return alert("Inserisci prima il link.");
+
+    const btn = document.querySelector('button[onclick="previewArticle()"]');
+    const oldText = btn?.textContent || "🔍 Recupera dati dal link";
+    if (btn) { btn.disabled = true; btn.textContent = "⏳ Recupero in corso..."; }
+
     try {
       const res = await fetch(WORKER_URL + "/api/articoli/preview", {
         method: "POST",
         headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
         body: JSON.stringify({ url })
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Anteprima non disponibile");
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.detail || data?.error || `HTTP ${res.status}`);
 
-      if (data.preview?.title) document.getElementById("articleTitle").value = adminArticleDecode(data.preview.title);
-      if (data.preview?.description) document.getElementById("articleDesc").value = adminArticleDecode(data.preview.description);
-      if (data.preview?.content) document.getElementById("articleContent").value = adminArticleDecode(data.preview.content);
-      if (data.preview?.image) {
-        document.getElementById("articleImage").value = data.preview.image;
+      const preview = data.preview || {};
+      let recovered = 0;
+
+      // Non sovrascrive campi già compilati con valori generici come “Facebook”.
+      if (preview.title && !isGenericRecoveredTitle(preview.title)) {
+        document.getElementById("articleTitle").value = adminArticleDecode(preview.title);
+        recovered++;
+      }
+      if (preview.description) {
+        document.getElementById("articleDesc").value = adminArticleDecode(preview.description);
+        recovered++;
+      }
+      if (preview.content) {
+        document.getElementById("articleContent").value = adminArticleDecode(preview.content);
+        recovered++;
+      }
+      if (preview.image && /^https?:\/\//i.test(preview.image)) {
+        document.getElementById("articleImage").value = preview.image;
         document.getElementById("articleImageData").value = "";
         setArticleImageState("Immagine recuperata dal link.");
+        recovered++;
       }
+
       if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
       if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
       updateArticleImagePreview();
 
-      if (data.preview?.content) {
+      if (data.manualRequired) {
+        alert("Facebook impedisce al Worker di leggere automaticamente il testo del post. Il link e l'eventuale immagine sono stati mantenuti: copia il testo del post e incollalo nel campo 'Testo completo', poi inserisci un titolo e salva.");
+      } else if (preview.content) {
         alert("Dati recuperati, incluso il testo dell'articolo. Controlla e salva.");
+      } else if (recovered > 0) {
+        alert("Dati recuperati parzialmente. Completa il campo 'Testo completo' prima di salvare.");
       } else {
-        alert("Dati recuperati parzialmente. Se il testo completo non compare, incollalo manualmente nel campo 'Testo completo'.");
+        alert("Il sito non ha fornito dati leggibili. Compila titolo, descrizione e testo completo manualmente.");
       }
     } catch(e) {
+      console.error("previewArticle:", e);
       if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
       if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
-      alert("Non riesco a leggere automaticamente il link. Compila o incolla manualmente titolo, descrizione e testo completo.");
+      alert("Recupero non riuscito: " + (e?.message || "errore sconosciuto") + ". Compila o incolla manualmente titolo, descrizione e testo completo.");
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = oldText; }
     }
+  }
+
+  function isGenericRecoveredTitle(value) {
+    const t = String(value || "").trim().toLowerCase();
+    return !t || t === "facebook" || t === "accedi a facebook" || t === "log into facebook";
   }
 
   async function saveArticle() {
