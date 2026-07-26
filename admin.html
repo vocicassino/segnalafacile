@@ -545,8 +545,8 @@
         <div style="background:#070c18;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:15px;margin-bottom:15px;">
           <h3 id="articleFormTitle" style="margin-top:0;color:#eaf0ff;">➕ Aggiungi articolo <span id="articleModeBadge" class="article-mode-badge" style="display:none;">Modifica attiva</span></h3>
           <input type="hidden" id="articleEditingId" value="">
-          <label>Link articolo / post Facebook</label>
-          <input type="text" id="articleUrl" placeholder="https://www.facebook.com/... oppure link articolo" />
+          <label>Link articolo / post Facebook / Reel</label>
+          <input type="text" id="articleUrl" placeholder="https://www.facebook.com/reel/... oppure link articolo" oninput="detectArticleTypeFromUrl();" />
           <button onclick="previewArticle()">🔍 Recupera dati dal link</button>
           <button class="btn-success" id="saveArticleBtn" onclick="saveArticle()">💾 Salva articolo</button>
           <button class="btn-warning" id="cancelArticleEditBtn" onclick="cancelArticleEdit()" style="display:none;">↩️ Annulla modifica</button>
@@ -556,6 +556,16 @@
             <div class="full">
               <label>Titolo</label>
               <input type="text" id="articleTitle" placeholder="Titolo articolo" />
+            </div>
+            <div>
+              <label>Tipo contenuto</label>
+              <select id="articleType" onchange="updateArticleTypeHint();">
+                <option value="articolo">📰 Articolo</option>
+                <option value="facebook">📘 Post Facebook</option>
+                <option value="reel">🎬 Reel Facebook</option>
+                <option value="video">🎥 Video</option>
+              </select>
+              <div id="articleTypeHint" class="article-help">Il tipo viene riconosciuto automaticamente dal link.</div>
             </div>
             <div>
               <label>Categoria</label>
@@ -2548,6 +2558,56 @@
     return cleaned.length > max ? cleaned.slice(0, max).trim() + "..." : cleaned;
   }
 
+  function normalizeArticleType(value, url = "") {
+    const t = String(value || "").trim().toLowerCase();
+    if (["articolo", "facebook", "reel", "video"].includes(t)) return t;
+    return detectArticleTypeFromValue(url);
+  }
+
+  function detectArticleTypeFromValue(url) {
+    const u = String(url || "").trim().toLowerCase();
+    if (/facebook\.com\/(reel|reels)\//i.test(u)) return "reel";
+    if (/facebook\.com|fb\.com|fb\.watch/i.test(u)) return "facebook";
+    if (/youtube\.com|youtu\.be|vimeo\.com|tiktok\.com/i.test(u)) return "video";
+    return "articolo";
+  }
+
+  function articleTypeMeta(type) {
+    const t = normalizeArticleType(type);
+    if (t === "reel") return { emoji: "🎬", label: "Reel Facebook" };
+    if (t === "facebook") return { emoji: "📘", label: "Post Facebook" };
+    if (t === "video") return { emoji: "🎥", label: "Video" };
+    return { emoji: "📰", label: "Articolo" };
+  }
+
+  function articleTypeBadgeHtml(type, url = "") {
+    const meta = articleTypeMeta(normalizeArticleType(type, url));
+    return `<span class="badge badge-cat">${meta.emoji} ${adminArticleSafe(meta.label)}</span>`;
+  }
+
+  function detectArticleTypeFromUrl() {
+    const url = document.getElementById("articleUrl")?.value || "";
+    const select = document.getElementById("articleType");
+    if (select) select.value = detectArticleTypeFromValue(url);
+    updateArticleTypeHint();
+  }
+
+  function updateArticleTypeHint() {
+    const select = document.getElementById("articleType");
+    const hint = document.getElementById("articleTypeHint");
+    if (!select || !hint) return;
+    const meta = articleTypeMeta(select.value);
+    if (select.value === "reel") {
+      hint.textContent = `${meta.emoji} Il Reel sarà salvato e aperto direttamente su Facebook. Titolo, testo e copertina possono essere inseriti manualmente.`;
+    } else if (select.value === "facebook") {
+      hint.textContent = `${meta.emoji} Facebook può impedire il recupero automatico del testo: il link resta comunque valido.`;
+    } else if (select.value === "video") {
+      hint.textContent = `${meta.emoji} Il video verrà mostrato come contenuto esterno con copertina e descrizione.`;
+    } else {
+      hint.textContent = `${meta.emoji} Articolo leggibile nell’app, con collegamento alla fonte originale.`;
+    }
+  }
+
   function getArticleImageValue() {
     const uploaded = document.getElementById("articleImageData")?.value.trim() || "";
     const url = document.getElementById("articleImage")?.value.trim() || "";
@@ -2665,6 +2725,9 @@
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
+    const typeEl = document.getElementById("articleType");
+    if (typeEl) typeEl.value = "articolo";
+    updateArticleTypeHint();
     setArticleEditMode(false);
     const fileInput = document.getElementById("articleImageFile");
     if (fileInput) fileInput.value = "";
@@ -2707,15 +2770,15 @@
       return `
       <div class="list-item article-row">
         <div class="details">
-          <h3>📰 ${adminArticleSafe(a.titolo || "Senza titolo")}</h3>
-          <p><span class="badge badge-cat">${adminArticleSafe(a.categoria || "Aggiornamento")}</span> ${adminArticleSafe(a.dataStr || "")}</p>
+          <h3>${articleTypeMeta(normalizeArticleType(a.tipo, a.url)).emoji} ${adminArticleSafe(a.titolo || "Senza titolo")}</h3>
+          <p>${articleTypeBadgeHtml(a.tipo, a.url)} <span class="badge badge-cat">${adminArticleSafe(a.categoria || "Aggiornamento")}</span> ${adminArticleSafe(a.dataStr || "")}</p>
           <p style="margin-top:4px;">${adminArticleSafe(a.descrizione || "")}</p>
           ${fullPreview}
           <p style="margin-top:6px;font-size:12px;color:#a9b6db;word-break:break-all;">🔗 ${adminArticleSafe(a.url || "")}</p>
           ${a.immagine ? `<div class="mini-photos"><img src="${adminArticleSafe(a.immagine)}" alt="Anteprima articolo"></div>` : ""}
         </div>
         <div class="article-admin-actions">
-          <a href="${adminArticleSafe(a.url || "#")}" target="_blank"><button type="button">👁️ Apri</button></a>
+          <a href="${adminArticleSafe(a.url || "#")}" target="_blank"><button type="button">${normalizeArticleType(a.tipo, a.url) === "reel" ? "🎬 Guarda Reel" : "👁️ Apri"}</button></a>
           <button class="btn-warning" onclick="editArticle('${adminArticleSafe(a.id)}')">✏️ Modifica</button>
           <button class="btn-danger" onclick="deleteArticle('${adminArticleSafe(a.id)}')">🗑️ Elimina</button>
         </div>
@@ -2728,6 +2791,8 @@
     if (!article) return alert("Articolo non trovato.");
 
     document.getElementById("articleUrl").value = article.url || "";
+    document.getElementById("articleType").value = normalizeArticleType(article.tipo, article.url);
+    updateArticleTypeHint();
     document.getElementById("articleTitle").value = adminArticleDecode(article.titolo || "");
     document.getElementById("articleCategory").value = adminArticleDecode(article.categoria || "Aggiornamento");
     document.getElementById("articleDate").value = adminArticleDecode(article.dataStr || "");
@@ -2752,6 +2817,7 @@
   async function previewArticle() {
     const url = document.getElementById("articleUrl")?.value.trim() || "";
     if (!url) return alert("Inserisci prima il link.");
+    detectArticleTypeFromUrl();
 
     const btn = document.querySelector('button[onclick="previewArticle()"]');
     const oldText = btn?.textContent || "🔍 Recupera dati dal link";
@@ -2767,6 +2833,10 @@
       if (!res.ok || !data?.ok) throw new Error(data?.detail || data?.error || `HTTP ${res.status}`);
 
       const preview = data.preview || {};
+      const detectedType = normalizeArticleType(data.tipo || preview.tipo, url);
+      const typeEl = document.getElementById("articleType");
+      if (typeEl) typeEl.value = detectedType;
+      updateArticleTypeHint();
       let recovered = 0;
 
       // Non sovrascrive campi già compilati con valori generici come “Facebook”.
@@ -2793,7 +2863,9 @@
       if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
       updateArticleImagePreview();
 
-      if (data.manualRequired) {
+      if (detectedType === "reel" && data.manualRequired) {
+        alert("Reel Facebook riconosciuto. Facebook non permette al Worker di leggere sempre titolo e testo: inserisci manualmente titolo, descrizione e copertina, poi salva. Il pulsante pubblico aprirà direttamente il Reel.");
+      } else if (data.manualRequired) {
         alert("Facebook impedisce al Worker di leggere automaticamente il testo del post. Il link e l'eventuale immagine sono stati mantenuti: copia il testo del post e incollalo nel campo 'Testo completo', poi inserisci un titolo e salva.");
       } else if (preview.content) {
         alert("Dati recuperati, incluso il testo dell'articolo. Controlla e salva.");
@@ -2821,6 +2893,7 @@
     const editingId = document.getElementById("articleEditingId")?.value.trim() || "";
     const payload = {
       url: document.getElementById("articleUrl")?.value.trim() || "",
+      tipo: normalizeArticleType(document.getElementById("articleType")?.value, document.getElementById("articleUrl")?.value),
       titolo: document.getElementById("articleTitle")?.value.trim() || "",
       categoria: document.getElementById("articleCategory")?.value.trim() || "Aggiornamento",
       dataStr: document.getElementById("articleDate")?.value.trim() || new Date().toLocaleDateString("it-IT"),
@@ -2872,6 +2945,8 @@
   });
 
   window.previewArticle = previewArticle;
+  window.detectArticleTypeFromUrl = detectArticleTypeFromUrl;
+  window.updateArticleTypeHint = updateArticleTypeHint;
   window.saveArticle = saveArticle;
   window.clearArticleForm = clearArticleForm;
   window.cancelArticleEdit = cancelArticleEdit;
@@ -2883,6 +2958,7 @@
   window.handleArticleImageUpload = handleArticleImageUpload;
   window.removeArticleImage = removeArticleImage;
   window.clearArticleUploadedImageIfUrlChanged = clearArticleUploadedImageIfUrlChanged;
+  updateArticleTypeHint();
 
   window.activitySetMonthlySubscription = activitySetMonthlySubscription;
   window.registerActivityPaymentAdmin = registerActivityPaymentAdmin;

@@ -1118,6 +1118,12 @@
     .articleTopWow p{margin:10px 0 0;color:#c7d4ea;line-height:1.55;max-width:72ch;}
     .articleSearchBar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;margin-top:18px;}
     .articleSmartList{display:grid;gap:16px;margin-top:16px;}
+    .articleTypeBadge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:950;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#eaf0ff;}
+    .articleTypeBadge.reel{border-color:rgba(255,76,150,.48);background:rgba(255,76,150,.14);color:#ffd6ea;}
+    .articleTypeBadge.facebook{border-color:rgba(80,140,255,.48);background:rgba(80,140,255,.14);color:#dce9ff;}
+    .articleTypeBadge.video{border-color:rgba(255,184,108,.48);background:rgba(255,184,108,.14);color:#ffe5c7;}
+    .articleCardPro.is-reel{border-color:rgba(255,76,150,.32);background:linear-gradient(145deg, rgba(72,25,65,.92), rgba(8,18,34,.96));}
+
     .articleCardPro{display:grid;grid-template-columns:minmax(230px,.78fr) minmax(0,1.22fr);overflow:hidden;border-radius:26px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(145deg, rgba(20,49,82,.92), rgba(8,18,34,.96));box-shadow:0 18px 42px rgba(0,0,0,.26);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
     .articleCardPro:hover{transform:translateY(-2px);border-color:rgba(45,125,255,.38);box-shadow:0 24px 52px rgba(0,0,0,.32);}
     .articleCover,.articleCoverPlaceholder{width:100%;height:100%;min-height:245px;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:58px;background:linear-gradient(135deg,rgba(45,125,255,.20),rgba(25,195,125,.13));}
@@ -4118,6 +4124,29 @@
       return `<span class="categoryBadge" style="--badge-color:${meta.color};--badge-bg:${meta.bg};--badge-border:${meta.border};">${meta.emoji} ${label}</span>`;
     }
 
+    function detectPublicArticleType(a){
+      const explicit = String(a?.tipo || a?.type || "").trim().toLowerCase();
+      if (["articolo", "facebook", "reel", "video"].includes(explicit)) return explicit;
+      const url = String(a?.url || a?.link || "").toLowerCase();
+      if (/facebook\.com\/(reel|reels)\//i.test(url)) return "reel";
+      if (/facebook\.com|fb\.com|fb\.watch/i.test(url)) return "facebook";
+      if (/youtube\.com|youtu\.be|vimeo\.com|tiktok\.com/i.test(url)) return "video";
+      return "articolo";
+    }
+
+    function articleTypeMetaPublic(a){
+      const type = detectPublicArticleType(a);
+      if(type === "reel") return {type, emoji:"🎬", label:"Reel Facebook"};
+      if(type === "facebook") return {type, emoji:"📘", label:"Post Facebook"};
+      if(type === "video") return {type, emoji:"🎥", label:"Video"};
+      return {type:"articolo", emoji:"📰", label:"Articolo"};
+    }
+
+    function articleTypeBadgePublic(a){
+      const meta = articleTypeMetaPublic(a);
+      return `<span class="articleTypeBadge ${meta.type}">${meta.emoji} ${articleSafe(meta.label)}</span>`;
+    }
+
     function articleDateLabel(a){
       return a?.dataStr || a?.data || a?.createdAt || a?.created_at || "Data non indicata";
     }
@@ -4178,7 +4207,10 @@
       const res = await fetch(CONFIG.telegramWorkerUrl + "/api/articoli?t=" + Date.now());
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || data.warning || "Errore caricamento articoli");
-      articlesCache = Array.isArray(data.articoli) ? data.articoli : [];
+      articlesCache = (Array.isArray(data.articoli) ? data.articoli : []).map(a => ({
+        ...a,
+        tipo: detectPublicArticleType(a)
+      }));
       window.publicArticoli = articlesCache;
       return articlesCache;
     }
@@ -4189,6 +4221,7 @@
       const titolo = decodeHtmlEntities(a.titolo || "Articolo Voci di Cassino");
       const data = articleDateLabel(a);
       const categoria = a.categoria || "Aggiornamento";
+      const typeMeta = articleTypeMetaPublic(a);
       const img = articleImageUrl(a);
       const url = a.url || a.link || "";
       const text = getArticleLongText(a);
@@ -4197,9 +4230,10 @@
 
       document.getElementById("articleReaderTitle").textContent = titolo;
       document.getElementById("articleReaderTitleBig").textContent = titolo;
-      document.getElementById("articleReaderSub").textContent = "News app • lettura completa";
+      document.getElementById("articleReaderSub").textContent = typeMeta.type === "reel" ? "Reel Facebook • contenuto esterno" : "News app • lettura completa";
       document.getElementById("articleReaderMeta").innerHTML = `
         <span class="pill">🗓️ ${articleSafe(data)}</span>
+        ${articleTypeBadgePublic(a)}
         ${categoryBadgeHtml(categoria)}
       `;
       document.getElementById("articleReaderHero").innerHTML = img
@@ -4218,6 +4252,7 @@
       document.getElementById("articleReaderContent").innerHTML = formatArticleText(text);
       const link = document.getElementById("articleReaderOpenLink");
       link.href = url || "#";
+      link.textContent = typeMeta.type === "reel" ? "🎬 Guarda il Reel su Facebook" : (typeMeta.type === "video" ? "🎥 Apri il video" : "🔗 Apri fonte originale");
       link.style.display = url ? "inline-flex" : "none";
       const imgBtn = document.getElementById("articleReaderImageBtn");
       imgBtn.style.display = img ? "inline-flex" : "none";
@@ -4240,6 +4275,7 @@
       const titolo = articleSafe(a.titolo || "Articolo Voci di Cassino");
       const data = articleSafe(articleDateLabel(a));
       const categoria = a.categoria || "Aggiornamento";
+      const typeMeta = articleTypeMetaPublic(a);
       const descrizione = articleSafe(getArticlePreviewText(a, opts.previewMax || 240));
       const url = articleSafe(a.url || a.link || "#");
       const img = articleImageUrl(a);
@@ -4250,18 +4286,20 @@
         : `<div class="articleCoverPlaceholder">📰</div>`;
 
       return `
-        <article class="articleCardPro" id="${id}">
+        <article class="articleCardPro ${typeMeta.type === "reel" ? "is-reel" : ""}" id="${id}">
           ${cover}
           <div class="articleCardBody">
             <div class="articleCardMeta">
               <span class="pill">🗓️ ${data}</span>
+              ${articleTypeBadgePublic(a)}
               ${categoryBadgeHtml(categoria)}
             </div>
             <h3>${titolo}</h3>
             ${descrizione ? `<p>${descrizione}</p>` : `<p>Apri la lettura completa per leggere l’aggiornamento.</p>`}
             <div class="articleCardActions">
-              <button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${idx})">📖 Leggi nell’app</button>
-              <a class="btn ghost small" href="${url}" target="_blank" rel="noreferrer">🔗 Fonte</a>
+              ${typeMeta.type === "reel"
+                ? `<a class="btn primary small" href="${url}" target="_blank" rel="noreferrer">🎬 Guarda il Reel</a><button class="btn ghost small" type="button" onclick="openArticleReaderByIndex(${idx})">ℹ️ Dettagli</button>`
+                : `<button class="btn primary small" type="button" onclick="openArticleReaderByIndex(${idx})">📖 Leggi nell’app</button><a class="btn ghost small" href="${url}" target="_blank" rel="noreferrer">🔗 Fonte</a>`}
               <a class="btn ghost small" href="#/report">📣 Segnala</a>
             </div>
           </div>
@@ -4289,7 +4327,7 @@
         .map((a, index) => ({...a, __index:index}))
         .filter(a => {
           if (!q) return true;
-          return [a.titolo, a.dataStr, a.data, a.categoria, a.descrizione, a.testo, a.contenuto, a.excerpt, a.url]
+          return [a.titolo, a.dataStr, a.data, a.categoria, a.tipo, a.descrizione, a.testo, a.contenuto, a.excerpt, a.url]
             .some(v => decodeHtmlEntities(v).toLowerCase().includes(q));
         });
 
@@ -4319,7 +4357,7 @@
         return;
       }
 
-      const items = articlesCache.slice(0,3).map((a,index)=>({...a,__index:index}));
+      const items = articlesCache.slice(0,5).map((a,index)=>({...a,__index:index}));
       if(!items.length){
         box.innerHTML = "📰 Nessun articolo in evidenza disponibile.";
         return;
@@ -4335,7 +4373,7 @@
           <button class="homeFeaturedArticleRow" type="button" onclick="openArticleReaderByIndex(${a.__index})">
             ${thumb}
             <span class="homeFeaturedArticleText">
-              ${categoryBadgeHtml(a.categoria || 'Aggiornamento')}
+              <span style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">${articleTypeBadgePublic(a)} ${categoryBadgeHtml(a.categoria || 'Aggiornamento')}</span>
               <h3>${articleSafe(a.titolo || 'Articolo Voci di Cassino')}</h3>
               <p>${articleSafe(getArticlePreviewText(a, 150) || 'Apri la lettura completa per leggere l’aggiornamento.')}</p>
             </span>
