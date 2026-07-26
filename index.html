@@ -3391,16 +3391,56 @@ function updateMiniFeed() {
         return dateB - dateA;
       });
 
-      if (elLatest) {
-        if (allItems.length) {
-          const latest = allItems[0];
-          const title = latest.titolo || latest.nome || "Nuova attività";
-          const date = String(latest.dataStr || latest.when || "").split(",")[0];
-          elLatest.textContent = date ? `${title} • ${date}` : title;
-        } else {
-          elLatest.textContent = "Nessun punto ancora presente";
+      const latestLine = document.getElementById("homeLatestLine");
+
+if (elLatest) {
+  if (allItems.length) {
+    const latest = allItems[0];
+    const title =
+      latest.titolo ||
+      latest.nome ||
+      "Nuova attività";
+
+    const date = String(
+      latest.dataStr ||
+      latest.when ||
+      latest.createdAt ||
+      ""
+    ).split(",")[0];
+
+    elLatest.textContent = date
+      ? `${title} • ${date}`
+      : title;
+
+    if (latestLine) {
+      latestLine.style.cursor = "pointer";
+      latestLine.setAttribute("role", "button");
+      latestLine.setAttribute("tabindex", "0");
+      latestLine.title = "Apri questo aggiornamento";
+
+      latestLine.onclick = () => {
+        openHomeLatestItem(latest);
+      };
+
+      latestLine.onkeydown = event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openHomeLatestItem(latest);
         }
-      }
+      };
+    }
+  } else {
+    elLatest.textContent = "Nessun punto ancora presente";
+
+    if (latestLine) {
+      latestLine.onclick = null;
+      latestLine.onkeydown = null;
+      latestLine.style.cursor = "default";
+      latestLine.removeAttribute("role");
+      latestLine.removeAttribute("tabindex");
+    }
+  }
+}
 
       if (recentList) {
         const recent = allItems.slice(0, 3);
