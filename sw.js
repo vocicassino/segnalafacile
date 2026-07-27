@@ -1,12 +1,15 @@
-const CACHE_NAME = "segnalafacile-map-v2";
+const CACHE_NAME = "segnalafacile-assistente-testi-v1";
 const ASSETS = [
   "./",
   "./index.html",
+  "./admin.html",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./map-enhancements.css",
-  "./map-enhancements.js"
+  "./map-enhancements.js",
+  "./assistant-text-tools.css",
+  "./assistant-text-tools.js"
 ];
 
 self.addEventListener("install", (event) => {
@@ -26,30 +29,46 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-function isMainPage(url) {
+function pageKind(url) {
   const path = new URL(url).pathname;
-  return path.endsWith("/segnalafacile/") || path.endsWith("/segnalafacile/index.html");
+  if (path.endsWith("/segnalafacile/") || path.endsWith("/segnalafacile/index.html")) return "main";
+  if (path.endsWith("/segnalafacile/admin.html")) return "admin";
+  return "";
 }
 
-async function injectMapEnhancements(response) {
-  if (!response || !response.ok) return response;
+async function injectEnhancements(response, kind) {
+  if (!response || !response.ok || !kind) return response;
 
   const type = response.headers.get("content-type") || "";
   if (!type.includes("text/html")) return response;
 
   let html = await response.text();
 
-  if (!html.includes("map-enhancements.css")) {
+  if (kind === "main" && !html.includes("map-enhancements.css")) {
     html = html.replace(
       "</head>",
-      '  <link rel="stylesheet" href="./map-enhancements.css?v=2" />\n</head>'
+      '  <link rel="stylesheet" href="./map-enhancements.css?v=4" />\n</head>'
     );
   }
 
-  if (!html.includes("map-enhancements.js")) {
+  if (!html.includes("assistant-text-tools.css")) {
+    html = html.replace(
+      "</head>",
+      '  <link rel="stylesheet" href="./assistant-text-tools.css?v=1" />\n</head>'
+    );
+  }
+
+  if (kind === "main" && !html.includes("map-enhancements.js")) {
     html = html.replace(
       "</body>",
-      '  <script src="./map-enhancements.js?v=2"></script>\n</body>'
+      '  <script src="./map-enhancements.js?v=4"></script>\n</body>'
+    );
+  }
+
+  if (!html.includes("assistant-text-tools.js")) {
+    html = html.replace(
+      "</body>",
+      '  <script src="./assistant-text-tools.js?v=1"></script>\n</body>'
     );
   }
 
@@ -69,12 +88,15 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate" || request.destination === "document") {
     event.respondWith((async () => {
+      const kind = pageKind(request.url);
       try {
         const network = await fetch(request, { cache: "no-store" });
-        return isMainPage(request.url) ? injectMapEnhancements(network) : network;
+        return injectEnhancements(network, kind);
       } catch {
-        const cached = await caches.match("./index.html");
-        return isMainPage(request.url) ? injectMapEnhancements(cached) : cached;
+        const fallback = kind === "admin"
+          ? await caches.match("./admin.html")
+          : await caches.match("./index.html");
+        return injectEnhancements(fallback, kind);
       }
     })());
     return;
