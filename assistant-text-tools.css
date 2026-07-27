@@ -1,0 +1,59 @@
+/* Segnala Facile - Assistente testi contestuale */
+nav.bottom .inner{grid-template-columns:repeat(6,1fr)!important;}
+nav.bottom a[data-nav="ai"],#view-ai{display:none!important;}
+
+.sf-text-assistant{
+  margin:12px 0 16px;
+  padding:14px;
+  border:1px solid rgba(45,125,255,.28);
+  border-radius:22px;
+  background:
+    radial-gradient(320px 130px at 0% 0%,rgba(45,125,255,.18),transparent 62%),
+    radial-gradient(300px 130px at 100% 0%,rgba(25,195,125,.12),transparent 60%),
+    rgba(0,0,0,.16);
+  box-shadow:0 14px 30px rgba(0,0,0,.18);
+}
+.sf-text-assistant-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+.sf-text-assistant-head strong{display:block;font-size:15px;color:#fff;}
+.sf-text-assistant-head span{display:block;margin-top:4px;color:#a9b6db;font-size:12.5px;line-height:1.45;}
+.sf-text-assistant-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;}
+.sf-text-assistant-actions button{margin:0;}
+.sf-text-assistant-status{display:none;margin-top:10px;padding:10px 12px;border-radius:16px;background:rgba(25,195,125,.10);border:1px solid rgba(25,195,125,.25);color:#dfffee;font-size:12.5px;line-height:1.45;}
+.sf-activity-assistant{margin-top:12px!important;margin-bottom:12px!important;}
+
+.sf-text-modal{
+  position:fixed;inset:0;z-index:1000000;display:none;
+  align-items:center;justify-content:center;padding:14px;
+  background:rgba(0,0,0,.68);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.sf-text-modal.open{display:flex;}
+.sf-text-modal-card{
+  width:min(720px,100%);max-height:92vh;overflow:auto;padding:18px;
+  border-radius:26px;border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(145deg,rgba(20,48,78,.98),rgba(7,15,29,.98));
+  box-shadow:0 34px 90px rgba(0,0,0,.62);color:#eaf0ff;
+}
+.sf-text-modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px;}
+.sf-text-modal-head strong{font-size:19px;}
+.sf-text-modal-head button{min-height:40px;padding:8px 11px;border-radius:14px;}
+.sf-text-modal textarea{
+  width:100%;min-height:300px;resize:vertical;padding:14px;border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:#eaf0ff;
+  font:inherit;line-height:1.55;
+}
+.sf-text-modal-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;}
+.sf-text-modal-actions button:first-child{background:#2d7dff;color:white;}
+
+/* Pannello admin: eredita il tema anche se non usa le classi .btn */
+#sfAdminArticleAssistant button{
+  cursor:pointer;background:#2d7dff;color:white;border:0;padding:10px 16px;
+  border-radius:8px;font-weight:bold;font-size:14px;margin:0;
+}
+#sfAdminArticleAssistant button:last-child{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);}
+
+@media(max-width:760px){
+  nav.bottom .inner{grid-template-columns:repeat(6,1fr)!important;}
+  .sf-text-assistant-actions>*{width:100%;}
+  .sf-text-modal-card{padding:14px;border-radius:22px;}
+  .sf-text-modal textarea{min-height:260px;}
+}
