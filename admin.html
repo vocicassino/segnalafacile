@@ -2663,7 +2663,7 @@
     if (select.value === "reel") {
       hint.textContent = `${meta.emoji} Il Reel sarà salvato e aperto direttamente su Facebook. Titolo, testo e copertina possono essere inseriti manualmente.`;
     } else if (select.value === "facebook") {
-      hint.textContent = `${meta.emoji} Facebook può impedire il recupero automatico del testo: il link resta comunque valido.`;
+      hint.textContent = `${meta.emoji} Il sistema prova a recuperare testo, data e immagine. Per i post della pagina, il collegamento META_PAGE_ACCESS_TOKEN rende il recupero più completo.`;
     } else if (select.value === "video") {
       hint.textContent = `${meta.emoji} Il video verrà mostrato come contenuto esterno con copertina e descrizione.`;
     } else {
@@ -2887,10 +2887,11 @@
     if (btn) { btn.disabled = true; btn.textContent = "⏳ Recupero in corso..."; }
 
     try {
+      const requestedType = document.getElementById("articleType")?.value || detectArticleTypeFromValue(url);
       const res = await fetch(WORKER_URL + "/api/articoli/preview", {
         method: "POST",
         headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url, tipo: requestedType })
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.detail || data?.error || `HTTP ${res.status}`);
@@ -2902,7 +2903,6 @@
       updateArticleTypeHint();
       let recovered = 0;
 
-      // Non sovrascrive campi già compilati con valori generici come “Facebook”.
       if (preview.title && !isGenericRecoveredTitle(preview.title)) {
         document.getElementById("articleTitle").value = adminArticleDecode(preview.title);
         recovered++;
@@ -2921,19 +2921,30 @@
         setArticleImageState("Immagine recuperata dal link.");
         recovered++;
       }
+      if (preview.date) {
+        document.getElementById("articleDate").value = adminArticleDecode(preview.date);
+        recovered++;
+      } else if (!document.getElementById("articleDate").value) {
+        document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
+      }
 
-      if (!document.getElementById("articleDate").value) document.getElementById("articleDate").value = new Date().toLocaleDateString("it-IT");
       if (!document.getElementById("articleCategory").value) document.getElementById("articleCategory").value = "Aggiornamento";
       updateArticleImagePreview();
 
-      if (detectedType === "reel" && data.manualRequired) {
-        alert("Reel Facebook riconosciuto. Facebook non permette al Worker di leggere sempre titolo e testo: inserisci manualmente titolo, descrizione e copertina, poi salva. Il pulsante pubblico aprirà direttamente il Reel.");
+      if (preview.content) {
+        const sourceLabel = data.source === "facebook_graph_page_token"
+          ? " tramite collegamento ufficiale alla pagina Facebook"
+          : "";
+        alert("Dati recuperati automaticamente" + sourceLabel + ". Controlla i campi e salva.");
+      } else if (data.manualRequired && !data.graphConfigured) {
+        alert("Link e immagine recuperati, ma Facebook non ha restituito il testo del post. Per compilare automaticamente anche il testo dei post di Voci di Cassino, configura nel Worker il secret META_PAGE_ACCESS_TOKEN. Nel frattempo puoi incollare il testo manualmente.");
+      } else if (detectedType === "reel" && data.manualRequired) {
+        alert("Reel Facebook riconosciuto. Facebook non ha reso disponibile il testo di questo Reel: inserisci titolo e descrizione oppure incolla il testo, poi salva.");
       } else if (data.manualRequired) {
-        alert("Facebook impedisce al Worker di leggere automaticamente il testo del post. Il link e l'eventuale immagine sono stati mantenuti: copia il testo del post e incollalo nel campo 'Testo completo', poi inserisci un titolo e salva.");
-      } else if (preview.content) {
-        alert("Dati recuperati, incluso il testo dell'articolo. Controlla e salva.");
+        const detail = data.graphError ? "\n\nDettaglio collegamento Facebook: " + data.graphError : "";
+        alert("Facebook non ha reso disponibile il testo di questo contenuto. Link e immagine restano validi; puoi completare manualmente titolo e testo." + detail);
       } else if (recovered > 0) {
-        alert("Dati recuperati parzialmente. Completa il campo 'Testo completo' prima di salvare.");
+        alert("Dati recuperati parzialmente. Controlla e completa i campi mancanti prima di salvare.");
       } else {
         alert("Il sito non ha fornito dati leggibili. Compila titolo, descrizione e testo completo manualmente.");
       }
