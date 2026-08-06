@@ -207,6 +207,35 @@
     .admin-ai-block{background:#070c18;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px;margin-top:10px;white-space:pre-wrap;line-height:1.45;color:#eaf0ff;}
     @media(max-width:720px){.admin-ai-grid{grid-template-columns:1fr;}}
 
+
+    /* SINCRONIZZAZIONE AUTOMATICA META */
+    .meta-sync-box{
+      margin-bottom:15px;
+      padding:15px;
+      border-radius:14px;
+      border:1px solid rgba(45,125,255,.35);
+      background:
+        radial-gradient(300px 140px at 0% 0%, rgba(45,125,255,.18), transparent 65%),
+        rgba(7,12,24,.92);
+    }
+    .meta-sync-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+    .meta-sync-title{font-size:17px;font-weight:950;color:#fff;}
+    .meta-sync-sub{color:#a9b6db;font-size:12px;line-height:1.45;margin-top:5px;max-width:70ch;}
+    .meta-sync-status{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:10px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      color:#dce7ff;
+      font-size:12px;
+      line-height:1.55;
+    }
+    .meta-sync-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+    .meta-sync-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:#f39c12;}
+    .meta-sync-dot.ok{background:#19c37d;box-shadow:0 0 12px rgba(25,195,125,.55);}
+    .meta-sync-dot.off{background:#ff4d4f;}
+
   </style>
   <link rel="stylesheet" href="./assistant-text-tools.css?v=2">
 </head>
@@ -543,6 +572,26 @@
         <span id="articoliIcon" class="section-icon">▼</span>
       </div>
       <div id="articoliSection" class="section-content">
+
+        <div class="meta-sync-box">
+          <div class="meta-sync-head">
+            <div>
+              <div class="meta-sync-title">🤖 Sincronizzazione automatica Facebook → Segnala Facile</div>
+              <div class="meta-sync-sub">
+                I nuovi post, foto, video e Reel della pagina Voci di Cassino vengono importati nella sezione Articoli.
+                Le modifiche fatte manualmente nell'admin non vengono sovrascritte. Le Storie Facebook non sono garantite dalle API e restano escluse quando Meta non le rende disponibili.
+              </div>
+            </div>
+            <span class="archive-badge ok">D1 + Graph API</span>
+          </div>
+          <div id="metaSyncStatus" class="meta-sync-status">Stato sincronizzazione non ancora caricato.</div>
+          <div class="meta-sync-actions">
+            <button type="button" onclick="syncMetaNow()">🔄 Sincronizza adesso</button>
+            <button type="button" class="btn-success" onclick="subscribeMetaWebhook()">🔗 Collega webhook alla Pagina</button>
+            <button type="button" class="btn-secondary" onclick="loadMetaSyncStatus()">📊 Aggiorna stato</button>
+          </div>
+        </div>
+
         <div style="background:#070c18;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:15px;margin-bottom:15px;">
           <h3 id="articleFormTitle" style="margin-top:0;color:#eaf0ff;">➕ Aggiungi articolo <span id="articleModeBadge" class="article-mode-badge" style="display:none;">Modifica attiva</span></h3>
           <input type="hidden" id="articleEditingId" value="">
@@ -809,6 +858,7 @@
       }
       if (sectionId === "articoliSection") {
         loadArticles();
+        loadMetaSyncStatus();
       }
       if (sectionId === "attivitaSection") {
         loadAttivitaAdmin();
@@ -2732,6 +2782,109 @@
     updateArticleImagePreview();
   }
 
+
+  // ==========================================
+  // SINCRONIZZAZIONE AUTOMATICA META
+  // ==========================================
+
+  function metaSyncFormatDate(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "mai";
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime()) ? raw : d.toLocaleString("it-IT");
+  }
+
+  function metaSyncConfigLine(label, active) {
+    return `<span class="archive-badge ${active ? "ok" : "off"}">${active ? "✅" : "⛔"} ${adminArticleSafe(label)}</span>`;
+  }
+
+  async function loadMetaSyncStatus() {
+    const box = document.getElementById("metaSyncStatus");
+    if (!box || !apiKey) return;
+    box.innerHTML = "⏳ Lettura configurazione Meta...";
+
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/meta-status?t=" + Date.now(), {
+        headers: { "X-Api-Key": apiKey }
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+      const cfg = data.configured || {};
+      const lastSuccess = data.state?.last_success?.value || null;
+      const lastError = data.state?.last_error?.value || null;
+      const subscribed = !!data.subscription?.subscribed;
+
+      box.innerHTML = `
+        <div>
+          ${metaSyncConfigLine("Page ID", cfg.pageId)}
+          ${metaSyncConfigLine("Page Access Token", cfg.pageAccessToken)}
+          ${metaSyncConfigLine("Verify Token", cfg.verifyToken)}
+          ${metaSyncConfigLine("App Secret", cfg.appSecret)}
+          ${metaSyncConfigLine("Webhook feed", subscribed)}
+        </div>
+        <div style="margin-top:8px;">
+          <span class="meta-sync-dot ${lastSuccess ? "ok" : "off"}"></span>
+          <b>Ultima sincronizzazione riuscita:</b>
+          ${lastSuccess ? metaSyncFormatDate(lastSuccess.completedAt) : "mai"}
+          ${lastSuccess?.stats ? ` — importati ${lastSuccess.stats.inserted || 0}, aggiornati ${lastSuccess.stats.updated || 0}, preservati ${lastSuccess.stats.preserved || 0}` : ""}
+        </div>
+        ${lastError ? `<div style="margin-top:6px;color:#ffb8ba;"><b>Ultimo errore:</b> ${adminArticleSafe(lastError.error || "")} (${metaSyncFormatDate(lastError.failedAt)})</div>` : ""}
+        <div style="margin-top:7px;color:#a9b6db;">
+          Callback: ${adminArticleSafe(data.callbackUrl || "")}<br>
+          Cron consigliato: <b>${adminArticleSafe(data.cronRecommended || "*/15 * * * *")}</b>
+        </div>
+      `;
+    } catch (e) {
+      box.innerHTML = `<span class="meta-sync-dot off"></span>Errore lettura stato: ${adminArticleSafe(e.message || e)}`;
+    }
+  }
+
+  async function syncMetaNow() {
+    if (!apiKey) return alert("Accedi prima all'admin.");
+    const box = document.getElementById("metaSyncStatus");
+    if (box) box.innerHTML = "⏳ Sincronizzazione Facebook in corso...";
+
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/meta-sync", {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ limit: 30 })
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+      const s = data.stats || {};
+      alert(`Sincronizzazione completata.\n\nContenuti letti: ${s.fetched || 0}\nNuovi articoli: ${s.inserted || 0}\nAggiornati: ${s.updated || 0}\nModifiche admin preservate: ${s.preserved || 0}`);
+      await loadArticles();
+      await loadMetaSyncStatus();
+    } catch (e) {
+      alert("Errore sincronizzazione Meta: " + (e.message || e));
+      await loadMetaSyncStatus();
+    }
+  }
+
+  async function subscribeMetaWebhook() {
+    if (!apiKey) return alert("Accedi prima all'admin.");
+    if (!confirm("Collegare l'app Meta alla pagina Voci di Cassino per ricevere automaticamente i nuovi contenuti?")) return;
+
+    try {
+      const res = await fetch(WORKER_URL + "/api/admin/meta-subscribe", {
+        method: "POST",
+        headers: { "X-Api-Key": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({})
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || data?.hint || `HTTP ${res.status}`);
+
+      alert("Webhook collegato correttamente al campo feed della Pagina.");
+      await loadMetaSyncStatus();
+    } catch (e) {
+      alert("Collegamento webhook non riuscito: " + (e.message || e) + "\n\nIl Page Access Token deve includere pages_manage_metadata.");
+    }
+  }
+
+
   async function handleArticleImageUpload(input) {
     const file = input?.files?.[0];
     if (!file) return;
@@ -2834,7 +2987,7 @@
       <div class="list-item article-row">
         <div class="details">
           <h3>${articleTypeMeta(normalizeArticleType(a.tipo, a.url)).emoji} ${adminArticleSafe(a.titolo || "Senza titolo")}</h3>
-          <p>${articleTypeBadgeHtml(a.tipo, a.url)} <span class="badge badge-cat">${adminArticleSafe(a.categoria || "Aggiornamento")}</span> ${adminArticleSafe(a.dataStr || "")}</p>
+          <p>${articleTypeBadgeHtml(a.tipo, a.url)} ${Number(a.auto_imported || 0) === 1 ? '<span class="archive-badge ok">🤖 Importato automaticamente</span>' : ''} <span class="badge badge-cat">${adminArticleSafe(a.categoria || "Aggiornamento")}</span> ${adminArticleSafe(a.dataStr || "")}</p>
           <p style="margin-top:4px;">${adminArticleSafe(a.descrizione || "")}</p>
           ${fullPreview}
           <p style="margin-top:6px;font-size:12px;color:#a9b6db;word-break:break-all;">🔗 ${adminArticleSafe(a.url || "")}</p>
@@ -3027,6 +3180,9 @@
   window.editArticle = editArticle;
   window.deleteArticle = deleteArticle;
   window.loadArticles = loadArticles;
+  window.loadMetaSyncStatus = loadMetaSyncStatus;
+  window.syncMetaNow = syncMetaNow;
+  window.subscribeMetaWebhook = subscribeMetaWebhook;
   window.updateArticleImagePreview = updateArticleImagePreview;
   window.pickArticleImageFromGallery = pickArticleImageFromGallery;
   window.handleArticleImageUpload = handleArticleImageUpload;
