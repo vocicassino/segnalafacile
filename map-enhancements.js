@@ -11,7 +11,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-22.7";
+  const VERSION = "2026-08-22.8";
 
   const state = {
     originalEnsureMaps: null,
@@ -29,7 +29,11 @@
     resizeObserver: null,
     visibilityObserver: null,
     periodicTimer: null,
-    openTimer: null
+    openTimer: null,
+    popupOpen: false,
+    popupMarker: null,
+    pendingRefresh: false,
+    pendingRefreshArgs: null
   };
 
   const safe = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -207,7 +211,7 @@
     }
 
     if (help) {
-      help.textContent = "Mappa V7: i punti vengono caricati automaticamente. Tocca un gruppo numerato per aprirlo.";
+      help.textContent = "Mappa V8: i punti restano aperti mentre leggi il popup. Tocca un gruppo numerato per aprirlo.";
     }
   }
 
@@ -343,7 +347,10 @@
   }
 
   function renderClusters() {
-    if (state.rebuilding || state.rendering) return;
+    // IMPORTANTISSIMO: Leaflet può spostare leggermente la mappa (autoPan)
+    // quando apre un popup. Quel movimento genera moveend/zoomend.
+    // Se ricreassimo i layer in quel momento, il popup verrebbe chiuso subito.
+    if (state.rebuilding || state.rendering || state.popupOpen) return;
 
     const map = getMainMap();
     const layer = getMainLayer();
@@ -488,15 +495,42 @@
     state.attachedMap = map;
 
     map.on("zoomend", () => {
-      if (!state.rebuilding) renderClusters();
+      if (!state.rebuilding && !state.popupOpen) renderClusters();
     });
 
     map.on("moveend", () => {
-      if (!state.rebuilding) renderClusters();
+      if (!state.rebuilding && !state.popupOpen) renderClusters();
     });
 
     map.on("resize", () => {
-      if (!state.rebuilding) renderClusters();
+      if (!state.rebuilding && !state.popupOpen) renderClusters();
+    });
+
+    // Mantiene aperto il popup anche quando Leaflet esegue l'auto-pan.
+    map.on("popupopen", (event) => {
+      state.popupOpen = true;
+      state.popupMarker = event?.popup?._source || null;
+    });
+
+    map.on("popupclose", () => {
+      state.popupOpen = false;
+      state.popupMarker = null;
+
+      const hadPendingRefresh = state.pendingRefresh;
+      const pendingArgs = state.pendingRefreshArgs;
+
+      state.pendingRefresh = false;
+      state.pendingRefreshArgs = null;
+
+      // Se mentre il popup era aperto sono arrivati dati nuovi,
+      // aggiorniamo solo DOPO la chiusura del popup.
+      setTimeout(() => {
+        if (hadPendingRefresh && typeof refreshPublicMaps === "function") {
+          try { refreshPublicMaps(...(pendingArgs || [])); } catch {}
+        } else {
+          renderClusters();
+        }
+      }, 60);
     });
 
     map.on("dragstart", () => {
@@ -773,6 +807,16 @@
 
     const enhancedRefreshPublicMaps =
       function enhancedRefreshPublicMaps(...args) {
+
+        // Se l'utente sta leggendo un popup non tocchiamo layerMain:
+        // refreshPublicMaps() fa clearLayers() e chiuderebbe il popup.
+        // Conserviamo la richiesta e la eseguiamo appena il popup viene chiuso.
+        if (state.popupOpen) {
+          state.pendingRefresh = true;
+          state.pendingRefreshArgs = args;
+          scheduleInvalidate();
+          return;
+        }
 
         const map = getMainMap();
 
