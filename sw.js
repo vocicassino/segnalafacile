@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v3";
+const CACHE_NAME = "segnalafacile-map-v12";
 
 const ASSETS = [
   "./",
