@@ -11,7 +11,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-22.8";
+  const VERSION = "2026-08-22.9";
 
   const state = {
     originalEnsureMaps: null,
@@ -184,6 +184,214 @@
     return { emoji: "📣", label: "Segnalazione", className: "report" };
   }
 
+
+  function ensureFullscreenStyle() {
+    if (document.getElementById("sfMapFullscreenStyle")) return;
+
+    const style = document.createElement("style");
+    style.id = "sfMapFullscreenStyle";
+    style.textContent = `
+      html.sf-map-fullscreen-root,
+      body.sf-map-fullscreen {
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+      }
+
+      body.sf-map-fullscreen #view-map {
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 900000 !important;
+        display: block !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #07111f !important;
+        overflow: hidden !important;
+      }
+
+      body.sf-map-fullscreen #view-map > * {
+        max-width: none !important;
+      }
+
+      body.sf-map-fullscreen #view-map .card {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #07111f !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+      }
+
+      body.sf-map-fullscreen #view-map .card::before {
+        display: none !important;
+      }
+
+      body.sf-map-fullscreen #view-map .mapShell {
+        position: relative !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: #07111f !important;
+      }
+
+      body.sf-map-fullscreen #view-map .mapTopBar {
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+        padding:
+          max(10px, env(safe-area-inset-top))
+          76px
+          10px
+          12px !important;
+        border-radius: 0 !important;
+        z-index: 1200 !important;
+        background: rgba(7,17,31,.96) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+      }
+
+      body.sf-map-fullscreen #view-map .sf-map-legend {
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+        padding: 8px 10px !important;
+        border-left: 0 !important;
+        border-right: 0 !important;
+        border-radius: 0 !important;
+        background: rgba(7,17,31,.94) !important;
+        z-index: 1190 !important;
+      }
+
+      body.sf-map-fullscreen #view-map .sf-map-help {
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+        padding: 7px 12px 9px !important;
+        background: rgba(7,17,31,.94) !important;
+        z-index: 1190 !important;
+      }
+
+      body.sf-map-fullscreen #mapMain {
+        position: relative !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        height: auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+      }
+
+      #sfMapFullscreenClose {
+        position: fixed;
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        z-index: 900100;
+        display: none;
+        width: 52px;
+        height: 52px;
+        padding: 0;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,.18);
+        background: rgba(7,17,31,.88);
+        color: #fff;
+        font-size: 22px;
+        font-weight: 1000;
+        box-shadow: 0 12px 32px rgba(0,0,0,.42);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        align-items: center;
+        justify-content: center;
+      }
+
+      body.sf-map-fullscreen #sfMapFullscreenClose {
+        display: flex;
+      }
+
+      @media (min-width: 900px) {
+        body.sf-map-fullscreen #view-map .mapTopBar {
+          padding-left: 18px !important;
+          padding-right: 86px !important;
+        }
+
+        body.sf-map-fullscreen #view-map .sf-map-legend {
+          padding-left: 18px !important;
+          padding-right: 18px !important;
+        }
+
+        body.sf-map-fullscreen #view-map .sf-map-help {
+          padding-left: 18px !important;
+          padding-right: 18px !important;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  function ensureFullscreenCloseButton() {
+    if (document.getElementById("sfMapFullscreenClose")) return;
+
+    const button = document.createElement("button");
+    button.id = "sfMapFullscreenClose";
+    button.type = "button";
+    button.setAttribute("aria-label", "Chiudi mappa a schermo intero");
+    button.title = "Chiudi mappa";
+    button.textContent = "✕";
+
+    button.addEventListener("click", () => {
+      location.hash = "#/";
+    });
+
+    document.body.appendChild(button);
+  }
+
+  function setMapFullscreen(active) {
+    ensureFullscreenStyle();
+    ensureFullscreenCloseButton();
+
+    const enabled = !!active;
+
+    document.documentElement.classList.toggle(
+      "sf-map-fullscreen-root",
+      enabled
+    );
+
+    document.body.classList.toggle(
+      "sf-map-fullscreen",
+      enabled
+    );
+
+    // Leaflet deve ricalcolare la dimensione dopo il cambio layout.
+    setTimeout(scheduleInvalidate, 0);
+    setTimeout(scheduleInvalidate, 80);
+    setTimeout(scheduleInvalidate, 260);
+  }
+
   function addLegend() {
     const mapShell = document.querySelector("#view-map .mapShell");
     const topBar = mapShell?.querySelector(".mapTopBar");
@@ -211,7 +419,7 @@
     }
 
     if (help) {
-      help.textContent = "Mappa V8: i punti restano aperti mentre leggi il popup. Tocca un gruppo numerato per aprirlo.";
+      help.textContent = "Mappa V9: visualizzazione a schermo intero. Tocca un gruppo numerato per aprirlo.";
     }
   }
 
@@ -888,7 +1096,11 @@
     }, true);
 
     window.addEventListener("hashchange", () => {
-      if (location.hash === "#/map") {
+      const isMap = location.hash === "#/map";
+
+      setMapFullscreen(isMap);
+
+      if (isMap) {
         state.userViewLocked = false;
         window.__sfMapUserViewLocked = false;
 
@@ -955,6 +1167,8 @@
 
     try {
       enhancedEnsureMaps();
+
+      setMapFullscreen(location.hash === "#/map");
 
       if (mapVisible()) {
         scheduleOpenMap(true);
