@@ -11,7 +11,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-22.11";
+  const VERSION = "2026-08-22.12";
 
   const state = {
     originalEnsureMaps: null,
@@ -522,8 +522,23 @@
       body.sf-map-fullscreen #view-map .mapTopBar .btn,
       body.sf-map-fullscreen #view-map .mapShell > .row,
       body.sf-map-fullscreen #view-map .sf-map-legend,
-      body.sf-map-fullscreen #view-map .sf-map-help {
+      body.sf-map-fullscreen #view-map .sf-map-help,
+      body.sf-map-fullscreen #mapCategoryFilter,
+      body.sf-map-fullscreen #btnMapFit {
         display: none !important;
+      }
+
+      /* Il filtro originale resta nel DOM solo come sorgente dati per il menu laterale,
+         ma non deve mai occupare spazio nella mappa fullscreen. */
+      body.sf-map-fullscreen #mapCategoryFilter {
+        position: fixed !important;
+        left: -9999px !important;
+        top: -9999px !important;
+        width: 1px !important;
+        height: 1px !important;
+        min-height: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
       }
 
       #sfMapMenuToggle,
@@ -903,6 +918,9 @@
 
   function toggleMapMenu(force) {
     const open = typeof force === "boolean" ? force : !state.menuOpen;
+
+    // Prima di aprire il menu, aggiorna sempre le opzioni dal filtro originale.
+    if (open) syncMapMenuUi();
     state.menuOpen = open;
     state.infoOpen = open ? false : state.infoOpen;
 
@@ -953,7 +971,7 @@
     }
 
     if (help) {
-      help.textContent = "Mappa V11: menu laterale con filtri e spiegazioni discrete.";
+      help.textContent = "Mappa V12: filtro spostato completamente nel menu laterale.";
     }
   }
 
