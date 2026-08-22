@@ -11,7 +11,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-22.9";
+  const VERSION = "2026-08-22.10";
 
   const state = {
     originalEnsureMaps: null,
@@ -348,6 +348,172 @@
           padding-right: 18px !important;
         }
       }
+
+      /* V10: la MAPPA è davvero lo sfondo dell'intera schermata.
+         I controlli galleggiano sopra senza togliere altezza al canvas. */
+      body.sf-map-fullscreen #view-map .mapShell {
+        position: absolute !important;
+        inset: 0 !important;
+        display: block !important;
+        overflow: hidden !important;
+      }
+
+      body.sf-map-fullscreen #mapMain {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        z-index: 1 !important;
+      }
+
+      /* Nasconde titolo e descrizione grandi: la mappa parte da subito sotto
+         la barra di stato / bordo superiore del browser. */
+      body.sf-map-fullscreen #view-map .mapTopBar > div:first-child {
+        display: none !important;
+      }
+
+      body.sf-map-fullscreen #view-map .mapTopBar {
+        position: absolute !important;
+        top: max(10px, env(safe-area-inset-top)) !important;
+        left: 10px !important;
+        right: 74px !important;
+        width: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        z-index: 1300 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+      }
+
+      /* Il bottone Sincronizza diventa compatto e flottante. */
+      body.sf-map-fullscreen #view-map .mapTopBar button,
+      body.sf-map-fullscreen #view-map .mapTopBar .btn {
+        min-height: 46px !important;
+        padding: 10px 13px !important;
+        border-radius: 15px !important;
+        background: rgba(7,17,31,.88) !important;
+        border: 1px solid rgba(255,255,255,.18) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,.30) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+      }
+
+      /* Filtro e Inquadra: flottanti sopra la mappa. */
+      body.sf-map-fullscreen #mapCategoryFilter {
+        position: absolute !important;
+        top: calc(max(10px, env(safe-area-inset-top)) + 58px) !important;
+        left: 10px !important;
+        z-index: 1295 !important;
+        width: min(285px, calc(100vw - 158px)) !important;
+        min-height: 46px !important;
+        margin: 0 !important;
+        border-radius: 15px !important;
+        background: rgba(7,17,31,.90) !important;
+        border: 1px solid rgba(255,255,255,.18) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,.30) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+      }
+
+      body.sf-map-fullscreen #btnMapFit {
+        position: absolute !important;
+        top: calc(max(10px, env(safe-area-inset-top)) + 58px) !important;
+        right: 10px !important;
+        z-index: 1296 !important;
+        min-height: 46px !important;
+        margin: 0 !important;
+        padding: 10px 13px !important;
+        border-radius: 15px !important;
+        background: rgba(7,17,31,.90) !important;
+        border: 1px solid rgba(255,255,255,.18) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,.30) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+      }
+
+      /* La riga che contiene filtro/inquadra non deve occupare spazio.
+         Gli elementi interni sono già assoluti. */
+      body.sf-map-fullscreen #view-map .mapShell > .row {
+        position: static !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* Legenda piccola flottante in basso, sopra Leaflet attribution. */
+      body.sf-map-fullscreen #view-map .sf-map-legend {
+        position: absolute !important;
+        left: 10px !important;
+        bottom: max(42px, calc(env(safe-area-inset-bottom) + 36px)) !important;
+        z-index: 1280 !important;
+        max-width: calc(100vw - 20px) !important;
+        margin: 0 !important;
+        padding: 6px !important;
+        gap: 4px !important;
+        border-radius: 14px !important;
+        background: rgba(7,17,31,.76) !important;
+        border: 1px solid rgba(255,255,255,.14) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,.25) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+      }
+
+      body.sf-map-fullscreen #view-map .sf-map-legend-item {
+        padding: 5px 7px !important;
+        font-size: 10px !important;
+      }
+
+      /* Il testo guida non occupa più una fascia intera. */
+      body.sf-map-fullscreen #view-map .sf-map-help {
+        display: none !important;
+      }
+
+      /* Pulsante chiusura più compatto sopra la mappa. */
+      body.sf-map-fullscreen #sfMapFullscreenClose {
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 15px !important;
+        background: rgba(7,17,31,.90) !important;
+      }
+
+      /* Leaflet controls devono restare utilizzabili sotto i comandi superiori. */
+      body.sf-map-fullscreen #mapMain .leaflet-top {
+        top: 118px !important;
+      }
+
+      /* PC: controlli compatti in una sola fascia. */
+      @media (min-width: 900px) {
+        body.sf-map-fullscreen #view-map .mapTopBar {
+          left: 14px !important;
+          right: 78px !important;
+        }
+
+        body.sf-map-fullscreen #mapCategoryFilter {
+          top: max(10px, env(safe-area-inset-top)) !important;
+          left: 170px !important;
+          width: 280px !important;
+        }
+
+        body.sf-map-fullscreen #btnMapFit {
+          top: max(10px, env(safe-area-inset-top)) !important;
+          left: 462px !important;
+          right: auto !important;
+        }
+
+        body.sf-map-fullscreen #mapMain .leaflet-top {
+          top: 68px !important;
+        }
+      }
     `;
 
     document.head.appendChild(style);
@@ -419,7 +585,7 @@
     }
 
     if (help) {
-      help.textContent = "Mappa V9: visualizzazione a schermo intero. Tocca un gruppo numerato per aprirlo.";
+      help.textContent = "Mappa V10: mappa a tutto schermo con controlli flottanti.";
     }
   }
 
