@@ -1,15 +1,17 @@
-/* Segnala Facile - mappa pubblica reattiva v6
-   22/08/2026
-   - refresh dati immediato quando si apre la Mappa
-   - mantiene zoom/centro durante i refresh in background
+/* Segnala Facile - mappa pubblica reattiva v7
+   Correzione passaggio Home -> Mappa
+   - NON cattura mai i cluster vecchi come se fossero PIN reali
+   - sospende il clustering mentre refreshPublicMaps ricostruisce i marker
+   - cattura i PIN reali subito dopo il refresh, in modo sincrono
+   - aggiorna i dati dal Worker all'apertura della mappa
+   - mantiene zoom/centro dopo l'interazione utente
    - cluster al primo tocco -> PIN singoli
-   - spiderfy automatico per PIN con coordinate uguali
-   - correzione resize Leaflet su Android/PWA
+   - spiderfy per coordinate uguali/quasi uguali
 */
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-22.6";
+  const VERSION = "2026-08-22.7";
 
   const state = {
     originalEnsureMaps: null,
@@ -19,13 +21,15 @@
     counter: 0,
     attachedMap: null,
     ready: false,
+    rebuilding: false,
+    rendering: false,
     userViewLocked: false,
     refreshPromise: null,
     lastFastFetch: 0,
     resizeObserver: null,
     visibilityObserver: null,
     periodicTimer: null,
-    captureTimer: null
+    openTimer: null
   };
 
   const safe = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -117,6 +121,7 @@
 
     const place = nearest(window.publicLuoghi, latlng);
     const report = nearest([...(window.publicSegnalazioni || []), ...localReports()], latlng);
+
     if (place && !report) return "place";
     return "report";
   }
@@ -137,7 +142,9 @@
 
     const raw = item?.galleria_foto ?? item?.foto ?? item?.photos ?? item?.photoDataUrl ?? item?.immagine ?? "";
     if (!raw) return [];
-    if (Array.isArray(raw)) return raw.map((entry) => entry?.dataUrl || entry?.url || entry).filter(Boolean).slice(0, 8);
+    if (Array.isArray(raw)) {
+      return raw.map((entry) => entry?.dataUrl || entry?.url || entry).filter(Boolean).slice(0, 8);
+    }
     if (typeof raw === "object") return [raw.dataUrl || raw.url].filter(Boolean);
 
     const value = String(raw).trim();
@@ -198,11 +205,15 @@
       help.className = "sf-map-help";
       legend?.insertAdjacentElement("afterend", help);
     }
-    if (help) help.textContent = "Tocca un gruppo numerato: i punti si aprono subito. La mappa si aggiorna automaticamente.";
+
+    if (help) {
+      help.textContent = "Mappa V7: i punti vengono caricati automaticamente. Tocca un gruppo numerato per aprirlo.";
+    }
   }
 
   function ensureDetailOverlay() {
     if (document.getElementById("sfMapDetailOverlay")) return;
+
     const overlay = document.createElement("div");
     overlay.id = "sfMapDetailOverlay";
     overlay.className = "sf-map-detail-overlay";
@@ -212,9 +223,11 @@
         <div id="sfMapDetailContent"></div>
       </div>
     `;
+
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) window.sfCloseMapDetail?.();
     });
+
     document.body.appendChild(overlay);
   }
 
@@ -229,25 +242,27 @@
     if (!entry) return;
 
     const meta = typeMeta(entry.type);
-    const openLabel = entry.type === "activity" ? "Apri attività" : entry.type === "place" ? "Apri scheda" : "Apri dettagli";
-    const actions = `
+    const openLabel =
+      entry.type === "activity" ? "Apri attività" :
+      entry.type === "place" ? "Apri scheda" :
+      "Apri dettagli";
+
+    content = `
+      <div class="sf-map-popup-badge ${meta.className}">${meta.emoji} ${meta.label}</div>
+      ${content}
       <div class="sf-map-actions">
         <button class="btn ghost small" type="button" onclick="sfOpenMapItem('${key}')">🔎 ${openLabel}</button>
         <button class="btn ghost small" type="button" onclick="sfShareMapItem('${key}')">📤 Condividi</button>
       </div>
     `;
 
-    content = `
-      <div class="sf-map-popup-badge ${meta.className}">${meta.emoji} ${meta.label}</div>
-      ${content}
-      ${actions}
-    `;
     popup.setContent(content);
   }
 
   function registerMarker(marker) {
-    const original = marker.__sfOriginalLatLng || marker.getLatLng();
-    marker.__sfOriginalLatLng = L.latLng(original.lat, original.lng);
+    const current = marker.getLatLng();
+    marker.__sfIsCluster = false;
+    marker.__sfOriginalLatLng = L.latLng(current.lat, current.lng);
 
     const type = classifyMarker(marker);
     const item = dataForMarker(type, marker.__sfOriginalLatLng);
@@ -267,6 +282,7 @@
     marker.__sfType = type;
     marker.__sfKey = key;
     enhancePopup(marker, key);
+
     return marker;
   }
 
@@ -290,6 +306,7 @@
 
   function addHighZoomMarkers(map, layer, zoom) {
     const groups = new Map();
+
     for (const marker of state.baseMarkers) {
       const key = highZoomKey(marker);
       if (!groups.has(key)) groups.set(key, []);
@@ -302,9 +319,6 @@
         continue;
       }
 
-      // Spiderfy: se più punti hanno coordinate uguali/quasi uguali,
-      // li disponiamo in anelli visivi. La posizione reale resta salvata
-      // in __sfOriginalLatLng e viene usata per dettagli/indicazioni.
       const center = markers[0].__sfOriginalLatLng || markers[0].getLatLng();
       const centerPoint = map.project(center, zoom);
       const perRing = 12;
@@ -316,10 +330,12 @@
         const indexInRing = index - firstInRing;
         const radius = 36 + ring * 30;
         const angle = (Math.PI * 2 * indexInRing / Math.max(1, countInRing)) - Math.PI / 2;
+
         const point = L.point(
           centerPoint.x + Math.cos(angle) * radius,
           centerPoint.y + Math.sin(angle) * radius
         );
+
         try { marker.setLatLng(map.unproject(point, zoom)); } catch {}
         marker.addTo(layer);
       });
@@ -327,113 +343,125 @@
   }
 
   function renderClusters() {
+    if (state.rebuilding || state.rendering) return;
+
     const map = getMainMap();
     const layer = getMainLayer();
     if (!map || !layer || !state.baseMarkers.length) return;
 
-    restoreOriginalPositions();
+    state.rendering = true;
 
-    const zoom = map.getZoom();
-    layer.clearLayers();
+    try {
+      restoreOriginalPositions();
 
-    if (zoom >= 17 || state.baseMarkers.length <= 1) {
-      addHighZoomMarkers(map, layer, zoom);
-      return;
-    }
+      const zoom = map.getZoom();
+      layer.clearLayers();
 
-    const cellSize = zoom <= 12 ? 92 : zoom <= 14 ? 70 : zoom <= 15 ? 54 : 44;
-    const groups = new Map();
-
-    for (const marker of state.baseMarkers) {
-      const pos = marker.__sfOriginalLatLng || marker.getLatLng();
-      const point = map.project(pos, zoom);
-      const key = `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(marker);
-    }
-
-    for (const markers of groups.values()) {
-      if (markers.length === 1) {
-        markers[0].addTo(layer);
-        continue;
+      if (zoom >= 17 || state.baseMarkers.length <= 1) {
+        addHighZoomMarkers(map, layer, zoom);
+        return;
       }
 
-      const center = markers.reduce((acc, marker) => {
+      const cellSize = zoom <= 12 ? 92 : zoom <= 14 ? 70 : zoom <= 15 ? 54 : 44;
+      const groups = new Map();
+
+      for (const marker of state.baseMarkers) {
         const pos = marker.__sfOriginalLatLng || marker.getLatLng();
-        acc.lat += pos.lat;
-        acc.lng += pos.lng;
-        return acc;
-      }, { lat: 0, lng: 0 });
+        const point = map.project(pos, zoom);
+        const key = `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(marker);
+      }
 
-      center.lat /= markers.length;
-      center.lng /= markers.length;
+      for (const markers of groups.values()) {
+        if (markers.length === 1) {
+          markers[0].addTo(layer);
+          continue;
+        }
 
-      const kind = clusterClass(markers);
-      const icon = L.divIcon({
-        className: "sf-map-cluster-wrap",
-        html: `<div class="sf-map-cluster ${kind}" title="${markers.length} punti">${markers.length}</div>`,
-        iconSize: [46, 46],
-        iconAnchor: [23, 23]
-      });
+        const center = markers.reduce((acc, marker) => {
+          const pos = marker.__sfOriginalLatLng || marker.getLatLng();
+          acc.lat += pos.lat;
+          acc.lng += pos.lng;
+          return acc;
+        }, { lat: 0, lng: 0 });
 
-      const cluster = L.marker([center.lat, center.lng], {
-        icon,
-        keyboard: true,
-        title: `${markers.length} punti vicini`
-      });
+        center.lat /= markers.length;
+        center.lng /= markers.length;
 
-      cluster.on("click", () => {
-        state.userViewLocked = true;
-        window.__sfMapUserViewLocked = true;
+        const kind = clusterClass(markers);
+        const icon = L.divIcon({
+          className: "sf-map-cluster-wrap",
+          html: `<div class="sf-map-cluster ${kind}" title="${markers.length} punti">${markers.length}</div>`,
+          iconSize: [46, 46],
+          iconAnchor: [23, 23]
+        });
 
-        try { map.stop(); } catch {}
-        const targetZoom = Math.min(18, Math.max(17, Number(map.getZoom() || 13) + 3));
-        map.setView([center.lat, center.lng], targetZoom, { animate: true, duration: 0.20 });
+        const cluster = L.marker([center.lat, center.lng], {
+          icon,
+          keyboard: true,
+          title: `${markers.length} punti vicini`
+        });
 
-        // Forza il ridisegno anche sui WebView Android che ritardano zoomend.
-        setTimeout(renderClusters, 120);
-        setTimeout(renderClusters, 280);
-      });
+        // Flag esplicito: non verrà MAI scambiato per un PIN reale.
+        cluster.__sfIsCluster = true;
 
-      cluster.addTo(layer);
+        cluster.on("click", () => {
+          state.userViewLocked = true;
+          window.__sfMapUserViewLocked = true;
+
+          try { map.stop(); } catch {}
+
+          const targetZoom = Math.min(
+            18,
+            Math.max(17, Number(map.getZoom() || 13) + 3)
+          );
+
+          map.setView(
+            [center.lat, center.lng],
+            targetZoom,
+            { animate: true, duration: 0.20 }
+          );
+
+          setTimeout(renderClusters, 120);
+          setTimeout(renderClusters, 280);
+        });
+
+        cluster.addTo(layer);
+      }
+    } finally {
+      state.rendering = false;
     }
   }
 
-  function captureAndCluster() {
-    const map = getMainMap();
+  function captureRealMarkers() {
     const layer = getMainLayer();
-    if (!map || !layer) return;
+    if (!layer) return;
 
+    // IMPORTANTE:
+    // questa funzione viene chiamata SOLO subito dopo originalRefreshPublicMaps().
+    // Non usa il DOM per capire se un marker è cluster: usa il flag esplicito.
     const markers = layer.getLayers().filter((item) =>
-      typeof item.getLatLng === "function" && !item.getElement?.()?.querySelector?.(".sf-map-cluster")
+      typeof item.getLatLng === "function" &&
+      item.__sfIsCluster !== true
     );
-
-    if (!markers.length) {
-      state.baseMarkers = [];
-      state.registry.clear();
-      return;
-    }
 
     state.registry.clear();
     state.counter = 0;
     state.baseMarkers = markers.map(registerMarker);
-    renderClusters();
-  }
 
-  function scheduleCapture() {
-    clearTimeout(state.captureTimer);
-    // refreshPublicMaps() costruisce i marker in modo sincrono.
-    // Un secondo capture dopo il clustering leggerebbe i cluster come se fossero
-    // marker originali e farebbe perdere punti: per questo catturiamo una sola volta.
-    state.captureTimer = setTimeout(captureAndCluster, 0);
+    renderClusters();
   }
 
   function scheduleInvalidate() {
     const map = getMainMap();
     if (!map) return;
-    [0, 50, 140, 300, 600].forEach((ms) => {
+
+    [0, 40, 100, 220, 450].forEach((ms) => {
       setTimeout(() => {
-        try { map.invalidateSize({ pan: false, animate: false }); } catch {
+        try {
+          map.invalidateSize({ pan: false, animate: false });
+        } catch {
           try { map.invalidateSize(); } catch {}
         }
       }, ms);
@@ -443,8 +471,12 @@
   function restoreView(center, zoom) {
     const map = getMainMap();
     if (!map || !center || !Number.isFinite(zoom)) return;
+
     try { map.stop(); } catch {}
-    try { map.setView(center, zoom, { animate: false, reset: true }); } catch {
+
+    try {
+      map.setView(center, zoom, { animate: false, reset: true });
+    } catch {
       try { map.setView(center, zoom); } catch {}
     }
   }
@@ -452,22 +484,34 @@
   function attachMapListeners() {
     const map = getMainMap();
     if (!map || state.attachedMap === map) return;
+
     state.attachedMap = map;
 
-    map.on("zoomend", renderClusters);
-    map.on("moveend", renderClusters);
-    map.on("resize", renderClusters);
+    map.on("zoomend", () => {
+      if (!state.rebuilding) renderClusters();
+    });
+
+    map.on("moveend", () => {
+      if (!state.rebuilding) renderClusters();
+    });
+
+    map.on("resize", () => {
+      if (!state.rebuilding) renderClusters();
+    });
+
     map.on("dragstart", () => {
       state.userViewLocked = true;
       window.__sfMapUserViewLocked = true;
     });
 
     const container = map.getContainer?.();
+
     if (container) {
       container.addEventListener("pointerdown", () => {
         state.userViewLocked = true;
         window.__sfMapUserViewLocked = true;
       }, { passive: true });
+
       container.addEventListener("wheel", () => {
         state.userViewLocked = true;
         window.__sfMapUserViewLocked = true;
@@ -475,9 +519,11 @@
 
       if (typeof ResizeObserver !== "undefined") {
         try { state.resizeObserver?.disconnect(); } catch {}
+
         state.resizeObserver = new ResizeObserver(() => {
           if (mapVisible()) scheduleInvalidate();
         });
+
         state.resizeObserver.observe(container);
       }
     }
@@ -489,6 +535,7 @@
         return String(CONFIG.telegramWorkerUrl).replace(/\/$/, "");
       }
     } catch {}
+
     return "https://segnalafacile-telegram.vocidicassino.workers.dev";
   }
 
@@ -496,39 +543,52 @@
     if (!mapVisible() || document.visibilityState === "hidden") return;
 
     const now = Date.now();
+
     if (!force && now - state.lastFastFetch < 8000) return;
     if (state.refreshPromise) return state.refreshPromise;
+
     state.lastFastFetch = now;
 
     state.refreshPromise = (async () => {
       try {
-        const response = await fetch(`${workerBaseUrl()}/api/public-data?t=${Date.now()}`, {
-          method: "GET",
-          cache: "no-store",
-          headers: { "Cache-Control": "no-cache" }
-        });
+        const response = await fetch(
+          `${workerBaseUrl()}/api/public-data?t=${Date.now()}`,
+          {
+            method: "GET",
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" }
+          }
+        );
+
         const data = await response.json();
-        if (!response.ok || !data?.ok) throw new Error(data?.error || `HTTP ${response.status}`);
+
+        if (!response.ok || !data?.ok) {
+          throw new Error(data?.error || `HTTP ${response.status}`);
+        }
 
         window.publicSegnalazioni = data.segnalazioni || [];
         window.publicLuoghi = data.luoghi || [];
         window.publicAttivita = data.attivita || [];
 
-        // Ridisegna SUBITO i dati ricevuti, senza attendere eventuali geocodifiche.
-        if (typeof refreshPublicMaps === "function") refreshPublicMaps();
+        // Ricostruzione completa usando i dati appena arrivati.
+        if (typeof refreshPublicMaps === "function") {
+          refreshPublicMaps();
+        }
 
-        // Le attività senza coordinate vengono risolte dopo, in background.
+        // Geocodifica secondaria in background.
         try {
           if (typeof resolvePublicActivityCoordsForMap === "function") {
             Promise.resolve(resolvePublicActivityCoordsForMap())
               .then(() => {
-                if (mapVisible() && typeof refreshPublicMaps === "function") refreshPublicMaps();
+                if (mapVisible() && typeof refreshPublicMaps === "function") {
+                  refreshPublicMaps();
+                }
               })
               .catch(() => {});
           }
         } catch {}
       } catch (error) {
-        console.debug("[Segnala Facile mappa] refresh rapido:", error);
+        console.debug("[Segnala Facile V7] refresh rapido:", error);
       } finally {
         state.refreshPromise = null;
         scheduleInvalidate();
@@ -538,23 +598,39 @@
     return state.refreshPromise;
   }
 
-  function openMapNow() {
+  function openMapNow(forceNetwork = true) {
     if (!mapVisible()) return;
 
-    try { if (typeof ensureMaps === "function") ensureMaps(); } catch {}
+    try {
+      if (typeof ensureMaps === "function") ensureMaps();
+    } catch {}
+
     attachMapListeners();
     addLegend();
     ensureDetailOverlay();
     scheduleInvalidate();
 
-    // Prima mostra ciò che è già in memoria, poi aggiorna dal server.
-    try { if (typeof refreshPublicMaps === "function") refreshPublicMaps(); } catch {}
-    fastFetchPublicData(false);
+    // Ricostruisce subito i PIN dai dati già in memoria.
+    try {
+      if (typeof refreshPublicMaps === "function") refreshPublicMaps();
+    } catch {}
+
+    // All'ingresso nella Mappa forza un controllo reale del Worker.
+    fastFetchPublicData(forceNetwork);
+  }
+
+  function scheduleOpenMap(forceNetwork = true) {
+    clearTimeout(state.openTimer);
+
+    state.openTimer = setTimeout(() => {
+      openMapNow(forceNetwork);
+    }, 20);
   }
 
   window.sfCloseMapDetail = function sfCloseMapDetail() {
     const overlay = document.getElementById("sfMapDetailOverlay");
     if (!overlay) return;
+
     overlay.classList.remove("open");
     overlay.setAttribute("aria-hidden", "true");
   };
@@ -564,24 +640,32 @@
     if (!entry) return;
 
     ensureDetailOverlay();
+
     const overlay = document.getElementById("sfMapDetailOverlay");
     const content = document.getElementById("sfMapDetailContent");
+    if (!overlay || !content) return;
+
     const meta = typeMeta(entry.type);
     const description = markerDescription(entry.type, entry.item);
     const date = markerDate(entry.item);
     const category = entry.item.categoria || entry.item.category || "";
     const status = String(entry.item.status || "").toLowerCase();
     const images = photosOf(entry.item);
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${entry.lat},${entry.lng}`;
+
+    const mapsUrl =
+      `https://www.google.com/maps/search/?api=1&query=${entry.lat},${entry.lng}`;
 
     let statusLabel = "";
+
     if (status === "resolved") statusLabel = "✅ Risolta";
     else if (status === "in_progress") statusLabel = "🚧 In lavorazione";
     else if (entry.type === "report") statusLabel = "🔴 Aperta";
 
     let internalButton = "";
+
     if (entry.type === "activity" && entry.item.id) {
-      internalButton = `<button class="btn primary" type="button" onclick="sfCloseMapDetail();openActivityDetail(${JSON.stringify(String(entry.item.id))})">🏪 Scheda attività completa</button>`;
+      internalButton =
+        `<button class="btn primary" type="button" onclick="sfCloseMapDetail();openActivityDetail(${JSON.stringify(String(entry.item.id))})">🏪 Scheda attività completa</button>`;
     } else if (entry.type === "place") {
       const safeKey = String(entry.item.nome || "")
         .toLowerCase()
@@ -590,10 +674,13 @@
         .replace(/[^a-z0-9]/g, "-")
         .replace(/-+/g, "-")
         .replace(/^-|-$/g, "");
-      if (safeKey) internalButton = `<button class="btn primary" type="button" onclick="sfCloseMapDetail();openPlaceCard('${safeKey}')">⭐ Apri recensioni</button>`;
+
+      if (safeKey) {
+        internalButton =
+          `<button class="btn primary" type="button" onclick="sfCloseMapDetail();openPlaceCard('${safeKey}')">⭐ Apri recensioni</button>`;
+      }
     }
 
-    if (!content || !overlay) return;
     content.innerHTML = `
       <div class="sf-map-detail-head">
         <div>
@@ -607,8 +694,15 @@
         </div>
         <button class="sf-map-detail-close" type="button" onclick="sfCloseMapDetail()" aria-label="Chiudi">✕</button>
       </div>
-      ${images.length ? `<div class="sf-map-detail-gallery">${images.map((src) => `<img src="${safe(src)}" alt="" onclick="openImage(this.src)" loading="lazy">`).join("")}</div>` : ""}
+
+      ${images.length
+        ? `<div class="sf-map-detail-gallery">${images.map(
+            (src) => `<img src="${safe(src)}" alt="" onclick="openImage(this.src)" loading="lazy">`
+          ).join("")}</div>`
+        : ""}
+
       <div class="sf-map-detail-text">${safe(description)}</div>
+
       <div class="sf-map-detail-buttons">
         ${internalButton}
         <a class="btn primary" href="${mapsUrl}" target="_blank" rel="noreferrer">🧭 Raggiungi</a>
@@ -624,7 +718,9 @@
     const entry = state.registry.get(key);
     if (!entry) return;
 
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${entry.lat},${entry.lng}`;
+    const mapsUrl =
+      `https://www.google.com/maps/search/?api=1&query=${entry.lat},${entry.lng}`;
+
     const text = `${entry.title}\n${mapsUrl}`;
 
     try {
@@ -636,65 +732,107 @@
         });
         return;
       }
+
       await navigator.clipboard.writeText(text);
-      if (typeof showBanner === "function") showBanner("success", "Link copiato negli appunti.");
+
+      if (typeof showBanner === "function") {
+        showBanner("success", "Link copiato negli appunti.");
+      }
     } catch (error) {
-      if (error?.name !== "AbortError" && typeof showBanner === "function") showBanner("error", "Condivisione non disponibile.");
+      if (
+        error?.name !== "AbortError" &&
+        typeof showBanner === "function"
+      ) {
+        showBanner("error", "Condivisione non disponibile.");
+      }
     }
   };
 
   function installEnhancements() {
     if (state.ready) return true;
     if (typeof L === "undefined") return false;
-    if (typeof ensureMaps !== "function" || typeof refreshPublicMaps !== "function") return false;
+    if (
+      typeof ensureMaps !== "function" ||
+      typeof refreshPublicMaps !== "function"
+    ) return false;
 
     state.originalEnsureMaps = ensureMaps;
     state.originalRefreshPublicMaps = refreshPublicMaps;
 
     const enhancedEnsureMaps = function enhancedEnsureMaps(...args) {
+      // QUI NON CATTURIAMO I MARKER.
+      // ensureMaps può essere chiamata mentre layerMain contiene ancora
+      // cluster della schermata precedente.
       state.originalEnsureMaps(...args);
-      addLegend();
-      ensureDetailOverlay();
-      attachMapListeners();
-      scheduleInvalidate();
-      scheduleCapture();
-    };
-
-    const enhancedRefreshPublicMaps = function enhancedRefreshPublicMaps(...args) {
-      const map = getMainMap();
-      const preserve = !!(map && mapVisible() && state.userViewLocked);
-      const center = preserve ? map.getCenter() : null;
-      const zoom = preserve ? map.getZoom() : null;
-
-      state.originalRefreshPublicMaps(...args);
-
-      // La funzione originale esegue sempre fitBounds(maxZoom 16).
-      // Se l'utente ha già zoomato/toccato la mappa, ripristiniamo la sua vista.
-      if (preserve) {
-        restoreView(center, zoom);
-        setTimeout(() => restoreView(center, zoom), 40);
-      }
 
       addLegend();
       ensureDetailOverlay();
       attachMapListeners();
       scheduleInvalidate();
-      scheduleCapture();
     };
+
+    const enhancedRefreshPublicMaps =
+      function enhancedRefreshPublicMaps(...args) {
+
+        const map = getMainMap();
+
+        const preserve =
+          !!(map && mapVisible() && state.userViewLocked);
+
+        const center = preserve ? map.getCenter() : null;
+        const zoom = preserve ? map.getZoom() : null;
+
+        // Blocca renderClusters durante il refresh originale:
+        // fitBounds() può emettere moveend/zoomend mentre i nuovi PIN
+        // sono appena stati creati. In V6 questo poteva cancellarli.
+        state.rebuilding = true;
+
+        try {
+          state.originalRefreshPublicMaps(...args);
+        } finally {
+          state.rebuilding = false;
+        }
+
+        // Ora layerMain contiene i PIN REALI creati dalla funzione originale.
+        // Li catturiamo subito, senza setTimeout e senza leggere il DOM.
+        captureRealMarkers();
+
+        if (preserve) {
+          restoreView(center, zoom);
+          requestAnimationFrame(() => {
+            restoreView(center, zoom);
+            renderClusters();
+          });
+        }
+
+        addLegend();
+        ensureDetailOverlay();
+        attachMapListeners();
+        scheduleInvalidate();
+      };
 
     ensureMaps = enhancedEnsureMaps;
     refreshPublicMaps = enhancedRefreshPublicMaps;
+
     window.ensureMaps = enhancedEnsureMaps;
     window.refreshPublicMaps = enhancedRefreshPublicMaps;
 
     state.ready = true;
+
     window.__sfMapEnhancementsVersion = VERSION;
 
-    // "Inquadra" e cambio filtro devono poter rifare il fit automatico.
     document.addEventListener("click", (event) => {
       if (event.target?.closest?.("#btnMapFit")) {
         state.userViewLocked = false;
         window.__sfMapUserViewLocked = false;
+
+        setTimeout(() => {
+          try {
+            if (typeof refreshPublicMaps === "function") {
+              refreshPublicMaps();
+            }
+          } catch {}
+        }, 0);
       }
     }, true);
 
@@ -705,18 +843,18 @@
       }
     }, true);
 
-    // Quando si entra nella mappa: fit iniziale, poi dati freschi dal Worker.
     window.addEventListener("hashchange", () => {
       if (location.hash === "#/map") {
         state.userViewLocked = false;
         window.__sfMapUserViewLocked = false;
-        setTimeout(openMapNow, 0);
-        setTimeout(openMapNow, 160);
+
+        // Un solo ingresso controllato, senza due refresh concorrenti.
+        scheduleOpenMap(true);
       }
     });
 
     window.addEventListener("pageshow", () => {
-      if (mapVisible()) setTimeout(openMapNow, 0);
+      if (mapVisible()) scheduleOpenMap(true);
     });
 
     window.addEventListener("focus", () => {
@@ -736,43 +874,64 @@
     }, { passive: true });
 
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && mapVisible()) {
+      if (
+        document.visibilityState === "visible" &&
+        mapVisible()
+      ) {
         scheduleInvalidate();
         fastFetchPublicData(false);
       }
     });
 
     const mapView = document.getElementById("view-map");
+
     if (mapView && typeof MutationObserver !== "undefined") {
       state.visibilityObserver = new MutationObserver(() => {
-        if (mapVisible()) setTimeout(openMapNow, 0);
+        if (mapVisible()) {
+          // Il router cambia prima le classi e poi completa il layout.
+          // Questo debounce evita refresh sovrapposti.
+          scheduleOpenMap(true);
+        }
       });
+
       state.visibilityObserver.observe(mapView, {
         attributes: true,
         attributeFilter: ["class", "style", "hidden"]
       });
     }
 
-    // Solo mentre la mappa è aperta: controllo leggero ogni 30 secondi.
     state.periodicTimer = setInterval(() => {
-      if (mapVisible() && document.visibilityState === "visible") {
+      if (
+        mapVisible() &&
+        document.visibilityState === "visible"
+      ) {
         fastFetchPublicData(false);
       }
     }, 30000);
 
     try {
       enhancedEnsureMaps();
-      if (mapVisible()) openMapNow();
+
+      if (mapVisible()) {
+        scheduleOpenMap(true);
+      }
     } catch {}
 
-    console.info("[Segnala Facile] Mappa reattiva attiva", VERSION);
+    console.info(
+      "[Segnala Facile] Mappa reattiva attiva",
+      VERSION
+    );
+
     return true;
   }
 
   if (!installEnhancements()) {
     const timer = setInterval(() => {
-      if (installEnhancements()) clearInterval(timer);
+      if (installEnhancements()) {
+        clearInterval(timer);
+      }
     }, 100);
+
     setTimeout(() => clearInterval(timer), 15000);
   }
 })();
