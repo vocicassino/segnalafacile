@@ -11,7 +11,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-22.10";
+  const VERSION = "2026-08-22.11";
 
   const state = {
     originalEnsureMaps: null,
@@ -33,7 +33,9 @@
     popupOpen: false,
     popupMarker: null,
     pendingRefresh: false,
-    pendingRefreshArgs: null
+    pendingRefreshArgs: null,
+    menuOpen: false,
+    infoOpen: false
   };
 
   const safe = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -514,6 +516,218 @@
           top: 68px !important;
         }
       }
+
+      /* V11: controlli minimali. I menu visibili diventano pannelli apribili. */
+      body.sf-map-fullscreen #view-map .mapTopBar button,
+      body.sf-map-fullscreen #view-map .mapTopBar .btn,
+      body.sf-map-fullscreen #view-map .mapShell > .row,
+      body.sf-map-fullscreen #view-map .sf-map-legend,
+      body.sf-map-fullscreen #view-map .sf-map-help {
+        display: none !important;
+      }
+
+      #sfMapMenuToggle,
+      #sfMapInfoToggle {
+        position: fixed;
+        z-index: 900120;
+        display: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        border: 1px solid rgba(255,255,255,.18);
+        background: rgba(7,17,31,.90);
+        color: #fff;
+        box-shadow: 0 10px 28px rgba(0,0,0,.32);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        align-items: center;
+        justify-content: center;
+        font-weight: 1000;
+      }
+
+      body.sf-map-fullscreen #sfMapMenuToggle,
+      body.sf-map-fullscreen #sfMapInfoToggle {
+        display: flex;
+      }
+
+      #sfMapMenuToggle {
+        top: max(10px, env(safe-area-inset-top));
+        left: max(10px, env(safe-area-inset-left));
+        font-size: 24px;
+      }
+
+      #sfMapInfoToggle {
+        bottom: max(76px, calc(env(safe-area-inset-bottom) + 70px));
+        left: max(10px, env(safe-area-inset-left));
+        font-size: 24px;
+        font-family: Georgia, serif;
+      }
+
+      #sfMapMenuBackdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 900105;
+        display: none;
+        background: rgba(0,0,0,.26);
+      }
+
+      body.sf-map-menu-open #sfMapMenuBackdrop {
+        display: block;
+      }
+
+      #sfMapSideMenu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 900110;
+        width: min(320px, calc(100vw - 36px));
+        padding: max(14px, env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
+        background: rgba(7,17,31,.96);
+        border-right: 1px solid rgba(255,255,255,.12);
+        box-shadow: 24px 0 48px rgba(0,0,0,.34);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        transform: translateX(-110%);
+        transition: transform .22s ease;
+        overflow-y: auto;
+      }
+
+      body.sf-map-menu-open #sfMapSideMenu {
+        transform: translateX(0);
+      }
+
+      .sf-map-side-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .sf-map-side-title {
+        font-size: 18px;
+        font-weight: 1000;
+        color: #fff;
+      }
+
+      .sf-map-side-close {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,.16);
+        background: rgba(255,255,255,.06);
+        color: #fff;
+        font-size: 20px;
+      }
+
+      .sf-map-side-group {
+        margin-bottom: 14px;
+      }
+
+      .sf-map-side-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #c9d4f4;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .25px;
+      }
+
+      .sf-map-side-select {
+        width: 100%;
+        min-height: 46px;
+        padding: 11px 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,.14);
+        background: rgba(255,255,255,.06);
+        color: #fff;
+      }
+
+      .sf-map-side-actions {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr;
+      }
+
+      .sf-map-side-actions .btn {
+        justify-content: center !important;
+      }
+
+      .sf-map-side-divider {
+        height: 1px;
+        margin: 16px 0 14px;
+        background: rgba(255,255,255,.10);
+      }
+
+      .sf-map-side-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .sf-map-side-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.06);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .sf-map-side-pill i {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        display: inline-block;
+      }
+
+      #sfMapInfoBox {
+        position: fixed;
+        left: max(10px, env(safe-area-inset-left));
+        right: max(10px, env(safe-area-inset-right));
+        bottom: max(136px, calc(env(safe-area-inset-bottom) + 130px));
+        z-index: 900115;
+        display: none;
+        max-width: 340px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,.14);
+        background: rgba(7,17,31,.94);
+        box-shadow: 0 12px 32px rgba(0,0,0,.32);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        color: #fff;
+      }
+
+      body.sf-map-info-open #sfMapInfoBox {
+        display: block;
+      }
+
+      .sf-map-info-title {
+        font-size: 14px;
+        font-weight: 1000;
+        margin-bottom: 8px;
+      }
+
+      .sf-map-info-list {
+        margin: 0;
+        padding-left: 18px;
+        color: #d5def8;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      @media (min-width: 900px) {
+        #sfMapInfoBox {
+          left: 14px;
+          right: auto;
+        }
+      }
     `;
 
     document.head.appendChild(style);
@@ -530,6 +744,8 @@
     button.textContent = "✕";
 
     button.addEventListener("click", () => {
+      toggleMapMenu(false);
+      toggleMapInfo(false);
       location.hash = "#/";
     });
 
@@ -539,6 +755,7 @@
   function setMapFullscreen(active) {
     ensureFullscreenStyle();
     ensureFullscreenCloseButton();
+    ensureMapMenuUi();
 
     const enabled = !!active;
 
@@ -552,10 +769,161 @@
       enabled
     );
 
+    if (!enabled) {
+      toggleMapMenu(false);
+      toggleMapInfo(false);
+    } else {
+      syncMapMenuUi();
+    }
+
     // Leaflet deve ricalcolare la dimensione dopo il cambio layout.
     setTimeout(scheduleInvalidate, 0);
     setTimeout(scheduleInvalidate, 80);
     setTimeout(scheduleInvalidate, 260);
+  }
+
+
+  function ensureMapMenuUi() {
+    ensureFullscreenStyle();
+
+    if (!document.getElementById("sfMapMenuToggle")) {
+      const btn = document.createElement("button");
+      btn.id = "sfMapMenuToggle";
+      btn.type = "button";
+      btn.setAttribute("aria-label", "Apri menu mappa");
+      btn.title = "Menu mappa";
+      btn.innerHTML = "☰";
+      btn.addEventListener("click", () => toggleMapMenu());
+      document.body.appendChild(btn);
+    }
+
+    if (!document.getElementById("sfMapSideMenu")) {
+      const panel = document.createElement("aside");
+      panel.id = "sfMapSideMenu";
+      panel.setAttribute("aria-hidden", "true");
+      panel.innerHTML = `
+        <div class="sf-map-side-head">
+          <div class="sf-map-side-title">🗺️ Controlli mappa</div>
+          <button type="button" class="sf-map-side-close" aria-label="Chiudi menu">✕</button>
+        </div>
+
+        <div class="sf-map-side-group">
+          <label class="sf-map-side-label" for="sfMapSideFilter">Filtro punti</label>
+          <select id="sfMapSideFilter" class="sf-map-side-select"></select>
+        </div>
+
+        <div class="sf-map-side-actions">
+          <button type="button" id="sfMapSideFit" class="btn ghost">🎯 Inquadra</button>
+          <button type="button" id="sfMapSideSync" class="btn ghost">🔄 Sincronizza</button>
+        </div>
+
+        <div class="sf-map-side-divider"></div>
+
+        <div class="sf-map-side-label">Legenda</div>
+        <div class="sf-map-side-legend">
+          <span class="sf-map-side-pill"><i style="background:#ff5a5f"></i>Segnalazioni</span>
+          <span class="sf-map-side-pill"><i style="background:#2d7dff"></i>Luoghi</span>
+          <span class="sf-map-side-pill"><i style="background:#19c37d"></i>Attività</span>
+          <span class="sf-map-side-pill"><i style="background:#f39c12"></i>In lavorazione</span>
+          <span class="sf-map-side-pill"><i style="background:#19c37d"></i>Risolte</span>
+        </div>
+      `;
+      document.body.appendChild(panel);
+
+      panel.querySelector(".sf-map-side-close")?.addEventListener("click", () => toggleMapMenu(false));
+
+      panel.querySelector("#sfMapSideFit")?.addEventListener("click", () => {
+        try { document.getElementById("btnMapFit")?.click(); } catch {}
+        toggleMapMenu(false);
+      });
+
+      panel.querySelector("#sfMapSideSync")?.addEventListener("click", () => {
+        try {
+          const candidates = [...document.querySelectorAll("#view-map .mapTopBar button, #view-map .mapTopBar .btn")];
+          const syncBtn = candidates.find((el) => /sincron/i.test((el.textContent || "").trim()));
+          syncBtn?.click();
+        } catch {}
+        toggleMapMenu(false);
+      });
+
+      panel.querySelector("#sfMapSideFilter")?.addEventListener("change", (event) => {
+        const original = document.getElementById("mapCategoryFilter");
+        if (!original) return;
+        original.value = event.target.value;
+        original.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    }
+
+    if (!document.getElementById("sfMapMenuBackdrop")) {
+      const backdrop = document.createElement("div");
+      backdrop.id = "sfMapMenuBackdrop";
+      backdrop.addEventListener("click", () => toggleMapMenu(false));
+      document.body.appendChild(backdrop);
+    }
+
+    if (!document.getElementById("sfMapInfoToggle")) {
+      const info = document.createElement("button");
+      info.id = "sfMapInfoToggle";
+      info.type = "button";
+      info.setAttribute("aria-label", "Spiegazioni mappa");
+      info.title = "Spiegazioni";
+      info.textContent = "i";
+      info.addEventListener("click", () => toggleMapInfo());
+      document.body.appendChild(info);
+    }
+
+    if (!document.getElementById("sfMapInfoBox")) {
+      const box = document.createElement("div");
+      box.id = "sfMapInfoBox";
+      box.setAttribute("aria-hidden", "true");
+      box.innerHTML = `
+        <div class="sf-map-info-title">ℹ️ Come usare la mappa</div>
+        <ul class="sf-map-info-list">
+          <li>Tocca un PIN per vedere i dettagli.</li>
+          <li>Tocca un gruppo numerato per aprire i punti vicini.</li>
+          <li>Usa il menu ☰ per filtro, sincronizzazione e legenda.</li>
+        </ul>
+      `;
+      document.body.appendChild(box);
+    }
+
+    syncMapMenuUi();
+  }
+
+  function syncMapMenuUi() {
+    const original = document.getElementById("mapCategoryFilter");
+    const mirror = document.getElementById("sfMapSideFilter");
+    if (!original || !mirror) return;
+
+    const currentValue = original.value;
+    mirror.innerHTML = [...original.options].map((opt) =>
+      `<option value="${safe(opt.value)}"${opt.value === currentValue ? " selected" : ""}>${safe(opt.textContent || opt.label || opt.value)}</option>`
+    ).join("");
+  }
+
+  function toggleMapMenu(force) {
+    const open = typeof force === "boolean" ? force : !state.menuOpen;
+    state.menuOpen = open;
+    state.infoOpen = open ? false : state.infoOpen;
+
+    document.body.classList.toggle("sf-map-menu-open", open);
+    const panel = document.getElementById("sfMapSideMenu");
+    const backdrop = document.getElementById("sfMapMenuBackdrop");
+    panel?.setAttribute("aria-hidden", open ? "false" : "true");
+    backdrop?.setAttribute("aria-hidden", open ? "false" : "true");
+
+    if (open) syncMapMenuUi();
+    if (open) toggleMapInfo(false);
+  }
+
+  function toggleMapInfo(force) {
+    const open = typeof force === "boolean" ? force : !state.infoOpen;
+    state.infoOpen = open;
+    if (open) toggleMapMenu(false);
+
+    document.body.classList.toggle("sf-map-info-open", open);
+    const box = document.getElementById("sfMapInfoBox");
+    box?.setAttribute("aria-hidden", open ? "false" : "true");
   }
 
   function addLegend() {
@@ -585,7 +953,7 @@
     }
 
     if (help) {
-      help.textContent = "Mappa V10: mappa a tutto schermo con controlli flottanti.";
+      help.textContent = "Mappa V11: menu laterale con filtri e spiegazioni discrete.";
     }
   }
 
@@ -1258,6 +1626,7 @@
       if (event.target?.id === "mapCategoryFilter") {
         state.userViewLocked = false;
         window.__sfMapUserViewLocked = false;
+        syncMapMenuUi();
       }
     }, true);
 
