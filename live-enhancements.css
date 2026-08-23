@@ -20,7 +20,7 @@
 nav a.sf-live-nav{position:relative}
 nav a.sf-live-nav .sf-live-nav-badge{
   position:absolute;top:4px;right:7px;min-width:14px;height:14px;padding:0 3px;border-radius:999px;
-  display:flex;align-items:center;justify-content:center;background:var(--sf-live-green);color:#06140e;
+  display:flex;align-items:center;justify-content:center;background:#ff4d4f;color:#fff;
   border:2px solid rgba(7,17,31,.95);font-size:8px;line-height:1;font-weight:1000
 }
 nav a.sf-live-nav .sf-live-nav-badge:empty{min-width:10px;width:10px;height:10px;padding:0}
@@ -429,4 +429,11 @@ body.sf-live-chat-open #view-chat.sf-live-v5.hidden {
   display:none!important;
   visibility:hidden!important;
   pointer-events:none!important;
+}
+
+
+/* LIVE V8 - il badge sulla dock indica SOLO messaggi non letti.
+   Il verde "online" resta esclusivamente nell'header della chat. */
+nav a.sf-live-nav .sf-live-nav-badge[data-empty="1"]{
+  display:none!important;
 }

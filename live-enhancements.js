@@ -4,7 +4,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-23.7";
+  const VERSION = "2026-08-23.8";
   const state = {
     installed:false,
     pollTimer:null,
@@ -15,10 +15,89 @@
     wasNearBottom:true,
     profileShownOnce:false,
     routeObserver:null,
-    routeGuardTimer:null
+    routeGuardTimer:null,
+    serverRows:[],
+    latestServerId:"",
+    lastReadId:"",
+    badgeInitialized:false
   };
 
   function chatOpen(){ return location.hash === "#/chat"; }
+
+  function normalizeMessageId(item){
+    return String(item?.id ?? item?.message_id ?? item?.created_at ?? item?.createdAt ?? "");
+  }
+
+  function loadLastReadId(){
+    if(state.lastReadId) return state.lastReadId;
+    try{
+      state.lastReadId = String(localStorage.getItem("sf_live_last_read_id") || "");
+    }catch{}
+    return state.lastReadId;
+  }
+
+  function saveLastReadId(id){
+    const value=String(id||"");
+    state.lastReadId=value;
+    try{
+      if(value) localStorage.setItem("sf_live_last_read_id",value);
+      else localStorage.removeItem("sf_live_last_read_id");
+    }catch{}
+  }
+
+  function markChatAsRead(){
+    const latest=state.latestServerId || normalizeMessageId(state.serverRows[state.serverRows.length-1]);
+    if(latest) saveLastReadId(latest);
+    state.unread=0;
+    updateBadges();
+  }
+
+  function calculateUnreadFromRows(rows){
+    const ids=(Array.isArray(rows)?rows:[])
+      .map(normalizeMessageId)
+      .filter(Boolean);
+
+    if(!ids.length){
+      state.latestServerId="";
+      state.unread=0;
+      return;
+    }
+
+    const latest=ids[ids.length-1];
+    state.latestServerId=latest;
+
+    const lastRead=loadLastReadId();
+
+    // Prima inizializzazione: i messaggi già presenti non sono "nuovi".
+    if(!lastRead){
+      saveLastReadId(latest);
+      state.unread=0;
+      state.badgeInitialized=true;
+      return;
+    }
+
+    if(chatOpen()){
+      saveLastReadId(latest);
+      state.unread=0;
+      state.badgeInitialized=true;
+      return;
+    }
+
+    const index=ids.lastIndexOf(lastRead);
+
+    if(index>=0){
+      state.unread=Math.max(0,ids.length-index-1);
+    }else if(lastRead===latest){
+      state.unread=0;
+    }else{
+      // Il messaggio letto è più vecchio della finestra scaricata.
+      // Mostriamo al massimo il numero dei messaggi effettivamente ricevuti,
+      // senza aumentarlo ad ogni refresh.
+      state.unread=Math.min(99,ids.length);
+    }
+
+    state.badgeInitialized=true;
+  }
 
   function initials(name){
     const words=String(name||"U").trim().split(/\s+/).filter(Boolean);
@@ -289,8 +368,7 @@
     chip.addEventListener("click",()=>{
       box.scrollTo({top:box.scrollHeight,behavior:"smooth"});
       chip.classList.remove("show");
-      state.unread=0;
-      updateBadges();
+      markChatAsRead();
     });
 
     const card=section.querySelector(":scope > .card");
@@ -304,10 +382,21 @@
     const mirror=document.getElementById("sfLiveOnlineCount");
     if(mirror) mirror.textContent=String(online);
 
+    // Il badge nella barra in basso indica SOLO i messaggi non letti.
+    // Il numero degli utenti collegati è mostrato soltanto nell'header Live.
     const badge=document.querySelector(".sf-live-nav-badge");
     if(badge){
-      if(state.unread>0) badge.textContent=state.unread>9?"9+":String(state.unread);
-      else badge.textContent=online>0?String(Math.min(online,99)):"";
+      if(state.unread>0){
+        badge.dataset.empty="0";
+        badge.textContent=state.unread>9?"9+":String(state.unread);
+        badge.title=`${state.unread} messaggi non letti`;
+        badge.setAttribute("aria-label",`${state.unread} messaggi non letti`);
+      }else{
+        badge.dataset.empty="1";
+        badge.textContent="";
+        badge.title="Nessun nuovo messaggio";
+        badge.setAttribute("aria-label","Nessun nuovo messaggio");
+      }
     }
   }
 
@@ -333,15 +422,15 @@
         decorateMessages();
 
         if(added){
+          // NON usiamo più i nodi DOM per contare i non letti:
+          // loadChatMessages() ricrea periodicamente tutti i messaggi e
+          // in passato ogni ricostruzione veniva scambiata per nuovi messaggi.
           if(chatOpen()){
             if(state.wasNearBottom){
               requestAnimationFrame(()=>{box.scrollTop=box.scrollHeight});
             }else{
               sectionChip()?.classList.add("show");
             }
-            state.unread=0;
-          }else{
-            state.unread=Math.min(99,state.unread+added);
           }
           updateBadges();
         }
@@ -380,18 +469,21 @@
   async function pollSummary(){
     try{
       if(typeof CONFIG==="undefined"||!CONFIG?.telegramWorkerUrl) return;
-      const url=`${String(CONFIG.telegramWorkerUrl).replace(/\/$/,"")}/api/chat/public?limit=1&t=${Date.now()}`;
+
+      // Scarichiamo una finestra di ID reali. Il conteggio non letti deriva
+      // dal confronto con l'ultimo ID letto, non dal numero di refresh DOM.
+      const url=`${String(CONFIG.telegramWorkerUrl).replace(/\/$/,"")}/api/chat/public?limit=50&t=${Date.now()}`;
       const res=await fetch(url,{cache:"no-store"});
       const data=await res.json();
       if(!res.ok||!data?.ok) return;
 
       const rows=Array.isArray(data.items)?data.items:[];
-      const latest=rows.length?String(rows[rows.length-1]?.id||rows[0]?.id||""):"";
+      state.serverRows=rows;
+
       const online=document.getElementById("chatOnlineCount");
       if(online) online.textContent=String(Number(data.online||0));
 
-      if(latest&&state.lastId&&latest!==state.lastId&&!chatOpen()) state.unread=Math.min(99,state.unread+1);
-      if(latest) state.lastId=latest;
+      calculateUnreadFromRows(rows);
       updateBadges();
     }catch{}
   }
@@ -493,6 +585,9 @@
       state.unread=0;
       updateBadges();
 
+      // Appena entriamo nella chat, l'ultimo messaggio server diventa letto.
+      pollSummary().then(markChatAsRead).catch(()=>{});
+
       setTimeout(()=>{
         try{ if(typeof loadChatMessages==="function") loadChatMessages(true); }catch{}
         decorateSection();
@@ -512,6 +607,7 @@
     if(state.installed) return;
     state.installed=true;
 
+    loadLastReadId();
     ensureLiveNav();
     decorateSection();
     installRouteGuard();
