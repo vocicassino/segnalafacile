@@ -51,7 +51,7 @@ body.sf-live-chat-open nav{display:none!important}
 /* IMPORTANTISSIMO:
    la chat deve essere forzata visibile SOLO quando la route corrente è #/chat.
    Sulle altre sezioni lasciamo che il router originale gestisca .hidden. */
-body.sf-live-chat-open #view-chat.sf-live-v5{
+body.sf-live-chat-open #view-chat.sf-live-v5:not(.hidden){
   display:block!important;
 }
 
@@ -418,4 +418,15 @@ body.sf-live-profile-open .sf-live-profile-sheet{display:block}
   .sf-live-online b{font-size:10px}
   .sf-live-online b::after{content:" online";font-size:9px}
   #view-chat .chatMsg{max-width:92%!important}
+}
+
+
+/* LIVE V7 ROUTE GUARD:
+   Questa regola è volutamente alla fine del file.
+   Se il router assegna .hidden alla chat, la chat deve sparire SEMPRE. */
+body #view-chat.sf-live-v5.hidden,
+body.sf-live-chat-open #view-chat.sf-live-v5.hidden {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
 }

@@ -4,7 +4,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-23.6";
+  const VERSION = "2026-08-23.7";
   const state = {
     installed:false,
     pollTimer:null,
@@ -13,7 +13,9 @@
     unread:0,
     lastId:"",
     wasNearBottom:true,
-    profileShownOnce:false
+    profileShownOnce:false,
+    routeObserver:null,
+    routeGuardTimer:null
   };
 
   function chatOpen(){ return location.hash === "#/chat"; }
@@ -394,10 +396,92 @@
     }catch{}
   }
 
+  function forceChatVisibilityForRoute(){
+    const section=document.getElementById("view-chat");
+    if(!section) return;
+
+    const shouldShow=chatOpen();
+
+    document.body.classList.toggle("sf-live-chat-open",shouldShow);
+
+    if(shouldShow){
+      // Quando entriamo in Live togliamo l'eventuale blocco inline
+      // lasciato dalla route precedente. Il router poi gestisce .hidden.
+      section.style.removeProperty("display");
+      section.style.removeProperty("visibility");
+      section.style.removeProperty("pointer-events");
+    }else{
+      // Guardia forte: qualunque sia lo stato del CSS o del Service Worker,
+      // la chat non può restare sopra Home/Articoli/Segnala/Attività/Offerte/Mappa.
+      section.classList.add("hidden");
+      section.style.setProperty("display","none","important");
+      section.style.setProperty("visibility","hidden","important");
+      section.style.setProperty("pointer-events","none","important");
+    }
+  }
+
+  function installRouteGuard(){
+    const section=document.getElementById("view-chat");
+    if(!section) return;
+
+    // 1) Intercetta subito i tasti della barra, prima ancora che il router lavori.
+    document.addEventListener("click",(event)=>{
+      const link=event.target?.closest?.('nav a[data-nav]');
+      if(!link) return;
+
+      const target=String(link.dataset.nav||"");
+      if(target==="chat"){
+        section.style.removeProperty("display");
+        section.style.removeProperty("visibility");
+        section.style.removeProperty("pointer-events");
+      }else{
+        document.body.classList.remove(
+          "sf-live-chat-open",
+          "sf-live-search-open",
+          "sf-live-attach-open",
+          "sf-live-profile-open"
+        );
+        section.classList.add("hidden");
+        section.style.setProperty("display","none","important");
+        section.style.setProperty("visibility","hidden","important");
+        section.style.setProperty("pointer-events","none","important");
+      }
+    },true);
+
+    // 2) Osserva direttamente la classe .hidden gestita dal router originale.
+    if(!state.routeObserver){
+      state.routeObserver=new MutationObserver(()=>{
+        const shouldShow=chatOpen();
+
+        if(section.classList.contains("hidden") || !shouldShow){
+          section.style.setProperty("display","none","important");
+          section.style.setProperty("visibility","hidden","important");
+          section.style.setProperty("pointer-events","none","important");
+        }else{
+          section.style.removeProperty("display");
+          section.style.removeProperty("visibility");
+          section.style.removeProperty("pointer-events");
+        }
+      });
+
+      state.routeObserver.observe(section,{
+        attributes:true,
+        attributeFilter:["class"]
+      });
+    }
+
+    // 3) Piccolo watchdog: serve anche se in futuro il router viene modificato
+    // e non emette hashchange nel modo previsto.
+    if(!state.routeGuardTimer){
+      state.routeGuardTimer=setInterval(forceChatVisibilityForRoute,700);
+    }
+
+    forceChatVisibilityForRoute();
+  }
+
   function updateRouteMode(){
     const open=chatOpen();
-    document.body.classList.toggle("sf-live-chat-open",open);
-
+    forceChatVisibilityForRoute();
     if(!open){
       document.body.classList.remove("sf-live-search-open","sf-live-attach-open","sf-live-profile-open");
     }
@@ -430,10 +514,21 @@
 
     ensureLiveNav();
     decorateSection();
+    installRouteGuard();
     updateRouteMode();
 
-    addEventListener("hashchange",updateRouteMode);
-    addEventListener("pageshow",updateRouteMode);
+    addEventListener("hashchange",()=>{
+      forceChatVisibilityForRoute();
+      updateRouteMode();
+    });
+    addEventListener("pageshow",()=>{
+      forceChatVisibilityForRoute();
+      updateRouteMode();
+    });
+    addEventListener("popstate",()=>{
+      forceChatVisibilityForRoute();
+      updateRouteMode();
+    });
     document.addEventListener("visibilitychange",()=>{
       if(document.visibilityState==="visible"){
         updateRouteMode();
