@@ -1,0 +1,47 @@
+/* Segnala Facile LIVE V1 */
+nav a.sf-live-nav{position:relative}
+nav a.sf-live-nav .sf-live-nav-badge{position:absolute;top:5px;right:8px;min-width:14px;height:14px;padding:0 3px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#19c37d;color:#04120c;border:2px solid #07111f;font-size:8px;font-weight:1000}
+@media(max-width:760px){nav a[data-nav]{min-width:0!important}nav a[data-nav] span:last-child{font-size:10px!important}nav a[data-nav] .navEmoji{font-size:22px!important}}
+
+#view-chat.sf-live-v1{padding-bottom:110px}
+#view-chat.sf-live-v1>.card{min-height:calc(100dvh - 145px);padding:14px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;gap:11px}
+#view-chat .sf-live-original-head{display:none!important}
+
+.sf-live-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid rgba(255,255,255,.13);border-radius:20px;background:radial-gradient(420px 120px at 10% 0%,rgba(45,125,255,.22),transparent 60%),rgba(0,0,0,.16)}
+.sf-live-kicker{color:#9db7ff;font-size:10px;font-weight:1000;letter-spacing:.7px}
+.sf-live-title{margin-top:3px;color:#fff;font-size:21px;font-weight:1000}
+.sf-live-subtitle{margin-top:4px;color:#b8c6e6;font-size:12px}
+.sf-live-online{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:999px;background:rgba(25,195,125,.11);border:1px solid rgba(25,195,125,.3);font-size:11px;font-weight:950}
+.sf-live-online-dot{width:9px;height:9px;border-radius:50%;background:#19c37d;box-shadow:0 0 0 5px rgba(25,195,125,.12)}
+
+#view-chat .sf-live-safety{margin:0!important;padding:9px 11px!important;border-radius:16px!important;border:1px solid rgba(255,193,7,.2)!important;background:rgba(255,193,7,.05)!important;font-size:12px!important;line-height:1.4!important}
+#view-chat .chatTop{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:9px!important;padding:9px!important;border:1px solid rgba(255,255,255,.12);border-radius:17px;background:rgba(0,0,0,.13)}
+#view-chat .chatOnlinePill{min-height:44px;display:flex!important;align-items:center;justify-content:center}
+#view-chat #chatMessages.chatBox{flex:1 1 auto;min-height:340px;height:50dvh!important;padding:11px!important;border-radius:20px!important;background:linear-gradient(180deg,rgba(4,11,23,.72),rgba(8,22,39,.62))!important}
+#view-chat .chatMsg{max-width:88%!important;border-radius:18px 18px 18px 6px!important}
+#view-chat .chatMsg.mine{border-radius:18px 18px 6px 18px!important;background:rgba(45,125,255,.18)!important}
+#view-chat .chatMsg.sf-live-admin{background:rgba(25,195,125,.11)!important;border-color:rgba(25,195,125,.3)!important}
+.sf-live-admin-badge{display:inline-flex;padding:3px 6px;border-radius:999px;background:rgba(25,195,125,.14);border:1px solid rgba(25,195,125,.26);color:#aaffd2;font-size:9px;font-weight:1000}
+#view-chat .chatMeta time{margin-left:auto;font-size:10px!important}
+#view-chat .chatImage{max-width:min(100%,420px)!important;border-radius:14px!important}
+
+#view-chat .chatComposer{position:sticky!important;bottom:102px!important;z-index:90;display:grid!important;grid-template-columns:minmax(0,1fr) auto auto!important;gap:8px!important;padding:9px!important;border:1px solid rgba(255,255,255,.13);border-radius:19px;background:rgba(7,17,31,.94);backdrop-filter:blur(16px)}
+#view-chat .chatComposer label{display:none!important}
+#view-chat #chatMessage{min-height:48px!important;margin:0!important;border-radius:15px!important}
+#view-chat #btnSendChat,#view-chat #btnRefreshChat{min-height:48px!important;border-radius:15px!important}
+#view-chat #btnRefreshChat{min-width:48px;padding:10px!important;font-size:0!important}
+#view-chat #btnRefreshChat:before{content:"↻";font-size:22px}
+#view-chat .chatPhotoTools{display:flex!important;gap:6px!important;margin-top:6px!important;flex-wrap:wrap}
+#view-chat .chatPhotoTools .btn{min-height:34px!important;padding:6px 8px!important;border-radius:11px!important;font-size:10px!important}
+
+@media(max-width:720px){
+  .sf-live-subtitle{display:none}
+  #view-chat .chatTop{grid-template-columns:1fr!important}
+  #view-chat .chatOnlinePill{display:none!important}
+  #view-chat #chatMessages.chatBox{height:52dvh!important}
+  #view-chat .chatMsg{max-width:94%!important}
+  #view-chat .chatComposer{grid-template-columns:minmax(0,1fr) 58px!important;bottom:104px!important}
+  #view-chat .chatComposer>div:first-child{grid-column:1/-1}
+  #view-chat #btnSendChat{font-size:0!important}
+  #view-chat #btnSendChat:before{content:"➤";font-size:21px}
+}
