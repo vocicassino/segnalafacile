@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v14-live-v3";
+const CACHE_NAME = "segnalafacile-map-v15-live-v4";
 
 const ASSETS = [
   "./","./index.html","./admin.html","./manifest.webmanifest",
@@ -30,16 +30,16 @@ async function injectEnhancements(response,kind){
   let html=await response.text();
 
   if(kind==="main"){
-    html=html.replace(/map-enhancements\.css\?v=\d+/g,"map-enhancements.css?v=14");
-    html=html.replace(/map-enhancements\.js\?v=\d+/g,"map-enhancements.js?v=14");
+    html=html.replace(/map-enhancements\.css\?v=\d+/g,"map-enhancements.css?v=15");
+    html=html.replace(/map-enhancements\.js\?v=\d+/g,"map-enhancements.js?v=15");
   }
-  if(kind==="main"&&!html.includes("map-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./map-enhancements.css?v=14" />\n</head>');
-  if(kind==="main"&&!html.includes("map-enhancements.js"))html=html.replace("</body>",'  <script src="./map-enhancements.js?v=14"></script>\n</body>');
+  if(kind==="main"&&!html.includes("map-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./map-enhancements.css?v=15" />\n</head>');
+  if(kind==="main"&&!html.includes("map-enhancements.js"))html=html.replace("</body>",'  <script src="./map-enhancements.js?v=15"></script>\n</body>');
   if(kind==="main"&&!html.includes("map-live-fix.js"))html=html.replace("</body>",'  <script src="./map-live-fix.js?v=2"></script>\n</body>');
   if(!html.includes("assistant-text-tools.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./assistant-text-tools.css?v=2" />\n</head>');
   if(!html.includes("assistant-text-tools.js"))html=html.replace("</body>",'  <script src="./assistant-text-tools.js?v=2"></script>\n</body>');
-  if(kind==="main"&&!html.includes("live-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./live-enhancements.css?v=3" />\n</head>');
-  if(kind==="main"&&!html.includes("live-enhancements.js"))html=html.replace("</body>",'  <script src="./live-enhancements.js?v=3"></script>\n</body>');
+  if(kind==="main"&&!html.includes("live-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./live-enhancements.css?v=4" />\n</head>');
+  if(kind==="main"&&!html.includes("live-enhancements.js"))html=html.replace("</body>",'  <script src="./live-enhancements.js?v=4"></script>\n</body>');
 
   const headers=new Headers(response.headers);headers.delete("content-length");headers.set("content-type","text/html; charset=utf-8");
   return new Response(html,{status:response.status,statusText:response.statusText,headers});
