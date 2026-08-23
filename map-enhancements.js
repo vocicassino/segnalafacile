@@ -21,7 +21,7 @@
       if (!hasCss) {
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = "./live-enhancements.css?v=5";
+        link.href = "./live-enhancements.css?v=6";
         link.dataset.sfLiveLoader = "1";
         document.head.appendChild(link);
       }
@@ -31,7 +31,7 @@
 
       if (!hasJs) {
         const script = document.createElement("script");
-        script.src = "./live-enhancements.js?v=5";
+        script.src = "./live-enhancements.js?v=6";
         script.dataset.sfLiveLoader = "1";
         script.async = false;
         document.head.appendChild(script);
@@ -41,7 +41,7 @@
     }
   })();
 
-  const VERSION = "2026-08-23.16";
+  const VERSION = "2026-08-23.17";
 
   const state = {
     originalEnsureMaps: null,

@@ -4,7 +4,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-23.5";
+  const VERSION = "2026-08-23.6";
   const state = {
     installed:false,
     pollTimer:null,
