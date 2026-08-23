@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v12-live-v1";
+const CACHE_NAME = "segnalafacile-map-v13-live-v1";
 
 const ASSETS = [
   "./","./index.html","./admin.html","./manifest.webmanifest",
