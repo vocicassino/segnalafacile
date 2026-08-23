@@ -1,6 +1,6 @@
 /* Segnala Facile LIVE V1 */
 (()=>{"use strict";
-const VERSION="2026-08-23.1";
+const VERSION="2026-08-23.2";
 const state={installed:false,observer:null,onlineObserver:null,pollTimer:null,unread:0,lastId:""};
 
 function chatOpen(){return location.hash==="#/chat"}

@@ -11,7 +11,37 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-22.12";
+  /* LIVE V2 - loader diretto.
+     Non dipende più dall'iniezione HTML del Service Worker. */
+  (function loadLiveEnhancementsDirectly() {
+    try {
+      const hasCss = [...document.querySelectorAll('link[rel="stylesheet"]')]
+        .some(el => String(el.getAttribute("href") || "").includes("live-enhancements.css"));
+
+      if (!hasCss) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "./live-enhancements.css?v=2";
+        link.dataset.sfLiveLoader = "1";
+        document.head.appendChild(link);
+      }
+
+      const hasJs = [...document.scripts]
+        .some(el => String(el.getAttribute("src") || "").includes("live-enhancements.js"));
+
+      if (!hasJs) {
+        const script = document.createElement("script");
+        script.src = "./live-enhancements.js?v=2";
+        script.dataset.sfLiveLoader = "1";
+        script.async = false;
+        document.head.appendChild(script);
+      }
+    } catch (error) {
+      console.warn("[Segnala Facile] impossibile caricare Live V2", error);
+    }
+  })();
+
+  const VERSION = "2026-08-23.13";
 
   const state = {
     originalEnsureMaps: null,
