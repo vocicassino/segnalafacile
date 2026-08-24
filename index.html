@@ -52,6 +52,44 @@
       box-shadow: 0 18px 40px rgba(0,0,0,.45); outline: 1px solid rgba(255,255,255,.10); flex:0 0 auto;
     }
     .title{ font-size: 28px; font-weight: 980; letter-spacing: -.35px; line-height: 1.05; }
+    .brandService{
+      margin-top:5px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.25;
+      font-weight:800;
+      letter-spacing:.1px;
+    }
+    .brandService strong{color:#eaf0ff;font-weight:980;}
+    .facebookBtn{
+      background:linear-gradient(135deg,#1877f2,#0f5fc9)!important;
+      color:#fff!important;
+      border:1px solid rgba(255,255,255,.14)!important;
+      box-shadow:0 16px 32px rgba(24,119,242,.22)!important;
+    }
+    .facebookBtn:hover{filter:brightness(1.06);}
+    .facebookCtaBox{
+      margin-top:16px;
+      padding:16px;
+      border-radius:22px;
+      border:1px solid rgba(24,119,242,.34);
+      background:
+        radial-gradient(300px 140px at 0% 0%, rgba(24,119,242,.24), transparent 62%),
+        rgba(24,119,242,.09);
+      box-shadow:0 14px 32px rgba(0,0,0,.20);
+    }
+    .facebookCtaTitle{
+      font-size:17px;
+      line-height:1.2;
+      font-weight:980;
+      color:#fff;
+    }
+    .facebookCtaText{
+      margin-top:6px;
+      color:#cbd8ef;
+      font-size:13px;
+      line-height:1.45;
+    }
 
     .grid{display:grid; gap:14px; position:relative;}
 
@@ -1571,7 +1609,10 @@
     <header>
       <div class="brand">
         <div class="logo"></div>
-        <div><div class="title">Segnala Facile</div></div>
+        <div>
+          <div class="title">Segnala Facile</div>
+          <div class="brandService">un servizio di <strong>Voci di Cassino</strong></div>
+        </div>
       </div>
       <button class="pill" id="installPill" style="display:none; cursor:pointer;" type="button">⬇️ Installa</button>
     </header>
@@ -1586,7 +1627,7 @@
         <div class="heroTop">
           <div>
             <h1>La tua Città.</h1>
-            <p>Segnala problemi, scopri attività locali, offerte e servizi utili per Cassino.</p>
+            <p>Segnala problemi, scopri attività locali, offerte e servizi utili per Cassino. <strong style="color:#eaf0ff;">Segnala Facile è un servizio di Voci di Cassino.</strong></p>
           </div>
           <video class="heroCover" autoplay loop muted playsinline poster="icons/hero.jpg">
             <source src="vocidicassino.mp4" type="video/mp4">
@@ -1603,6 +1644,7 @@
           <a class="btn ghost" href="#/ai">🎙️ Assistente AI</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
           <a class="btn ghost" href="#/install">📲 Come installarla</a>
+          <a class="btn facebookBtn" href="https://www.facebook.com/share/1D3oKnPmJn/" target="_blank" rel="noopener noreferrer">📘 Segui Voci di Cassino</a>
           <a class="btn ghost" href="#/contacts">☎️ Contatti</a>
         </div>
       </div>
@@ -1888,6 +1930,14 @@
             <div class="hint" style="margin:6px 0 0">Grazie per il tuo contributo.</div>
           </div>
         </div>
+        <div class="facebookCtaBox">
+          <div class="facebookCtaTitle">📘 Resta aggiornato con Voci di Cassino</div>
+          <div class="facebookCtaText">La tua segnalazione può diventare un aggiornamento utile per la città. Segui la pagina per non perdere notizie, sviluppi e nuove segnalazioni da Cassino.</div>
+          <div class="btnRow" style="margin-top:12px">
+            <a class="btn facebookBtn" href="https://www.facebook.com/share/1D3oKnPmJn/" target="_blank" rel="noopener noreferrer">Segui Voci di Cassino su Facebook</a>
+          </div>
+        </div>
+
         <div class="btnRow" style="margin-top:14px">
           <a class="btn primary" href="#/">🏠 Torna alla Home</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
@@ -2262,7 +2312,7 @@
           <h2>Dalle segnalazioni agli articoli</h2>
           <p>Leggi direttamente nell’app gli aggiornamenti pubblicati da <b>Voci di Cassino</b>. Puoi aprire la lettura completa in popup e, quando serve, andare anche alla fonte originale.</p>
           <div class="btnRow" style="margin-top:14px">
-            <a class="btn primary" href="https://www.facebook.com/search/top?q=voci%20di%20cassino" target="_blank" rel="noreferrer">📘 Apri Facebook</a>
+            <a class="btn primary facebookBtn" href="https://www.facebook.com/share/1D3oKnPmJn/" target="_blank" rel="noopener noreferrer">📘 Segui Voci di Cassino</a>
             <a class="btn ghost" href="#/report">📣 Invia una segnalazione</a>
           </div>
         </div>
@@ -2567,6 +2617,7 @@
         <div class="articleReaderText" id="articleReaderContent">Contenuto non disponibile.</div>
         <div class="articleReaderActions">
           <a class="btn primary" id="articleReaderOpenLink" href="#" target="_blank" rel="noreferrer">🔗 Apri fonte originale</a>
+          <a class="btn facebookBtn" href="https://www.facebook.com/share/1D3oKnPmJn/" target="_blank" rel="noopener noreferrer">📘 Segui Voci di Cassino</a>
           <button class="btn ghost" id="articleReaderImageBtn" type="button">🖼️ Apri immagine</button>
           <button class="btn ghost" id="articleReaderReportBtn" type="button">📣 Invia una segnalazione</button>
         </div>
