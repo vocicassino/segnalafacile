@@ -41,7 +41,36 @@
     }
   })();
 
-  const VERSION = "2026-08-23.19";
+  /* CASSINO RACCOLTA V1 - loader diretto */
+  (function loadRaccoltaIntegrationDirectly() {
+    try {
+      const hasCss = [...document.querySelectorAll('link[rel="stylesheet"]')]
+        .some(el => String(el.getAttribute("href") || "").includes("raccolta-integration.css"));
+
+      if (!hasCss) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "./raccolta-integration.css?v=1";
+        link.dataset.sfRaccoltaLoader = "1";
+        document.head.appendChild(link);
+      }
+
+      const hasJs = [...document.scripts]
+        .some(el => String(el.getAttribute("src") || "").includes("raccolta-integration.js"));
+
+      if (!hasJs) {
+        const script = document.createElement("script");
+        script.src = "./raccolta-integration.js?v=1";
+        script.dataset.sfRaccoltaLoader = "1";
+        script.async = false;
+        document.head.appendChild(script);
+      }
+    } catch (error) {
+      console.warn("[Segnala Facile] impossibile caricare Cassino Raccolta", error);
+    }
+  })();
+
+  const VERSION = "2026-08-28.20";
 
   const state = {
     originalEnsureMaps: null,
