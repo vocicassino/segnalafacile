@@ -5,7 +5,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-28.1";
+  const VERSION = "2026-08-28.3";
   const PUSH_WORKER = "https://cassino-raccolta-push.vocidicassino.workers.dev";
 
   const WASTE = {
@@ -212,19 +212,33 @@
     const box=document.createElement("button");
     box.type="button";
     box.className="sf-home-raccolta-card";
+    box.setAttribute("aria-label","Apri Cassino Raccolta");
     box.innerHTML=`
-      <span class="sf-home-raccolta-icon">♻️</span>
-      <span style="text-align:left">
-        <strong>Raccolta rifiuti</strong>
+      <span class="sf-home-raccolta-icon-wrap">
+        <span class="sf-home-raccolta-icon">♻️</span>
+      </span>
+      <span class="sf-home-raccolta-copy">
+        <strong>Cassino Raccolta</strong>
         <small id="sfHomeRaccoltaText">Scopri cosa esporre oggi a Cassino.</small>
       </span>
-      <span class="sf-home-raccolta-go">›</span>`;
+      <span class="sf-home-raccolta-go">Apri</span>`;
     box.addEventListener("click",()=>{ location.hash="#/raccolta"; });
 
-    // Inserisce in fondo alla card Home, prima di eventuali contenuti finali.
-    card.appendChild(box);
+    const cta=[...card.querySelectorAll("button, a")].find(el=>/invia segnalazione/i.test((el.textContent||"").trim()))
+      || card.querySelector(".ctaBig")
+      || card.querySelector(".primary");
+
+    if(cta && cta.parentElement===card){
+      cta.insertAdjacentElement("afterend",box);
+    }else if(cta){
+      cta.parentElement?.insertAdjacentElement("afterend",box);
+    }else{
+      card.prepend(box);
+    }
+
     state.homeCardBuilt=true;
     refreshHomeCard();
+    requestAnimationFrame(refreshHomeCard);
   }
 
   function refreshHomeCard(){

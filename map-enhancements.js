@@ -50,7 +50,7 @@
       if (!hasCss) {
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = "./raccolta-integration.css?v=1";
+        link.href = "./raccolta-integration.css?v=3";
         link.dataset.sfRaccoltaLoader = "1";
         document.head.appendChild(link);
       }
@@ -60,7 +60,7 @@
 
       if (!hasJs) {
         const script = document.createElement("script");
-        script.src = "./raccolta-integration.js?v=1";
+        script.src = "./raccolta-integration.js?v=3";
         script.dataset.sfRaccoltaLoader = "1";
         script.async = false;
         document.head.appendChild(script);
@@ -70,7 +70,7 @@
     }
   })();
 
-  const VERSION = "2026-08-28.20";
+  const VERSION = "2026-08-28.22";
 
   const state = {
     originalEnsureMaps: null,

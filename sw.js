@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v20-live-v8-raccolta-v1";
+const CACHE_NAME = "segnalafacile-map-v22-live-v8-raccolta-v3-home";
 
 const ASSETS = [
   "./","./index.html","./admin.html","./manifest.webmanifest",
@@ -14,7 +14,29 @@ self.addEventListener("install",event=>{
   self.skipWaiting();
 });
 self.addEventListener("activate",event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME&&k.startsWith("segnalafacile")).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(
+      keys
+        .filter(k=>k!==CACHE_NAME && k.startsWith("segnalafacile"))
+        .map(k=>caches.delete(k))
+    );
+
+    await self.clients.claim();
+
+    // V21: forza una sola riapertura delle finestre già aperte, così i vecchi
+    // riferimenti ?v=4 / cache precedenti vengono sostituiti immediatamente.
+    const windows=await self.clients.matchAll({type:"window",includeUncontrolled:true});
+    await Promise.all(windows.map(async client=>{
+      try{
+        const u=new URL(client.url);
+        if(!u.pathname.includes("/segnalafacile/")) return;
+        if(u.searchParams.get("sf-refresh")==="22") return;
+        u.searchParams.set("sf-refresh","22");
+        await client.navigate(u.href);
+      }catch{}
+    }));
+  })());
 });
 
 function pageKind(url){
@@ -31,20 +53,23 @@ async function injectEnhancements(response,kind){
   let html=await response.text();
 
   if(kind==="main"){
-    html=html.replace(/map-enhancements\.css\?v=\d+/g,"map-enhancements.css?v=20");
-    html=html.replace(/map-enhancements\.js\?v=\d+/g,"map-enhancements.js?v=20");
+    html=html.replace(/map-enhancements\.css\?v=\d+/g,"map-enhancements.css?v=22");
+    html=html.replace(/map-enhancements\.js\?v=\d+/g,"map-enhancements.js?v=22");
   }
-  if(kind==="main"&&!html.includes("map-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./map-enhancements.css?v=20" />\n</head>');
-  if(kind==="main"&&!html.includes("map-enhancements.js"))html=html.replace("</body>",'  <script src="./map-enhancements.js?v=20"></script>\n</body>');
+  if(kind==="main"&&!html.includes("map-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./map-enhancements.css?v=22" />\n</head>');
+  if(kind==="main"&&!html.includes("map-enhancements.js"))html=html.replace("</body>",'  <script src="./map-enhancements.js?v=22"></script>\n</body>');
   if(kind==="main"&&!html.includes("map-live-fix.js"))html=html.replace("</body>",'  <script src="./map-live-fix.js?v=2"></script>\n</body>');
   if(!html.includes("assistant-text-tools.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./assistant-text-tools.css?v=2" />\n</head>');
   if(!html.includes("assistant-text-tools.js"))html=html.replace("</body>",'  <script src="./assistant-text-tools.js?v=2"></script>\n</body>');
   if(kind==="main"&&!html.includes("live-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./live-enhancements.css?v=8" />\n</head>');
   if(kind==="main"&&!html.includes("live-enhancements.js"))html=html.replace("</body>",'  <script src="./live-enhancements.js?v=8"></script>\n</body>');
-  if(kind==="main"&&!html.includes("raccolta-integration.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./raccolta-integration.css?v=1" />\n</head>');
-  if(kind==="main"&&!html.includes("raccolta-integration.js"))html=html.replace("</body>",'  <script src="./raccolta-integration.js?v=1"></script>\n</body>');
+  if(kind==="main"&&!html.includes("raccolta-integration.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./raccolta-integration.css?v=3" />\n</head>');
+  if(kind==="main"&&!html.includes("raccolta-integration.js"))html=html.replace("</body>",'  <script src="./raccolta-integration.js?v=3"></script>\n</body>');
 
-  const headers=new Headers(response.headers);headers.delete("content-length");headers.set("content-type","text/html; charset=utf-8");
+  const headers=new Headers(response.headers);
+  headers.delete("content-length");
+  headers.set("content-type","text/html; charset=utf-8");
+  headers.set("cache-control","no-store, no-cache, must-revalidate");
   return new Response(html,{status:response.status,statusText:response.statusText,headers});
 }
 
@@ -55,7 +80,7 @@ function isCodeAsset(request){
 }
 async function networkFirst(request){
   try{
-    const response=await fetch(request,{cache:"no-store"});
+    const response=await fetch(request,{cache:"reload"});
     if(response?.ok){const cache=await caches.open(CACHE_NAME);cache.put(request,response.clone()).catch(()=>{})}
     return response;
   }catch(e){
@@ -127,7 +152,7 @@ self.addEventListener("fetch",event=>{
   if(request.mode==="navigate"||request.destination==="document"){
     event.respondWith((async()=>{
       const kind=pageKind(request.url);
-      try{return injectEnhancements(await fetch(request,{cache:"no-store"}),kind)}
+      try{return injectEnhancements(await fetch(request,{cache:"reload"}),kind)}
       catch{
         const fallback=kind==="admin"?await caches.match("./admin.html"):await caches.match("./index.html");
         return injectEnhancements(fallback,kind);
