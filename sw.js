@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v22-live-v8-raccolta-v3-home";
+const CACHE_NAME = "segnalafacile-map-v23-live-v8-raccolta-v3-nocoords-v1";
 
 const ASSETS = [
   "./","./index.html","./admin.html","./manifest.webmanifest",
@@ -6,7 +6,8 @@ const ASSETS = [
   "./map-enhancements.css","./map-enhancements.js","./map-live-fix.js",
   "./assistant-text-tools.css","./assistant-text-tools.js",
   "./live-enhancements.css","./live-enhancements.js",
-  "./raccolta-integration.css","./raccolta-integration.js"
+  "./raccolta-integration.css","./raccolta-integration.js",
+  "./no-coords-reports.css","./no-coords-reports.js"
 ];
 
 self.addEventListener("install",event=>{
@@ -16,23 +17,15 @@ self.addEventListener("install",event=>{
 self.addEventListener("activate",event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
-    await Promise.all(
-      keys
-        .filter(k=>k!==CACHE_NAME && k.startsWith("segnalafacile"))
-        .map(k=>caches.delete(k))
-    );
-
+    await Promise.all(keys.filter(k=>k!==CACHE_NAME&&k.startsWith("segnalafacile")).map(k=>caches.delete(k)));
     await self.clients.claim();
-
-    // V21: forza una sola riapertura delle finestre già aperte, così i vecchi
-    // riferimenti ?v=4 / cache precedenti vengono sostituiti immediatamente.
     const windows=await self.clients.matchAll({type:"window",includeUncontrolled:true});
     await Promise.all(windows.map(async client=>{
       try{
         const u=new URL(client.url);
-        if(!u.pathname.includes("/segnalafacile/")) return;
-        if(u.searchParams.get("sf-refresh")==="22") return;
-        u.searchParams.set("sf-refresh","22");
+        if(!u.pathname.includes("/segnalafacile/"))return;
+        if(u.searchParams.get("sf-refresh")==="23")return;
+        u.searchParams.set("sf-refresh","23");
         await client.navigate(u.href);
       }catch{}
     }));
@@ -65,6 +58,8 @@ async function injectEnhancements(response,kind){
   if(kind==="main"&&!html.includes("live-enhancements.js"))html=html.replace("</body>",'  <script src="./live-enhancements.js?v=8"></script>\n</body>');
   if(kind==="main"&&!html.includes("raccolta-integration.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./raccolta-integration.css?v=3" />\n</head>');
   if(kind==="main"&&!html.includes("raccolta-integration.js"))html=html.replace("</body>",'  <script src="./raccolta-integration.js?v=3"></script>\n</body>');
+  if(kind==="main"&&!html.includes("no-coords-reports.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./no-coords-reports.css?v=1" />\n</head>');
+  if(kind==="main"&&!html.includes("no-coords-reports.js"))html=html.replace("</body>",'  <script src="./no-coords-reports.js?v=1"></script>\n</body>');
 
   const headers=new Headers(response.headers);
   headers.delete("content-length");
@@ -88,63 +83,24 @@ async function networkFirst(request){
   }
 }
 
-/* Cassino Raccolta integrata: ricezione promemoria push sul Service Worker di Segnala Facile. */
-self.addEventListener("push", event => {
-  let payload = {};
-  try { payload = event.data?.json() || {}; }
-  catch { payload = { body: event.data?.text() || "Hai un nuovo promemoria per la raccolta." }; }
-
-  const rawTarget = payload?.data?.url || "./#/raccolta";
-  const targetUrl = String(rawTarget).includes("/Cassino-Raccolta/")
-    ? "./#/raccolta"
-    : rawTarget;
-
-  const title = payload.title || "Cassino Raccolta • Segnala Facile";
-  const options = {
-    body: payload.body || "Hai un nuovo promemoria per la raccolta.",
-    icon: payload.icon && !String(payload.icon).includes("Cassino-Raccolta")
-      ? payload.icon
-      : "./icons/icon-192.png",
-    badge: "./icons/icon-192.png",
-    tag: payload.tag || "cassino-raccolta-push",
-    renotify: Boolean(payload.renotify),
-    requireInteraction: Boolean(payload.requireInteraction),
-    vibrate: payload.vibrate || [180,80,180],
-    data: { ...(payload.data || {}), url: targetUrl },
-    actions: payload.actions || [{ action:"open", title:"Apri raccolta" }]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options).then(() =>
-      self.clients.matchAll({type:"window",includeUncontrolled:true}).then(list =>
-        Promise.all(list.map(client =>
-          client.postMessage({
-            type:"cassino-push-received",
-            payload:{title, ...options}
-          })
-        ))
-      )
-    )
-  );
+/* Cassino Raccolta push */
+self.addEventListener("push",event=>{
+  let payload={};
+  try{payload=event.data?.json()||{}}catch{payload={body:event.data?.text()||"Hai un nuovo promemoria per la raccolta."}}
+  const rawTarget=payload?.data?.url||"./#/raccolta";
+  const targetUrl=String(rawTarget).includes("/Cassino-Raccolta/")?"./#/raccolta":rawTarget;
+  const title=payload.title||"Cassino Raccolta • Segnala Facile";
+  const options={body:payload.body||"Hai un nuovo promemoria per la raccolta.",icon:"./icons/icon-192.png",badge:"./icons/icon-192.png",tag:payload.tag||"cassino-raccolta-push",data:{...(payload.data||{}),url:targetUrl}};
+  event.waitUntil(self.registration.showNotification(title,options));
 });
-
-self.addEventListener("notificationclick", event => {
+self.addEventListener("notificationclick",event=>{
   event.notification.close();
-
-  let targetUrl = event.notification.data?.url || "./#/raccolta";
-  if(String(targetUrl).includes("/Cassino-Raccolta/")) targetUrl = "./#/raccolta";
-
-  event.waitUntil(
-    clients.matchAll({type:"window",includeUncontrolled:true}).then(clientList => {
-      for(const client of clientList){
-        if("focus" in client){
-          client.navigate(targetUrl);
-          return client.focus();
-        }
-      }
-      return clients.openWindow ? clients.openWindow(targetUrl) : undefined;
-    })
-  );
+  let targetUrl=event.notification.data?.url||"./#/raccolta";
+  if(String(targetUrl).includes("/Cassino-Raccolta/"))targetUrl="./#/raccolta";
+  event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{
+    for(const client of list){if("focus"in client){client.navigate(targetUrl);return client.focus()}}
+    return clients.openWindow?clients.openWindow(targetUrl):undefined;
+  }));
 });
 
 self.addEventListener("fetch",event=>{

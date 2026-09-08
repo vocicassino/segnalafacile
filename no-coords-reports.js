@@ -1,0 +1,34 @@
+
+(()=>{"use strict";
+const VERSION="2026-09-08.1";
+const S={installed:false,timer:null,current:null,lastSig:""};
+const safe=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const reports=()=>Array.isArray(window.publicSegnalazioni)?window.publicSegnalazioni:[];
+function hasCoords(i){const lat=Number(i?.lat??i?.geo?.lat),lng=Number(i?.lng??i?.geo?.lng);return Number.isFinite(lat)&&Number.isFinite(lng)&&!(lat===0&&lng===0)}
+const noCoords=()=>reports().filter(i=>!hasCoords(i));
+const title=i=>String(i?.titolo??i?.title??"Segnalazione").trim()||"Segnalazione";
+const desc=i=>String(i?.descrizione??i?.description??i?.testo??"").trim();
+const date=i=>String(i?.dataStr??i?.when??i?.created_at??i?.createdAt??"").trim();
+const cat=i=>String(i?.categoria??i?.category??"altro").trim()||"altro";
+const id=i=>String(i?.id??i?.created_at??i?.createdAt??i?.dataStr??i?.when??i?.titolo??"");
+function emoji(c){c=String(c).toLowerCase();if(c.includes("rifiut"))return"🗑️";if(c.includes("strad"))return"🛣️";if(c.includes("luce"))return"💡";if(c.includes("verde"))return"🌳";return"📣"}
+function photos(i){try{if(typeof estraiTutteLeFoto==="function"){const a=estraiTutteLeFoto(i);if(Array.isArray(a))return a.filter(Boolean).slice(0,8)}}catch{}const r=i?.galleria_foto??i?.foto??i?.photos??i?.photoDataUrl??i?.immagine??"";if(!r)return[];if(Array.isArray(r))return r.map(x=>x?.dataUrl||x?.url||x).filter(Boolean).slice(0,8);if(typeof r==="object")return[r.dataUrl||r.url].filter(Boolean);const t=String(r).trim();if(t.startsWith("[")||t.startsWith("{")){try{return photos({foto:JSON.parse(t)})}catch{}}return t?[t]:[]}
+function ensureUI(){
+ if(!document.getElementById("sfNoGeoBackdrop")){const b=document.createElement("div");b.id="sfNoGeoBackdrop";b.onclick=close;document.body.appendChild(b)}
+ if(!document.getElementById("sfNoGeoPanel")){const p=document.createElement("aside");p.id="sfNoGeoPanel";p.innerHTML=`<div class="sf-no-geo-handle"></div><div id="sfNoGeoListView"><div class="sf-no-geo-head"><div><div class="sf-no-geo-kicker">SEGNALA FACILE</div><h2>📄 Segnalazioni senza posizione</h2></div><button class="sf-no-geo-close">✕</button></div><div class="sf-no-geo-note">Sono pubblicate normalmente, ma non possono avere un PIN sulla mappa finché non viene indicata una posizione.</div><div class="sf-no-geo-list" id="sfNoGeoList"></div></div><div id="sfNoGeoDetail"><button class="btn ghost" id="sfNoGeoBack">← Tutte</button><div id="sfNoGeoDetailBody"></div></div>`;document.body.appendChild(p);p.querySelector(".sf-no-geo-close").onclick=close;p.querySelector("#sfNoGeoBack").onclick=showList}
+ ensureMapBtn();ensureHomeNotice()
+}
+function ensureMapBtn(){const m=document.getElementById("sfMapSideMenu");if(!m||document.getElementById("sfNoGeoMapMenuBtn"))return;const b=document.createElement("button");b.id="sfNoGeoMapMenuBtn";b.className="btn ghost";b.innerHTML=`📄 Senza posizione <span class="sf-no-geo-count" id="sfNoGeoMapCount">0</span>`;b.onclick=openList;m.appendChild(b)}
+function ensureHomeNotice(){if(document.getElementById("sfNoGeoHomeNotice"))return;const h=document.getElementById("view-home");if(!h)return;const b=document.createElement("button");b.id="sfNoGeoHomeNotice";b.innerHTML=`<span>📍</span><span><strong>Segnalazioni senza posizione</strong><small id="sfNoGeoHomeText"></small></span><span>›</span>`;b.onclick=openList;const recent=h.querySelector("[data-recent-index]")?.parentElement;if(recent)recent.insertAdjacentElement("afterend",b);else h.querySelector(":scope > .card")?.appendChild(b)}
+function renderList(){const el=document.getElementById("sfNoGeoList"),rows=noCoords().slice().reverse();if(!el)return;if(!rows.length){el.innerHTML=`<div class="sf-no-geo-note">Nessuna segnalazione senza posizione.</div>`;return}el.innerHTML=rows.map((i,n)=>`<button class="sf-no-geo-row" data-n="${n}"><span class="sf-no-geo-row-icon">${emoji(cat(i))}</span><span><strong>${safe(title(i))}</strong><small>${safe(cat(i))}${date(i)?" • "+safe(date(i)):""}</small></span><span class="sf-no-geo-row-go">›</span></button>`).join("");el.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>showDetail(rows[Number(b.dataset.n)]))}
+function showDetail(i){S.current=i;const p=document.getElementById("sfNoGeoPanel"),el=document.getElementById("sfNoGeoDetailBody"),pics=photos(i);el.innerHTML=`<article class="sf-no-geo-detail-card"><div>${emoji(cat(i))} Segnalazione • ${safe(cat(i))}</div><h2 class="sf-no-geo-title">${safe(title(i))}</h2><div class="sf-no-geo-meta">${date(i)?`<span class="sf-no-geo-chip">🕒 ${safe(date(i))}</span>`:""}</div><div class="sf-no-geo-warning">📍 <strong>Posizione non indicata.</strong><br>La segnalazione resta visibile nell'app, ma non viene inventato un punto sulla mappa.</div>${desc(i)?`<div class="sf-no-geo-desc">${safe(desc(i))}</div>`:""}${pics.length?`<div class="sf-no-geo-gallery">${pics.map(x=>`<img src="${safe(x)}" loading="lazy">`).join("")}</div>`:""}</article>`;p.classList.add("detail")}
+function showList(){S.current=null;document.getElementById("sfNoGeoPanel")?.classList.remove("detail");renderList()}
+function openList(){ensureUI();showList();document.body.classList.add("sf-no-geo-open")}
+function openDetail(i){ensureUI();showDetail(i);document.body.classList.add("sf-no-geo-open")}
+function close(){document.body.classList.remove("sf-no-geo-open")}
+function findRecent(btn){const t=String(btn.querySelector("strong")?.textContent||"").trim();if(!t)return null;const a=reports().filter(i=>title(i)===t);return a[a.length-1]||a[0]||null}
+function guard(){document.addEventListener("click",e=>{const b=e.target?.closest?.(".homeRecentItem[data-recent-index]");if(!b)return;const i=findRecent(b);if(!i||hasCoords(i))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openDetail(i)},true)}
+function update(){ensureUI();const a=noCoords(),n=a.length;const c=document.getElementById("sfNoGeoMapCount");if(c)c.textContent=String(n);const h=document.getElementById("sfNoGeoHomeNotice"),t=document.getElementById("sfNoGeoHomeText");if(h)h.classList.toggle("show",n>0);if(t)t.textContent=`${n} ${n===1?"segnalazione consultabile":"segnalazioni consultabili"}`;const sig=a.map(id).join("|");if(sig!==S.lastSig){S.lastSig=sig;if(document.body.classList.contains("sf-no-geo-open")&&!S.current)renderList()}}
+function install(){if(S.installed)return;S.installed=true;ensureUI();guard();update();addEventListener("hashchange",()=>setTimeout(update,80));addEventListener("pageshow",update);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")update()});S.timer=setInterval(update,3000);window.sfOpenReportsWithoutCoords=openList;window.__sfNoCoordsReportsVersion=VERSION}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install,{once:true});else install();
+})();
