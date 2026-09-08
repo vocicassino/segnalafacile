@@ -70,7 +70,43 @@
     }
   })();
 
-  const VERSION = "2026-08-28.22";
+  /* SEGNALAZIONI SENZA COORDINATE V3 - loader diretto */
+  (function loadNoCoordsReportsDirectly() {
+    try {
+      const css = [...document.querySelectorAll('link[rel="stylesheet"]')]
+        .find(el => String(el.getAttribute("href") || "").includes("no-coords-reports.css"));
+
+      if (!css) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "./no-coords-reports.css?v=3";
+        link.dataset.sfNoCoordsLoader = "1";
+        document.head.appendChild(link);
+      }
+
+      const old = [...document.scripts]
+        .find(el => String(el.getAttribute("src") || "").includes("no-coords-reports.js"));
+
+      if (old && !String(old.getAttribute("src") || "").includes("v=3")) {
+        old.remove();
+      }
+
+      const hasV3 = [...document.scripts]
+        .some(el => String(el.getAttribute("src") || "").includes("no-coords-reports.js?v=3"));
+
+      if (!hasV3) {
+        const script = document.createElement("script");
+        script.src = "./no-coords-reports.js?v=3";
+        script.dataset.sfNoCoordsLoader = "1";
+        script.async = false;
+        document.head.appendChild(script);
+      }
+    } catch (error) {
+      console.warn("[Segnala Facile] impossibile caricare segnalazioni senza coordinate V3", error);
+    }
+  })();
+
+  const VERSION = "2026-09-08.23";
 
   const state = {
     originalEnsureMaps: null,

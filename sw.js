@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v25-live-v8-raccolta-v3-nocoords-v2-location-required";
+const CACHE_NAME = "segnalafacile-map-v26-live-v8-raccolta-v3-nocoords-v3-location-required";
 
 const ASSETS = [
   "./","./index.html","./admin.html","./manifest.webmanifest",
@@ -25,8 +25,8 @@ self.addEventListener("activate",event=>{
       try{
         const u=new URL(client.url);
         if(!u.pathname.includes("/segnalafacile/"))return;
-        if(u.searchParams.get("sf-refresh")==="25")return;
-        u.searchParams.set("sf-refresh","25");
+        if(u.searchParams.get("sf-refresh")==="26")return;
+        u.searchParams.set("sf-refresh","26");
         await client.navigate(u.href);
       }catch{}
     }));
@@ -47,11 +47,11 @@ async function injectEnhancements(response,kind){
   let html=await response.text();
 
   if(kind==="main"){
-    html=html.replace(/map-enhancements\.css\?v=\d+/g,"map-enhancements.css?v=22");
-    html=html.replace(/map-enhancements\.js\?v=\d+/g,"map-enhancements.js?v=22");
+    html=html.replace(/map-enhancements\.css\?v=\d+/g,"map-enhancements.css?v=23");
+    html=html.replace(/map-enhancements\.js\?v=\d+/g,"map-enhancements.js?v=23");
   }
-  if(kind==="main"&&!html.includes("map-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./map-enhancements.css?v=22" />\n</head>');
-  if(kind==="main"&&!html.includes("map-enhancements.js"))html=html.replace("</body>",'  <script src="./map-enhancements.js?v=22"></script>\n</body>');
+  if(kind==="main"&&!html.includes("map-enhancements.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./map-enhancements.css?v=23" />\n</head>');
+  if(kind==="main"&&!html.includes("map-enhancements.js"))html=html.replace("</body>",'  <script src="./map-enhancements.js?v=23"></script>\n</body>');
   if(kind==="main"&&!html.includes("map-live-fix.js"))html=html.replace("</body>",'  <script src="./map-live-fix.js?v=2"></script>\n</body>');
   if(!html.includes("assistant-text-tools.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./assistant-text-tools.css?v=2" />\n</head>');
   if(!html.includes("assistant-text-tools.js"))html=html.replace("</body>",'  <script src="./assistant-text-tools.js?v=2"></script>\n</body>');
@@ -59,8 +59,8 @@ async function injectEnhancements(response,kind){
   if(kind==="main"&&!html.includes("live-enhancements.js"))html=html.replace("</body>",'  <script src="./live-enhancements.js?v=8"></script>\n</body>');
   if(kind==="main"&&!html.includes("raccolta-integration.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./raccolta-integration.css?v=3" />\n</head>');
   if(kind==="main"&&!html.includes("raccolta-integration.js"))html=html.replace("</body>",'  <script src="./raccolta-integration.js?v=3"></script>\n</body>');
-  if(kind==="main"&&!html.includes("no-coords-reports.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./no-coords-reports.css?v=2" />\n</head>');
-  if(kind==="main"&&!html.includes("no-coords-reports.js"))html=html.replace("</body>",'  <script src="./no-coords-reports.js?v=2"></script>\n</body>');
+  if(kind==="main"&&!html.includes("no-coords-reports.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./no-coords-reports.css?v=3" />\n</head>');
+  if(kind==="main"&&!html.includes("no-coords-reports.js"))html=html.replace("</body>",'  <script src="./no-coords-reports.js?v=3"></script>\n</body>');
   if(kind==="main"&&!html.includes("required-location.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./required-location.css?v=1" />\n</head>');
   if(kind==="main"&&!html.includes("required-location.js"))html=html.replace("</body>",'  <script src="./required-location.js?v=1"></script>\n</body>');
 

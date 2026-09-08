@@ -3,14 +3,16 @@
 */
 (()=>{"use strict";
 
-const VERSION="2026-09-08.2";
+const VERSION="2026-09-08.3";
 const S={
   installed:false,
   timer:null,
   current:null,
   lastSig:"",
   originalOpenHomeLatestItem:null,
-  wrapped:false
+  wrapped:false,
+  pendingNoGeo:null,
+  pendingAt:0
 };
 
 const safe=v=>String(v??"").replace(/[&<>"']/g,c=>({
@@ -348,28 +350,154 @@ function handleHomeClick(event){
   return false;
 }
 
+
+function latestNoGeo(){
+  const latest=latestOverall();
+  return latest?.__type==="segnalazione" && !hasCoords(latest) ? latest : null;
+}
+
+function markPending(item){
+  if(!item || hasCoords(item)) return;
+  S.pendingNoGeo=item;
+  S.pendingAt=Date.now();
+}
+
+function clearPending(){
+  S.pendingNoGeo=null;
+  S.pendingAt=0;
+}
+
+function pendingFresh(){
+  return S.pendingNoGeo && (Date.now()-S.pendingAt)<3000;
+}
+
+function reportFromHomeTarget(target){
+  if(!target) return null;
+  let node=target instanceof Element ? target : target.parentElement;
+  let depth=0;
+
+  while(node && depth<8 && node.id!=="view-home"){
+    const txt=String(node.textContent||"").replace(/\s+/g," ").trim();
+    if(txt){
+      const candidates=noCoords().filter(item=>txt.includes(title(item)));
+      if(candidates.length){
+        candidates.sort((a,b)=>parseDateString(b.dataStr||b.when)-parseDateString(a.dataStr||a.when));
+        return candidates[0];
+      }
+    }
+    node=node.parentElement;
+    depth++;
+  }
+  return null;
+}
+
+function overrideLatestHomeHandlers(){
+  const item=latestNoGeo();
+  if(!item) return;
+
+  const handler=(event)=>{
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    event?.stopImmediatePropagation?.();
+    clearPending();
+    openDetail(item);
+    return false;
+  };
+
+  const mini=document.getElementById("miniFeed");
+  if(mini){
+    mini.onclick=handler;
+    mini.onkeydown=(event)=>{
+      if(event.key==="Enter"||event.key===" "){
+        event.preventDefault();
+        handler(event);
+      }
+    };
+  }
+
+  const latestLine=document.getElementById("homeLatestLine");
+  if(latestLine){
+    latestLine.onclick=handler;
+    latestLine.onkeydown=(event)=>{
+      if(event.key==="Enter"||event.key===" "){
+        event.preventDefault();
+        handler(event);
+      }
+    };
+  }
+}
+
+function rescueMapNavigation(){
+  if(location.hash!=="#/map" || !pendingFresh()) return false;
+
+  const item=S.pendingNoGeo;
+  clearPending();
+
+  location.hash="#/";
+  setTimeout(()=>openDetail(item),100);
+  return true;
+}
+
 function installHomeGuards(){
+  document.addEventListener("pointerdown",event=>{
+    if(!event.target?.closest?.("#view-home")) return;
+
+    const item=
+      event.target?.closest?.("#miniFeed,#homeLatestLine")
+        ? latestNoGeo()
+        : reportFromHomeTarget(event.target);
+
+    if(item) markPending(item);
+  },true);
+
   document.addEventListener("click",event=>{
-    handleHomeClick(event);
+    if(!event.target?.closest?.("#view-home")) return;
+
+    const item=
+      event.target?.closest?.("#miniFeed,#homeLatestLine")
+        ? latestNoGeo()
+        : reportFromHomeTarget(event.target);
+
+    if(!item) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    clearPending();
+    openDetail(item);
   },true);
 
   document.addEventListener("keydown",event=>{
-    if(event.key!=="Enter" && event.key!==" ")return;
+    if(event.key!=="Enter" && event.key!==" ") return;
+    if(!event.target?.closest?.("#view-home")) return;
 
-    const clickable=event.target?.closest?.("#miniFeed,#homeLatestLine,.homeRecentItem[data-recent-index]");
-    if(!clickable)return;
+    const item=
+      event.target?.closest?.("#miniFeed,#homeLatestLine")
+        ? latestNoGeo()
+        : reportFromHomeTarget(event.target);
 
-    handleHomeClick(event);
+    if(!item) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    clearPending();
+    openDetail(item);
   },true);
 
-  // Se la funzione globale esiste, la sostituiamo anche direttamente:
-  // è una seconda protezione oltre all'intercettazione dei click.
+  window.addEventListener("hashchange",()=>rescueMapNavigation(),true);
+
   wrapOpenHomeLatestItem();
+  overrideLatestHomeHandlers();
 }
 
 function update(){
   ensureUI();
   wrapOpenHomeLatestItem();
+  overrideLatestHomeHandlers();
+  rescueMapNavigation();
 
   const a=noCoords();
   const n=a.length;
@@ -405,7 +533,7 @@ function install(){
     if(document.visibilityState==="visible")update();
   });
 
-  S.timer=setInterval(update,2000);
+  S.timer=setInterval(update,600);
 
   window.sfOpenReportsWithoutCoords=openList;
   window.sfOpenReportWithoutCoords=openDetail;
