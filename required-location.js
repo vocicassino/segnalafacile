@@ -2,7 +2,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-09-08.1";
+  const VERSION = "2026-09-08.2";
   const state = { installed:false, observer:null, timer:null };
 
   function currentGeo(){
@@ -34,7 +34,7 @@
 
     // Cambia "Posizione (opzionale)" in obbligatoria.
     const labels=[...view.querySelectorAll("label")];
-    const locationLabel=labels.find(el=>/Posizione\s*\(opzionale\)/i.test(el.textContent||""));
+    const locationLabel=labels.find(el=>/Posizione\s*\((?:opzionale|obbligatoria)\)/i.test(el.textContent||""));
     if(locationLabel){
       locationLabel.textContent="Posizione (obbligatoria)";
       locationLabel.style.color="#fff";

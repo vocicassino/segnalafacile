@@ -1,4 +1,4 @@
-/* Segnala Facile - Posizione obbligatoria V1 */
+/* Segnala Facile - Posizione obbligatoria V2 - caricamento diretto */
 
 #view-report .sf-required-location-box{
   margin:14px 0 8px;
@@ -84,4 +84,34 @@
 @keyframes sfLocationPulse{
   0%,100%{transform:none;box-shadow:0 15px 32px rgba(45,125,255,.20)}
   50%{transform:scale(1.015);box-shadow:0 0 0 5px rgba(255,90,95,.15),0 18px 36px rgba(45,125,255,.24)}
+}
+
+
+/* V2: layout nativo del modulo Segnala */
+#view-report .row:has(#btnGeoPick){
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+
+#view-report #btnGeoPick.sf-location-primary{
+  grid-column:1 / -1!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+}
+
+#view-report #btnGeoOnce,
+#view-report #btnGeoLive{
+  width:100%!important;
+}
+
+@media(max-width:620px){
+  #view-report .row:has(#btnGeoPick){
+    grid-template-columns:1fr!important;
+  }
+  #view-report #btnGeoPick.sf-location-primary{
+    grid-column:auto!important;
+  }
 }

@@ -1602,6 +1602,7 @@
     }
 
   </style>
+  <link rel="stylesheet" href="./required-location.css?v=2" />
 </head>
 
 <body>
@@ -1769,14 +1770,31 @@
         <label for="descrizione">Descrizione</label>
         <textarea id="descrizione" maxlength="700" placeholder="Spiega cosa succede, dove e quando…"></textarea>
 
-        <label>Posizione (opzionale)</label>
-        <div class="row">
-          <button class="ghost" id="btnGeoOnce" type="button">📍 Usa posizione attuale</button>
-          <button class="ghost" id="btnGeoLive" type="button">🛰️ Posizione in tempo reale: OFF</button>
-          <button class="ghost" id="btnGeoPick" type="button">🗺️ Inserisci a mano sulla mappa</button>
-          <button class="ghost" id="btnGeoClear" type="button">🧹 Rimuovi posizione</button>
+        <label>Posizione (obbligatoria)</label>
+
+        <div class="sf-required-location-box">
+          <div class="sf-required-location-title">📍 Indica il punto esatto</div>
+          <div class="sf-required-location-note">
+            La posizione è necessaria per pubblicare la segnalazione.
+            Consigliamo di indicare direttamente sulla mappa il punto preciso del problema.
+          </div>
         </div>
-        <div id="geoLine" class="hint" style="margin-top:10px; display:none;"></div>
+
+        <div class="row">
+          <button class="primary sf-location-primary" id="btnGeoPick" type="button">
+            🗺️ Indica il punto esatto sulla mappa
+          </button>
+          <button class="ghost sf-location-secondary" id="btnGeoOnce" type="button">
+            📍 Usa posizione attuale
+          </button>
+          <button class="ghost sf-location-secondary" id="btnGeoLive" type="button">
+            🛰️ Posizione in tempo reale: OFF
+          </button>
+        </div>
+
+        <div id="geoLine" class="hint sf-location-missing" style="margin-top:10px; display:block;">
+          ⚠️ Posizione obbligatoria: indica il punto esatto prima di inviare.
+        </div>
 
         <label>Foto (Massimo 3)</label>
         <div class="row">
@@ -4900,11 +4918,28 @@ if (elLatest) {
         btnRecord.textContent = '🎤 Registra Vocale';
     });
 
+    function reportGeoValid(){
+      if(!geo) return false;
+      const lat = Number(geo.lat);
+      const lng = Number(geo.lng);
+      return Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0);
+    }
+
     function renderGeo(){
       const geoLine = document.getElementById("geoLine");
-      if(!geo){ geoLine.style.display = "none"; geoLine.textContent = ""; return; }
+      if(!geoLine) return;
+
+      const ok = reportGeoValid();
       geoLine.style.display = "block";
-      geoLine.textContent = `📍 Posizione: ${geo.lat.toFixed(6)}, ${geo.lng.toFixed(6)}`;
+      geoLine.classList.toggle("sf-location-ok", ok);
+      geoLine.classList.toggle("sf-location-missing", !ok);
+
+      if(!ok){
+        geoLine.textContent = "⚠️ Posizione obbligatoria: indica il punto esatto prima di inviare.";
+        return;
+      }
+
+      geoLine.textContent = `✅ Posizione selezionata: ${Number(geo.lat).toFixed(6)}, ${Number(geo.lng).toFixed(6)}`;
     }
 
     document.getElementById("btnGeoOnce")?.addEventListener("click", () => {
@@ -4915,14 +4950,25 @@ if (elLatest) {
         (err) => { showBanner("error", "Errore GPS."); }, { enableHighAccuracy: true, timeout: 10000 }
       );
     });
-
-    document.getElementById("btnGeoClear")?.addEventListener("click", () => { geo = null; renderGeo(); showBanner("info", "Posizione rimossa."); });
-    document.getElementById("anonimo").addEventListener("change", (e) => document.getElementById("contactBox").classList.toggle("hidden", e.target.checked));
+document.getElementById("anonimo").addEventListener("change", (e) => document.getElementById("contactBox").classList.toggle("hidden", e.target.checked));
 
     document.getElementById("btnSend").addEventListener("click", async () => {
       const titolo = document.getElementById("titolo").value.trim(); 
       const descrizione = document.getElementById("descrizione").value.trim();
       if(titolo.length < 4 || descrizione.length < 10) return showBanner("error", "Compila bene Titolo e Descrizione.");
+
+      if(!reportGeoValid()){
+        showBanner("error", "📍 La posizione è obbligatoria. Indica il punto esatto sulla mappa prima di inviare.");
+        renderGeo();
+
+        const pickButton = document.getElementById("btnGeoPick");
+        pickButton?.classList.add("sf-location-error-pulse");
+        setTimeout(() => pickButton?.classList.remove("sf-location-error-pulse"), 1600);
+
+        // Porta direttamente l'utente alla scelta del punto esatto.
+        openMapPicker("report");
+        return;
+      }
       
       const isAnon = document.getElementById("anonimo").checked;
       const payload = {
@@ -4942,7 +4988,7 @@ if (elLatest) {
       try{
         const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
         if(!res.ok) throw new Error();
-        document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null; document.getElementById("photoPreview").style.display="none";
+        document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null; renderGeo(); document.getElementById("photoPreview").style.display="none";
         document.getElementById("btnClearAudio")?.click(); 
         location.hash = "#/success"; fetchPublicData(); 
       }catch(e){
@@ -5412,5 +5458,6 @@ if (elLatest) {
 
   <script src="./map-enhancements.js?v=4"></script>
   <script src="./assistant-text-tools.js?v=2"></script>
+  <script src="./required-location.js?v=2"></script>
 </body>
 </html>
