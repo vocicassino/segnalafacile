@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v28-location-required-safe-v3";
+const CACHE_NAME = "segnalafacile-map-v29-location-required-safe-v3";
 
 const ASSETS = [
   "./","./index.html","./admin.html","./manifest.webmanifest",
