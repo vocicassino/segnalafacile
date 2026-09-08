@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v23-live-v8-raccolta-v3-nocoords-v1";
+const CACHE_NAME = "segnalafacile-map-v24-live-v8-raccolta-v3-nocoords-v1-location-required";
 
 const ASSETS = [
   "./","./index.html","./admin.html","./manifest.webmanifest",
@@ -7,7 +7,8 @@ const ASSETS = [
   "./assistant-text-tools.css","./assistant-text-tools.js",
   "./live-enhancements.css","./live-enhancements.js",
   "./raccolta-integration.css","./raccolta-integration.js",
-  "./no-coords-reports.css","./no-coords-reports.js"
+  "./no-coords-reports.css","./no-coords-reports.js",
+  "./required-location.css","./required-location.js"
 ];
 
 self.addEventListener("install",event=>{
@@ -24,8 +25,8 @@ self.addEventListener("activate",event=>{
       try{
         const u=new URL(client.url);
         if(!u.pathname.includes("/segnalafacile/"))return;
-        if(u.searchParams.get("sf-refresh")==="23")return;
-        u.searchParams.set("sf-refresh","23");
+        if(u.searchParams.get("sf-refresh")==="24")return;
+        u.searchParams.set("sf-refresh","24");
         await client.navigate(u.href);
       }catch{}
     }));
@@ -60,6 +61,8 @@ async function injectEnhancements(response,kind){
   if(kind==="main"&&!html.includes("raccolta-integration.js"))html=html.replace("</body>",'  <script src="./raccolta-integration.js?v=3"></script>\n</body>');
   if(kind==="main"&&!html.includes("no-coords-reports.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./no-coords-reports.css?v=1" />\n</head>');
   if(kind==="main"&&!html.includes("no-coords-reports.js"))html=html.replace("</body>",'  <script src="./no-coords-reports.js?v=1"></script>\n</body>');
+  if(kind==="main"&&!html.includes("required-location.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./required-location.css?v=1" />\n</head>');
+  if(kind==="main"&&!html.includes("required-location.js"))html=html.replace("</body>",'  <script src="./required-location.js?v=1"></script>\n</body>');
 
   const headers=new Headers(response.headers);
   headers.delete("content-length");
