@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-map-v27-location-required-native-v2";
+const CACHE_NAME = "segnalafacile-map-v28-location-required-safe-v3";
 
 const ASSETS = [
   "./","./index.html","./admin.html","./manifest.webmanifest",
@@ -25,8 +25,8 @@ self.addEventListener("activate",event=>{
       try{
         const u=new URL(client.url);
         if(!u.pathname.includes("/segnalafacile/"))return;
-        if(u.searchParams.get("sf-refresh")==="27")return;
-        u.searchParams.set("sf-refresh","27");
+        if(u.searchParams.get("sf-refresh")==="28")return;
+        u.searchParams.set("sf-refresh","28");
         await client.navigate(u.href);
       }catch{}
     }));
@@ -62,7 +62,7 @@ async function injectEnhancements(response,kind){
   if(kind==="main"&&!html.includes("no-coords-reports.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./no-coords-reports.css?v=2" />\n</head>');
   if(kind==="main"&&!html.includes("no-coords-reports.js"))html=html.replace("</body>",'  <script src="./no-coords-reports.js?v=2"></script>\n</body>');
   if(kind==="main"&&!html.includes("required-location.css"))html=html.replace("</head>",'  <link rel="stylesheet" href="./required-location.css?v=2" />\n</head>');
-  if(kind==="main"&&!html.includes("required-location.js"))html=html.replace("</body>",'  <script src="./required-location.js?v=2"></script>\n</body>');
+  if(kind==="main"&&!html.includes("required-location.js"))html=html.replace("</body>",'  <script src="./required-location.js?v=3"></script>\n</body>');
 
   const headers=new Headers(response.headers);
   headers.delete("content-length");
