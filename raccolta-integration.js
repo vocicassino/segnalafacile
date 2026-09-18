@@ -5,7 +5,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-08-28.3";
+  const VERSION = "2026-09-18.4";
   const PUSH_WORKER = "https://cassino-raccolta-push.vocidicassino.workers.dev";
 
   const WASTE = {
@@ -173,10 +173,6 @@
           <button class="sf-more-item" type="button" data-sf-more="offerte">
             <span class="sf-more-ico">🎁</span><strong>Offerte</strong>
             <small>Promozioni e vantaggi delle attività locali.</small>
-          </button>
-          <button class="sf-more-item" type="button" data-sf-more="ai">
-            <span class="sf-more-ico">🎙️</span><strong>Assistente AI</strong>
-            <small>Aiuto per segnalazioni, testi e informazioni.</small>
           </button>
           <button class="sf-more-item" type="button" data-sf-more="install">
             <span class="sf-more-ico">📲</span><strong>Installa l'app</strong>
