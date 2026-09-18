@@ -1,5 +1,5 @@
 /* Segnala Facile - Assistente testi contestuale
-   Rimuove la scheda AI autonoma e porta gli strumenti utili nei moduli corretti.
+   Strumenti integrati nei moduli Segnalazioni, Attività e Articoli.
 */
 (() => {
   "use strict";
@@ -372,20 +372,7 @@
     overlay.setAttribute("aria-hidden", "false");
   }
 
-  function removeStandaloneAi() {
-    document.querySelectorAll('nav.bottom a[data-nav="ai"], a[href="#/ai"]').forEach(link => link.remove());
-    const view = $("#view-ai");
-    if (view) {
-      view.classList.add("hidden");
-      view.setAttribute("aria-hidden", "true");
-    }
-    if (/^#\/ai(?:$|[/?])/i.test(location.hash)) {
-      location.hash = "#/report";
-    }
-  }
-
   function initialize() {
-    removeStandaloneAi();
     installReportAssistant();
     installActivityAssistant();
     installAdminArticleAssistant();
@@ -395,7 +382,6 @@
 
   document.addEventListener("DOMContentLoaded", initialize, { once: true });
   window.addEventListener("hashchange", () => {
-    removeStandaloneAi();
     installReportAssistant();
     installActivityAssistant();
   });

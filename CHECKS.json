@@ -1,7 +1,12 @@
 {
-  "index_has_old_key": false,
-  "admin_has_old_key": false,
-  "admin_has_old_pin": false,
-  "index_has_ai_nav": false,
-  "index_registers_sw": true
+  "version": "3.1.0",
+  "legacy_ai_view_removed": true,
+  "legacy_ai_route_removed": true,
+  "legacy_ai_functions_removed": true,
+  "report_text_assistant_preserved": true,
+  "activity_text_assistant_preserved": true,
+  "facebook_sync_admin_preserved": true,
+  "admin_login_endpoint_preserved": true,
+  "sw_cache": true,
+  "worker_in_upload_package": false
 }

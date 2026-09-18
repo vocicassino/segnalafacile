@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-v3.0.0";
+const CACHE_NAME = "segnalafacile-v3.1.0";
 const STATIC_ASSETS = [
   "./",
   "./index.html",

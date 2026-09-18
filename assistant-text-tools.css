@@ -1,7 +1,5 @@
 /* Segnala Facile - Assistente testi contestuale */
 nav.bottom .inner{grid-template-columns:repeat(6,1fr)!important;}
-nav.bottom a[data-nav="ai"],#view-ai{display:none!important;}
-
 .sf-text-assistant{
   margin:12px 0 16px;
   padding:14px;
