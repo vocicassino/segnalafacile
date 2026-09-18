@@ -7,8 +7,12 @@
   <title>Segnala Facile</title>
 
   <link rel="manifest" href="manifest.webmanifest?v=2" />
-  <link rel="stylesheet" href="./map-enhancements.css?v=4">
-  <link rel="stylesheet" href="./assistant-text-tools.css?v=2">
+  <link rel="stylesheet" href="./map-enhancements.css?v=30">
+  <link rel="stylesheet" href="./assistant-text-tools.css?v=30">
+  <link rel="stylesheet" href="./live-enhancements.css?v=30">
+  <link rel="stylesheet" href="./raccolta-integration.css?v=30">
+  <link rel="stylesheet" href="./no-coords-reports.css?v=30">
+  <link rel="stylesheet" href="./required-location.css?v=30">
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
@@ -1181,7 +1185,7 @@
     .articleReaderText p{margin:0 0 13px;}
     .articleReaderText p:last-child{margin-bottom:0;}
     nav.bottom{padding:10px 10px calc(10px + env(safe-area-inset-bottom));}
-    nav.bottom .inner{max-width:920px!important;margin:0 auto!important;padding:10px 8px!important;border-radius:28px!important;border:1px solid rgba(255,255,255,.14)!important;background:radial-gradient(320px 140px at 0% 0%, rgba(45,125,255,.20), transparent 58%),radial-gradient(340px 140px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(8,14,28,.88)!important;backdrop-filter:blur(16px) saturate(140%)!important;box-shadow:0 16px 42px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.05)!important;display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:6px!important;overflow:visible!important;}
+    nav.bottom .inner{max-width:920px!important;margin:0 auto!important;padding:10px 8px!important;border-radius:28px!important;border:1px solid rgba(255,255,255,.14)!important;background:radial-gradient(320px 140px at 0% 0%, rgba(45,125,255,.20), transparent 58%),radial-gradient(340px 140px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(8,14,28,.88)!important;backdrop-filter:blur(16px) saturate(140%)!important;box-shadow:0 16px 42px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.05)!important;display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:6px!important;overflow:visible!important;}
     nav.bottom a{position:relative!important;min-width:0!important;min-height:64px!important;border-radius:21px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;color:#c3d0e6!important;text-decoration:none!important;padding:7px 4px!important;overflow:visible!important;background:transparent!important;border:1px solid transparent!important;}
     nav.bottom a::before, nav.bottom a::after{display:none!important;content:none!important;}
     .navIco{display:none!important;}
@@ -1189,7 +1193,7 @@
     nav.bottom a span:last-child{font-size:11px!important;font-weight:900!important;line-height:1!important;white-space:nowrap!important;}
     nav.bottom a.active{color:#fff!important;background:linear-gradient(135deg,rgba(45,125,255,.24),rgba(25,195,125,.15))!important;border-color:rgba(255,255,255,.14)!important;box-shadow:0 10px 24px rgba(45,125,255,.16)!important;}
     nav.bottom a.active .navEmoji{background:linear-gradient(135deg,rgba(45,125,255,.38),rgba(25,195,125,.22));border-color:rgba(118,184,255,.36);transform:translateY(-2px) scale(1.04);}
-    @media(max-width:720px){.articleSearchBar{grid-template-columns:1fr;}.articleSearchBar .btn{width:100%;}.articleCardPro{grid-template-columns:1fr;}.articleCover,.articleCoverPlaceholder{height:190px;min-height:190px;}.articleCardBody h3{font-size:20px;}.articleCardActions .btn{flex:1 1 auto;}nav.bottom .inner{grid-template-columns:repeat(7,1fr)!important;gap:3px!important;padding:8px 5px!important;border-radius:24px!important;}nav.bottom a{min-height:59px!important;border-radius:18px!important;gap:4px!important;padding:6px 2px!important;}.navEmoji{width:29px;height:29px;border-radius:12px;font-size:16px;}nav.bottom a span:last-child{font-size:9.5px!important;}}
+    @media(max-width:720px){.articleSearchBar{grid-template-columns:1fr;}.articleSearchBar .btn{width:100%;}.articleCardPro{grid-template-columns:1fr;}.articleCover,.articleCoverPlaceholder{height:190px;min-height:190px;}.articleCardBody h3{font-size:20px;}.articleCardActions .btn{flex:1 1 auto;}nav.bottom .inner{grid-template-columns:repeat(6,1fr)!important;gap:3px!important;padding:8px 5px!important;border-radius:24px!important;}nav.bottom a{min-height:59px!important;border-radius:18px!important;gap:4px!important;padding:6px 2px!important;}.navEmoji{width:29px;height:29px;border-radius:12px;font-size:16px;}nav.bottom a span:last-child{font-size:9.5px!important;}}
 
   
 
@@ -1275,7 +1279,7 @@
     .articleReaderActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;}
 
     nav.bottom{pointer-events:none!important;padding:10px 10px calc(10px + env(safe-area-inset-bottom))!important;}
-    nav.bottom .inner{pointer-events:auto!important;max-width:940px!important;margin:0 auto!important;padding:9px 8px!important;border-radius:30px!important;border:1px solid rgba(255,255,255,.14)!important;background:radial-gradient(340px 150px at 0% 0%, rgba(45,125,255,.22), transparent 58%),radial-gradient(340px 150px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(7,15,30,.90)!important;backdrop-filter:blur(18px) saturate(150%)!important;box-shadow:0 18px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.06)!important;display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:6px!important;}
+    nav.bottom .inner{pointer-events:auto!important;max-width:940px!important;margin:0 auto!important;padding:9px 8px!important;border-radius:30px!important;border:1px solid rgba(255,255,255,.14)!important;background:radial-gradient(340px 150px at 0% 0%, rgba(45,125,255,.22), transparent 58%),radial-gradient(340px 150px at 100% 0%, rgba(25,195,125,.16), transparent 58%),rgba(7,15,30,.90)!important;backdrop-filter:blur(18px) saturate(150%)!important;box-shadow:0 18px 46px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.06)!important;display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:6px!important;}
     nav.bottom a{pointer-events:auto!important;position:relative!important;min-height:66px!important;border-radius:22px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;color:#c4d1e7!important;text-decoration:none!important;background:transparent!important;border:1px solid transparent!important;transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease,color .18s ease!important;overflow:visible!important;}
     nav.bottom a::before, nav.bottom a::after{display:none!important;content:none!important;}
     .navEmoji{width:35px!important;height:35px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:16px!important;background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.10)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 18px rgba(0,0,0,.18)!important;font-size:20px!important;line-height:1!important;filter:none!important;transform:translateZ(0);transition:transform .18s ease,background .18s ease,box-shadow .18s ease!important;}
@@ -1642,7 +1646,6 @@
         <div class="btnRow">
           <a class="btn ghost" href="#/attivita">🏪 Scopri attività</a>
           <a class="btn ghost" href="#/articoli">📰 Articoli</a>
-          <a class="btn ghost" href="#/ai">🎙️ Assistente AI</a>
           <a class="btn ghost" href="#/my">🗂️ Le mie segnalazioni</a>
           <a class="btn ghost" href="#/install">📲 Come installarla</a>
           <a class="btn facebookBtn" href="https://www.facebook.com/share/1D3oKnPmJn/" target="_blank" rel="noopener noreferrer">📘 Segui Voci di Cassino</a>
@@ -2195,7 +2198,6 @@
 
           <div class="aiQuickActions" style="margin-top:12px;margin-bottom:8px;">
             <button class="btn primary small" type="button" onclick="openAiForCurrentActivity()">🎙️ Genera promo AI dalla scheda</button>
-            <button class="btn ghost small" type="button" onclick="location.hash='#/ai'">✨ Apri Assistente AI</button>
           </div>
 
           <label>Descrizione</label>
@@ -2344,116 +2346,6 @@
         </div>
 
         <div id="articleList" class="articleSmartList"></div>
-      </div>
-    </section>
-
-
-
-
-    <section id="view-ai" class="grid hidden">
-      <div class="card aiHeroCard">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
-          <div>
-            <div class="aiBadge">🎙️ Segnala Facile AI</div>
-            <h2 style="margin:0;font-size:28px;line-height:1.05;">Assistente per segnalazioni, attività e video avatar</h2>
-            <p class="hint" style="font-size:14px;margin-top:10px;max-width:70ch;">Genera testi pronti per segnalazioni, schede attività, post social, articoli e script video con avatar. Questa prima versione lavora direttamente nell'app; il video avatar reale potrà essere collegato dopo tramite API esterna.</p>
-          </div>
-          <a class="btn small ghost" href="#/">← Home</a>
-        </div>
-
-        <div class="aiModeGrid" id="aiModeGrid">
-          <div class="aiModeCard active" data-ai-mode="segnalazione" onclick="setAiMode('segnalazione')">
-            <div class="aiModeIcon">📣</div><div class="aiModeTitle">Segnalazione AI</div>
-            <div class="aiModeText">Corregge il testo, crea titolo, categoria e priorità.</div>
-          </div>
-          <div class="aiModeCard" data-ai-mode="attivita" onclick="setAiMode('attivita')">
-            <div class="aiModeIcon">🏪</div><div class="aiModeTitle">Attività AI</div>
-            <div class="aiModeText">Descrizione, slogan, Facebook, Instagram e Reel.</div>
-          </div>
-          <div class="aiModeCard" data-ai-mode="articolo" onclick="setAiMode('articolo')">
-            <div class="aiModeIcon">📰</div><div class="aiModeTitle">Voci AI</div>
-            <div class="aiModeText">Bozza articolo, titolo forte e hashtag.</div>
-          </div>
-          <div class="aiModeCard" data-ai-mode="avatar" onclick="setAiMode('avatar')">
-            <div class="aiModeIcon">🎬</div><div class="aiModeTitle">Avatar AI</div>
-            <div class="aiModeText">Script per avatar parlante e video promo.</div>
-          </div>
-        </div>
-
-        <div class="aiFormGrid">
-          <div>
-            <label for="aiNome">Nome / titolo</label>
-            <input id="aiNome" type="text" placeholder="Es. Pizzeria Bella Napoli, prodotto, problema...">
-          </div>
-          <div>
-            <label for="aiCategoria">Categoria</label>
-            <select id="aiCategoria">
-              <option value="segnalazione">📣 Segnalazione cittadina</option>
-              <option value="ristorante">🍕 Ristorante / food</option>
-              <option value="negozio">🛍️ Negozio</option>
-              <option value="professionista">💼 Professionista</option>
-              <option value="servizi">🧰 Servizi</option>
-              <option value="evento">🎉 Evento</option>
-              <option value="prodotto">📦 Prodotto</option>
-              <option value="articolo">📰 Articolo</option>
-            </select>
-          </div>
-          <div>
-            <label for="aiPrezzo">Prezzo / offerta (opzionale)</label>
-            <input id="aiPrezzo" type="text" placeholder="Es. 19,90€, sconto 20%, menù fisso...">
-          </div>
-          <div>
-            <label for="aiTarget">Pubblico</label>
-            <select id="aiTarget">
-              <option value="cittadini di Cassino">Cittadini di Cassino</option>
-              <option value="famiglie">Famiglie</option>
-              <option value="giovani">Giovani</option>
-              <option value="clienti locali">Clienti locali</option>
-              <option value="turisti e visitatori">Turisti e visitatori</option>
-              <option value="aziende e professionisti">Aziende e professionisti</option>
-            </select>
-          </div>
-          <div>
-            <label for="aiStile">Stile</label>
-            <select id="aiStile">
-              <option value="chiaro e professionale">Chiaro e professionale</option>
-              <option value="persuasivo e commerciale">Persuasivo e commerciale</option>
-              <option value="emozionale e coinvolgente">Emozionale e coinvolgente</option>
-              <option value="diretto e provocatorio">Diretto e provocatorio</option>
-              <option value="istituzionale">Istituzionale</option>
-            </select>
-          </div>
-          <div>
-            <label for="aiDurata">Durata video avatar</label>
-            <select id="aiDurata">
-              <option value="30">30 secondi</option>
-              <option value="45">45 secondi</option>
-              <option value="60">60 secondi</option>
-            </select>
-          </div>
-          <div class="full">
-            <label for="aiDescrizione">Descrizione / testo di partenza</label>
-            <textarea id="aiDescrizione" placeholder="Scrivi il problema, il prodotto, l'attività, l'offerta o l'argomento dell'articolo..."></textarea>
-          </div>
-          <div class="full">
-            <label for="aiFotoInput">Foto prodotto / attività (opzionale)</label>
-            <div class="btnRow">
-              <button class="btn ghost small" type="button" onclick="document.getElementById('aiFotoInput').click()">📷 Carica foto</button>
-              <button class="btn ghost small" type="button" onclick="aiLoadReportDraft()">📣 Usa bozza segnalazione</button>
-              <button class="btn ghost small" type="button" onclick="aiLoadFromActivity()">🏪 Usa attività collegata</button>
-              <input id="aiFotoInput" type="file" accept="image/*" class="hidden" onchange="handleAiPhoto(event)">
-            </div>
-            <div id="aiPhotoPreview" class="aiPhotoPreview"></div>
-          </div>
-        </div>
-
-        <div class="btnRow" style="margin-top:16px">
-          <button class="btn primary" type="button" onclick="generateAiContent()">✨ Genera contenuti</button>
-          <button class="btn ghost" type="button" onclick="copyAiAll()">📋 Copia tutto</button>
-          <button class="btn ghost" type="button" onclick="sendAiRequestToAdmin()">📩 Invia a Voci di Cassino</button>
-        </div>
-
-        <div id="aiResult" class="aiResultBox"></div>
       </div>
     </section>
 
@@ -2656,7 +2548,6 @@
       <a href="#/articoli" data-nav="articoli" aria-label="Articoli"><span class="navEmoji">📰</span><span>Articoli</span></a>
       <a href="#/report" data-nav="report" aria-label="Segnala"><span class="navEmoji">📣</span><span>Segnala</span></a>
       <a href="#/attivita" data-nav="attivita" aria-label="Attività"><span class="navEmoji">🏪</span><span>Attività</span></a>
-      <a href="#/ai" data-nav="ai" aria-label="Assistente AI"><span class="navEmoji">🎙️</span><span>AI</span></a>
       <a href="#/offerte" data-nav="offerte" aria-label="Offerte"><span class="navEmoji">🎁</span><span>Offerte</span></a>
       <a href="#/map" data-nav="map" aria-label="Mappa"><span class="navEmoji">🗺️</span><span>Mappa</span></a>
     </div>
@@ -2666,9 +2557,8 @@
     const CONFIG = {
       email: "vocidicassino@proton.me",
       mapsQuery: "Cassino",
-      telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev",
-      telegramApiKey: "SF-Secure-Key-2026" 
-    };
+      telegramWorkerUrl: "https://segnalafacile-telegram.vocidicassino.workers.dev"
+};
 
     const CHAT_CONFIG = {
       maxMessages: 50,
@@ -4986,7 +4876,7 @@ document.getElementById("anonimo").addEventListener("change", (e) => document.ge
       const arr = loadReports(); arr.push({ id: String(Date.now()), ...payload }); saveReports(arr);
 
       try{
-        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/segnalazioni", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         if(!res.ok) throw new Error();
         document.getElementById("titolo").value = ""; document.getElementById("descrizione").value = ""; photos=[]; geo=null; renderGeo(); document.getElementById("photoPreview").style.display="none";
         document.getElementById("btnClearAudio")?.click(); 
@@ -5030,7 +4920,7 @@ document.getElementById("anonimo").addEventListener("change", (e) => document.ge
 
       document.getElementById("btnSendPlace").disabled = true;
       try{
-        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/luoghi", { method: "POST", headers: { "Content-Type": "application/json", "X-Api-Key": CONFIG.telegramApiKey }, body: JSON.stringify(payload) });
+        const res = await fetch(CONFIG.telegramWorkerUrl + "/api/luoghi", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         if(res.ok) { 
           showBanner("success", "Recensione pubblicata!"); 
           resetAddPlace(); 
@@ -5267,7 +5157,7 @@ document.getElementById("anonimo").addEventListener("change", (e) => document.ge
       showBanner("success", "Dati attività caricati nell'Assistente AI.");
     }
     function openAiForCurrentActivity(){
-      location.hash = "#/ai";
+      location.hash = "#/report";
       setTimeout(aiLoadFromActivity, 120);
     }
     function buildAiPayload(){
@@ -5456,8 +5346,21 @@ document.getElementById("anonimo").addEventListener("change", (e) => document.ge
     });
   </script>
 
-  <script src="./map-enhancements.js?v=4"></script>
-  <script src="./assistant-text-tools.js?v=2"></script>
-  <script src="./required-location.js?v=3"></script>
+  <script src="./map-enhancements.js?v=30"></script>
+  <script src="./assistant-text-tools.js?v=30"></script>
+  <script src="./required-location.js?v=30"></script>
+  <script src="./map-live-fix.js?v=30"></script>
+  <script src="./live-enhancements.js?v=30"></script>
+  <script src="./raccolta-integration.js?v=30"></script>
+  <script src="./no-coords-reports.js?v=30"></script>
+  <script>
+    window.SF_APP_VERSION = "3.0.0";
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })
+          .catch(err => console.warn("Service Worker non registrato:", err));
+      });
+    }
+  </script>
 </body>
 </html>
