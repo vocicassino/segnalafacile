@@ -1,4 +1,4 @@
-const CACHE_NAME = "segnalafacile-v3.1.1";
+const CACHE_NAME = "segnalafacile-v3.2.0-subscriptions";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -17,12 +17,15 @@ const STATIC_ASSETS = [
   "./no-coords-reports.css",
   "./no-coords-reports.js",
   "./required-location.css",
-  "./required-location.js"
+  "./required-location.js",
+  "./admin-subscriptions.js"
 ];
 
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => Promise.allSettled(STATIC_ASSETS.map(asset => cache.add(asset))))
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.allSettled(STATIC_ASSETS.map(asset => cache.add(asset)))
+    )
   );
   self.skipWaiting();
 });
@@ -30,14 +33,51 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k => k.startsWith("segnalafacile") && k !== CACHE_NAME).map(k => caches.delete(k)));
+    await Promise.all(
+      keys
+        .filter(k => k.startsWith("segnalafacile") && k !== CACHE_NAME)
+        .map(k => caches.delete(k))
+    );
     await self.clients.claim();
   })());
 });
 
+async function injectAdminSubscriptions(response, request) {
+  try {
+    const url = new URL(request.url);
+    if (!/\/admin\.html$/i.test(url.pathname)) return response;
+    if (!response.ok) return response;
+
+    const type = response.headers.get("content-type") || "";
+    if (!type.includes("text/html")) return response;
+
+    let html = await response.text();
+    if (!html.includes("admin-subscriptions.js")) {
+      html = html.replace(
+        /<\/body>/i,
+        '  <script src="./admin-subscriptions.js?v=1"></script>\n</body>'
+      );
+    }
+
+    const headers = new Headers(response.headers);
+    headers.delete("content-length");
+    headers.set("cache-control", "no-cache");
+
+    return new Response(html, {
+      status: response.status,
+      statusText: response.statusText,
+      headers
+    });
+  } catch {
+    return response;
+  }
+}
+
 async function networkFirst(request) {
   try {
-    const response = await fetch(request, { cache: "no-store" });
+    const raw = await fetch(request, { cache: "no-store" });
+    const response = await injectAdminSubscriptions(raw, request);
+
     if (request.method === "GET" && response.ok) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone()).catch(() => {});
@@ -64,29 +104,40 @@ self.addEventListener("push", event => {
   let payload = {};
   try { payload = event.data?.json() || {}; }
   catch { payload = { body: event.data?.text() || "Hai un nuovo promemoria per la raccolta." }; }
+
   const rawTarget = payload?.data?.url || "./#/raccolta";
-  const targetUrl = String(rawTarget).includes("/Cassino-Raccolta/") ? "./#/raccolta" : rawTarget;
-  event.waitUntil(self.registration.showNotification(payload.title || "Cassino Raccolta • Segnala Facile", {
-    body: payload.body || "Hai un nuovo promemoria per la raccolta.",
-    icon: "./icons/icon-192.png",
-    badge: "./icons/icon-192.png",
-    tag: payload.tag || "cassino-raccolta-push",
-    data: { ...(payload.data || {}), url: targetUrl }
-  }));
+  const targetUrl = String(rawTarget).includes("/Cassino-Raccolta/")
+    ? "./#/raccolta"
+    : rawTarget;
+
+  event.waitUntil(
+    self.registration.showNotification(
+      payload.title || "Cassino Raccolta • Segnala Facile",
+      {
+        body: payload.body || "Hai un nuovo promemoria per la raccolta.",
+        icon: "./icons/icon-192.png",
+        badge: "./icons/icon-192.png",
+        tag: payload.tag || "cassino-raccolta-push",
+        data: { ...(payload.data || {}), url: targetUrl }
+      }
+    )
+  );
 });
 
 self.addEventListener("notificationclick", event => {
   event.notification.close();
   const targetUrl = event.notification.data?.url || "./#/raccolta";
-  event.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
-    for (const client of list) {
-      if ("focus" in client) {
-        client.navigate(targetUrl);
-        return client.focus();
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+      for (const client of list) {
+        if ("focus" in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
       }
-    }
-    return clients.openWindow ? clients.openWindow(targetUrl) : undefined;
-  }));
+      return clients.openWindow ? clients.openWindow(targetUrl) : undefined;
+    })
+  );
 });
 
 self.addEventListener("fetch", event => {
@@ -99,7 +150,10 @@ self.addEventListener("fetch", event => {
   }
 
   const url = new URL(request.url);
-  if (url.origin === self.location.origin && /\.(?:js|css)$/i.test(url.pathname)) {
+  if (
+    url.origin === self.location.origin &&
+    /\.(?:js|css)$/i.test(url.pathname)
+  ) {
     event.respondWith(networkFirst(request));
     return;
   }

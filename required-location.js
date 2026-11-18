@@ -916,3 +916,235 @@
     install();
   }
 })();
+
+/* =========================================================
+   SEGNALA FACILE — ABBONAMENTI ATTIVITÀ V1
+   18-11-2026
+   - attività scaduta resta visibile come scheda BASE
+   - niente "in evidenza" e niente offerte dopo scadenza
+   - area titolare in sola lettura fino al rinnovo
+   - link Paga/Rinnova resta utilizzabile
+   NON modifica API, Telegram o flusso segnalazioni.
+   ========================================================= */
+(() => {
+  "use strict";
+
+  const VERSION = "2026-11-18.subscriptions1";
+  let renderWrapped = false;
+  let editorObserver = null;
+
+  function dateOnly(v){
+    const s = String(v || "").trim();
+    const m = /^(\d{4}-\d{2}-\d{2})/.exec(s);
+    return m ? m[1] : "";
+  }
+
+  function todayISO(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function isExpired(a){
+    if(!a) return false;
+    const stato = String(a.stato_pagamento || "").toLowerCase();
+    if(stato === "scaduto") return true;
+    const end = dateOnly(a.abbonamento_scadenza);
+    return !!end && end < todayISO();
+  }
+
+  function toBaseIfExpired(a){
+    if(!a || !isExpired(a)) return a;
+    return {
+      ...a,
+      piano: "base",
+      in_evidenza: 0,
+      offerta: "",
+      testo_offerta: "",
+      titolo_offerta: "",
+      __sf_subscription_expired: true
+    };
+  }
+
+  function withPublicActivities(callback){
+    const original = Array.isArray(window.publicAttivita) ? window.publicAttivita : [];
+    const safe = original.map(toBaseIfExpired);
+    window.publicAttivita = safe;
+    try { return callback(); }
+    finally { window.publicAttivita = original; }
+  }
+
+  function wrapPublicRenderers(){
+    if(renderWrapped) return;
+    renderWrapped = true;
+
+    if(typeof window.renderAttivita === "function"){
+      const original = window.renderAttivita;
+      window.renderAttivita = function(...args){
+        return withPublicActivities(() => original.apply(this,args));
+      };
+    }
+
+    if(typeof window.renderOfferte === "function"){
+      const original = window.renderOfferte;
+      window.renderOfferte = function(...args){
+        return withPublicActivities(() => original.apply(this,args));
+      };
+    }
+
+    if(typeof window.openActivityDetail === "function"){
+      const original = window.openActivityDetail;
+      window.openActivityDetail = function(...args){
+        return withPublicActivities(() => original.apply(this,args));
+      };
+    }
+  }
+
+  function getSavedActivity(){
+    try {
+      const raw = localStorage.getItem("sf_activity_session");
+      if(!raw) return null;
+      return JSON.parse(raw)?.attivita || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function ensureExpiredBanner(editor,a){
+    let banner = document.getElementById("sfSubscriptionExpiredBanner");
+
+    if(!isExpired(a)){
+      banner?.remove();
+      return;
+    }
+
+    if(!banner){
+      banner = document.createElement("div");
+      banner.id = "sfSubscriptionExpiredBanner";
+      banner.style.cssText = [
+        "margin:12px 0",
+        "padding:13px 14px",
+        "border-radius:16px",
+        "border:1px solid rgba(255,90,95,.34)",
+        "background:rgba(255,90,95,.10)",
+        "color:#ffe5e6",
+        "font-size:12px",
+        "line-height:1.5"
+      ].join(";");
+
+      const title = editor.querySelector("#activityEditorTitle")?.closest("div");
+      if(title?.parentElement) title.parentElement.insertAdjacentElement("afterend",banner);
+      else editor.prepend(banner);
+    }
+
+    const end = dateOnly(a?.abbonamento_scadenza) || "non indicata";
+    const pay = a?.pagamento_url
+      ? `<br><a href="${String(a.pagamento_url).replace(/"/g,"&quot;")}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;color:#9fc3ff;font-weight:900;">💳 Paga / rinnova abbonamento</a>`
+      : "";
+
+    banner.innerHTML =
+      `<strong>⛔ Abbonamento scaduto</strong><br>` +
+      `Scadenza: <b>${end}</b>. La vetrina pubblica resta visibile in modalità Base, ` +
+      `ma offerte, evidenza e modifica della scheda sono sospese fino al rinnovo.` + pay;
+  }
+
+  function applyEditorLock(){
+    const editor = document.getElementById("activityEditorBox");
+    if(!editor || editor.classList.contains("hidden")) return;
+
+    const a = getSavedActivity();
+    if(!a) return;
+
+    const expired = isExpired(a);
+    ensureExpiredBanner(editor,a);
+
+    const fields = editor.querySelectorAll("input,textarea,select");
+    fields.forEach(el => {
+      if(expired){
+        if(!el.disabled){
+          el.dataset.sfSubLock = "1";
+          el.disabled = true;
+        }
+      }else if(el.dataset.sfSubLock === "1"){
+        el.disabled = false;
+        delete el.dataset.sfSubLock;
+      }
+    });
+
+    editor.querySelectorAll("button").forEach(btn => {
+      const action = String(btn.getAttribute("onclick") || "");
+      const isLogout = /logoutAttivita/i.test(action);
+      if(expired && !isLogout){
+        if(!btn.disabled){
+          btn.dataset.sfSubLock = "1";
+          btn.disabled = true;
+          btn.style.opacity = ".5";
+        }
+      }else if(!expired && btn.dataset.sfSubLock === "1"){
+        btn.disabled = false;
+        btn.style.opacity = "";
+        delete btn.dataset.sfSubLock;
+      }
+    });
+
+    const plan = document.getElementById("activityEditorPlan");
+    if(plan && expired && !plan.querySelector("[data-sf-expired-note]")){
+      const note = document.createElement("div");
+      note.dataset.sfExpiredNote = "1";
+      note.style.cssText = "margin-top:6px;color:#ffb8bb;font-weight:900;";
+      note.textContent = "Funzioni Plus/Premium sospese fino al rinnovo.";
+      plan.appendChild(note);
+    }
+  }
+
+  function installEditorWatcher(){
+    const editor = document.getElementById("activityEditorBox");
+    if(!editor || editorObserver) return;
+
+    editorObserver = new MutationObserver(() => {
+      setTimeout(applyEditorLock,0);
+    });
+
+    // Osserviamo solo il contenitore: le modifiche disabled sui figli
+    // non fanno scattare un loop.
+    editorObserver.observe(editor,{
+      attributes:true,
+      attributeFilter:["class"],
+      childList:true
+    });
+
+    applyEditorLock();
+  }
+
+  function refresh(){
+    wrapPublicRenderers();
+    installEditorWatcher();
+
+    // Ridisegna le aree pubbliche usando le regole abbonamento.
+    try {
+      if(location.hash === "#/attivita" && typeof window.renderAttivita === "function"){
+        window.renderAttivita();
+      }
+      if(location.hash === "#/offerte" && typeof window.renderOfferte === "function"){
+        window.renderOfferte();
+      }
+    } catch {}
+
+    setTimeout(applyEditorLock,30);
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded",refresh,{once:true});
+  }else{
+    refresh();
+  }
+
+  window.addEventListener("hashchange",()=>setTimeout(refresh,40));
+  window.addEventListener("storage",e=>{
+    if(e.key === "sf_activity_session") setTimeout(applyEditorLock,20);
+  });
+
+  window.__sfSubscriptionsPublicVersion = VERSION;
+})();
