@@ -6,7 +6,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "2026-11-18.ui4.1";
+  const VERSION = "2026-11-18.ui4.2";
   const state = {
     installed: false,
     reportReady: false,
@@ -480,6 +480,437 @@
   }
 
   if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",install,{once:true});
+  }else{
+    install();
+  }
+})();
+/* =========================================================
+   SEGNALA FACILE — FIX CLUSTER MAPPA V4.2
+   Problema risolto:
+   tocco su un gruppo numerato -> mostra i PIN reali di quel gruppo,
+   mantenendoli visibili dopo lo zoom e aprendo a ventaglio le
+   coordinate uguali/quasi uguali.
+   NON modifica API, Worker, Telegram o invio segnalazioni.
+   ========================================================= */
+(() => {
+  "use strict";
+
+  const VERSION = "2026-11-18.clusterfix1";
+  const capturedByKey = new Map();
+
+  let installed = false;
+  let layerPatched = false;
+  let mapListenersInstalled = false;
+  let expanded = null;
+  let addLayerOriginal = null;
+
+  function getMap(){
+    try { return (typeof mapMain !== "undefined" && mapMain) ? mapMain : null; }
+    catch { return null; }
+  }
+
+  function getLayer(){
+    try { return (typeof layerMain !== "undefined" && layerMain) ? layerMain : null; }
+    catch { return null; }
+  }
+
+  function originalLatLng(marker){
+    try {
+      const p = marker?.__sfOriginalLatLng || marker?.getLatLng?.();
+      if(!p) return null;
+      const lat = Number(p.lat);
+      const lng = Number(p.lng);
+      if(!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      return L.latLng(lat,lng);
+    } catch {
+      return null;
+    }
+  }
+
+  function rememberMarker(marker){
+    if(!marker || marker.__sfIsCluster === true) return;
+    if(typeof marker.getLatLng !== "function") return;
+
+    const key = String(marker.__sfKey || "");
+    if(!key) return;
+
+    capturedByKey.set(key, marker);
+  }
+
+  function currentRealMarkers(){
+    const rows = [...capturedByKey.values()].filter(marker => {
+      return marker &&
+        marker.__sfIsCluster !== true &&
+        marker.__sfKey &&
+        originalLatLng(marker);
+    });
+
+    // map-enhancements azzera il contatore ad ogni ricostruzione:
+    // una Map per __sfKey conserva automaticamente l'ultima generazione.
+    return rows;
+  }
+
+  function cellSizeForZoom(zoom){
+    return zoom <= 12 ? 92 :
+           zoom <= 14 ? 70 :
+           zoom <= 15 ? 54 : 44;
+  }
+
+  function cellKey(map, marker, zoom){
+    const p = originalLatLng(marker);
+    if(!p) return "";
+    const point = map.project(p, zoom);
+    const size = cellSizeForZoom(zoom);
+    return `${Math.floor(point.x / size)}:${Math.floor(point.y / size)}`;
+  }
+
+  function centerOf(markers){
+    const valid = markers.map(originalLatLng).filter(Boolean);
+    if(!valid.length) return null;
+    const sum = valid.reduce((acc,p)=>{
+      acc.lat += p.lat;
+      acc.lng += p.lng;
+      return acc;
+    },{lat:0,lng:0});
+    return L.latLng(sum.lat/valid.length,sum.lng/valid.length);
+  }
+
+  function distance(a,b){
+    if(!a || !b) return Infinity;
+    return Math.abs(a.lat-b.lat)+Math.abs(a.lng-b.lng);
+  }
+
+  function groupsAtZoom(map,zoom){
+    const groups = new Map();
+
+    for(const marker of currentRealMarkers()){
+      const key = cellKey(map,marker,zoom);
+      if(!key) continue;
+      if(!groups.has(key)) groups.set(key,[]);
+      groups.get(key).push(marker);
+    }
+
+    return groups;
+  }
+
+  function findClickedGroup(map, clusterMarker, expectedCount, zoom){
+    const clusterCenter = clusterMarker?.getLatLng?.();
+    const groups = [...groupsAtZoom(map,zoom).values()]
+      .filter(group => group.length > 1);
+
+    if(!groups.length) return [];
+
+    // Prima cerca il gruppo con lo stesso numero e centro più vicino.
+    const sameCount = Number.isFinite(expectedCount)
+      ? groups.filter(group => group.length === expectedCount)
+      : [];
+
+    const candidates = sameCount.length ? sameCount : groups;
+
+    candidates.sort((a,b)=>
+      distance(centerOf(a),clusterCenter) -
+      distance(centerOf(b),clusterCenter)
+    );
+
+    return candidates[0] || [];
+  }
+
+  function clusterMarkerFromTarget(layer,target){
+    if(!layer || !target) return null;
+
+    const candidates = layer.getLayers?.() || [];
+    for(const item of candidates){
+      if(item?.__sfIsCluster !== true) continue;
+      const icon = item._icon;
+      if(!icon) continue;
+      if(icon === target || icon.contains?.(target) || target.contains?.(icon)){
+        return item;
+      }
+    }
+    return null;
+  }
+
+  function removeExpandedVisuals(){
+    const map = getMap();
+    if(!map || !expanded?.markers) {
+      expanded = null;
+      return;
+    }
+
+    for(const marker of expanded.markers){
+      try {
+        if(map.hasLayer(marker)) map.removeLayer(marker);
+      } catch {}
+      try {
+        const p = originalLatLng(marker);
+        if(p) marker.setLatLng(p);
+      } catch {}
+    }
+
+    expanded = null;
+  }
+
+  function expandedBounds(markers){
+    const points = markers.map(originalLatLng).filter(Boolean);
+    if(!points.length) return null;
+    try { return L.latLngBounds(points); }
+    catch { return null; }
+  }
+
+  function spreadAndShowExpanded(){
+    const map = getMap();
+    if(!map || !expanded?.markers?.length) return;
+
+    const zoom = Number(map.getZoom() || 13);
+
+    // Se l'utente è tornato allo zoom iniziale (o più largo),
+    // richiude automaticamente il gruppo.
+    if(zoom <= expanded.fromZoom){
+      removeExpandedVisuals();
+      return;
+    }
+
+    const groups = new Map();
+
+    for(const marker of expanded.markers){
+      const p = originalLatLng(marker);
+      if(!p) continue;
+      const key = `${p.lat.toFixed(5)}:${p.lng.toFixed(5)}`;
+      if(!groups.has(key)) groups.set(key,[]);
+      groups.get(key).push(marker);
+    }
+
+    for(const markers of groups.values()){
+      const center = originalLatLng(markers[0]);
+      if(!center) continue;
+
+      if(markers.length === 1){
+        try {
+          markers[0].setLatLng(center);
+          markers[0].addTo(map);
+        } catch {}
+        continue;
+      }
+
+      // Spiderfy: i PIN con coordinate uguali vengono disposti a ventaglio.
+      const centerPoint = map.project(center,zoom);
+      const perRing = 12;
+
+      markers.forEach((marker,index)=>{
+        const ring = Math.floor(index/perRing);
+        const first = ring*perRing;
+        const count = Math.min(perRing,markers.length-first);
+        const pos = index-first;
+        const radius = 34 + ring*28;
+        const angle = (Math.PI*2*pos/Math.max(1,count)) - Math.PI/2;
+
+        const point = L.point(
+          centerPoint.x + Math.cos(angle)*radius,
+          centerPoint.y + Math.sin(angle)*radius
+        );
+
+        try {
+          marker.setLatLng(map.unproject(point,zoom));
+          marker.addTo(map);
+        } catch {}
+      });
+    }
+
+    // Porta i PIN selezionati sopra agli altri livelli.
+    for(const marker of expanded.markers){
+      try { marker.setZIndexOffset?.(2000); } catch {}
+    }
+  }
+
+  function openCluster(clusterMarker,targetEl){
+    const map = getMap();
+    const layer = getLayer();
+    if(!map || !layer || !clusterMarker) return false;
+
+    const fromZoom = Number(map.getZoom() || 13);
+    const expectedCount = Number(
+      String(targetEl?.textContent || "").trim()
+    );
+
+    const markers = findClickedGroup(
+      map,
+      clusterMarker,
+      Number.isFinite(expectedCount) ? expectedCount : null,
+      fromZoom
+    );
+
+    if(markers.length < 2) return false;
+
+    removeExpandedVisuals();
+
+    expanded = {
+      markers,
+      fromZoom,
+      expectedCount: markers.length
+    };
+
+    const bounds = expandedBounds(markers);
+    if(!bounds) return false;
+
+    try { map.stop(); } catch {}
+
+    const samePoint = bounds.getNorthEast().equals(bounds.getSouthWest());
+
+    if(samePoint){
+      map.setView(bounds.getCenter(),Math.max(17,fromZoom+1),{
+        animate:true,
+        duration:.18
+      });
+    }else{
+      map.fitBounds(bounds,{
+        paddingTopLeft:[52,115],
+        paddingBottomRight:[52,72],
+        maxZoom:16,
+        animate:true,
+        duration:.20
+      });
+
+      // Se fitBounds non aumenta lo zoom, aumenta di un livello:
+      // il gruppo deve realmente "aprirsi".
+      setTimeout(()=>{
+        if(!expanded) return;
+        try{
+          if(map.getZoom() <= fromZoom){
+            map.setZoom(Math.min(16,fromZoom+1),{animate:true});
+          }
+        }catch{}
+      },80);
+    }
+
+    // map-enhancements ridisegna i cluster su zoomend/moveend.
+    // Noi aggiungiamo i PIN reali subito dopo quel ridisegno.
+    setTimeout(spreadAndShowExpanded,240);
+    setTimeout(spreadAndShowExpanded,420);
+
+    return true;
+  }
+
+  function patchLayer(){
+    const layer = getLayer();
+    if(!layer || layerPatched) return false;
+
+    layerPatched = true;
+
+    const originalAdd = layer.addLayer.bind(layer);
+    addLayerOriginal = originalAdd;
+
+    layer.addLayer = function(item){
+      const result = originalAdd(item);
+
+      // Dopo registerMarker, il PIN possiede __sfKey.
+      // Registriamo sempre l'ultima generazione.
+      if(item?.__sfIsCluster !== true){
+        queueMicrotask(()=>rememberMarker(item));
+      }
+
+      return result;
+    };
+
+    // Registra eventuali PIN già presenti.
+    for(const item of (layer.getLayers?.() || [])){
+      rememberMarker(item);
+    }
+
+    // Ricostruzione controllata per avere sicuramente l'ultima
+    // generazione dei marker reali nel registro.
+    try {
+      if(typeof refreshPublicMaps === "function"){
+        setTimeout(()=> {
+          try { refreshPublicMaps(); } catch {}
+        },0);
+      }
+    } catch {}
+
+    return true;
+  }
+
+  function installMapListeners(){
+    const map = getMap();
+    const layer = getLayer();
+    if(!map || !layer || mapListenersInstalled) return false;
+
+    mapListenersInstalled = true;
+
+    const container = map.getContainer?.();
+    if(container){
+      // Capture: intercetta il gruppo PRIMA del vecchio click handler,
+      // evitando lo zoom cieco sul centro medio del cluster.
+      container.addEventListener("click",(event)=>{
+        const target = event.target?.closest?.(".sf-map-cluster,.sf-map-cluster-wrap");
+        if(!target) return;
+
+        const cluster = clusterMarkerFromTarget(layer,target);
+        if(!cluster) return;
+
+        if(openCluster(cluster,target)){
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+        }
+      },true);
+    }
+
+    const reapply = ()=>{
+      if(!expanded) return;
+      setTimeout(spreadAndShowExpanded,0);
+      setTimeout(spreadAndShowExpanded,70);
+    };
+
+    // I listener originali della mappa sono stati registrati prima:
+    // questi vengono eseguiti dopo il loro renderClusters().
+    map.on("zoomend",reapply);
+    map.on("moveend",reapply);
+
+    return true;
+  }
+
+  function tryInstall(){
+    try {
+      if(typeof ensureMaps === "function") ensureMaps();
+    } catch {}
+
+    const okLayer = patchLayer();
+    const okMap = installMapListeners();
+
+    if(okLayer && okMap){
+      window.__sfClusterFixVersion = VERSION;
+      console.info("[Segnala Facile] fix cluster mappa attivo",VERSION);
+      return true;
+    }
+
+    return false;
+  }
+
+  function install(){
+    if(installed) return;
+    installed = true;
+
+    // Tentativi limitati: nessun polling permanente.
+    [0,150,450,1000,2200].forEach(ms=>{
+      setTimeout(tryInstall,ms);
+    });
+
+    window.addEventListener("hashchange",()=>{
+      if(location.hash === "#/map"){
+        setTimeout(tryInstall,0);
+        setTimeout(()=>{
+          try{
+            if(typeof refreshPublicMaps === "function") refreshPublicMaps();
+          }catch{}
+        },120);
+      }else{
+        removeExpandedVisuals();
+      }
+    });
+  }
+
+  if(document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded",install,{once:true});
   }else{
     install();
